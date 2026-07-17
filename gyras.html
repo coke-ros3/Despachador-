@@ -8,6 +8,7 @@
 </head>
 <body class="gyras-body">
 
+    <!-- CABECERA Y ESTADÍSTICAS (INTERFAZ WEB) -->
     <div class="gyras-header">
         <h1>GYRAS: <span>SISTEMA DE ARCHIVO OPERATIVO</span></h1>
         <div class="gyras-station-tag">CUARTEL CENTRAL - NUEVA IMPERIAL</div>
@@ -15,23 +16,20 @@
 
     <div class="gyras-stats-grid">
         <div class="gyras-stat-card total">
-            <h3>Total Emergencias</h3>
-            <div class="num" id="stat-total">0</div>
+            <h3>Total Emergencias</h3><div class="num" id="stat-total">0</div>
         </div>
         <div class="gyras-stat-card">
-            <h3>Estructurales (10-0)</h3>
-            <div class="num" id="stat-100">0</div>
+            <h3>Estructurales (10-0)</h3><div class="num" id="stat-100">0</div>
         </div>
         <div class="gyras-stat-card">
-            <h3>Pastizales (10-2)</h3>
-            <div class="num" id="stat-102">0</div>
+            <h3>Pastizales (10-2)</h3><div class="num" id="stat-102">0</div>
         </div>
         <div class="gyras-stat-card">
-            <h3>Accidentes (10-4)</h3>
-            <div class="num" id="stat-104">0</div>
+            <h3>Accidentes (10-4)</h3><div class="num" id="stat-104">0</div>
         </div>
     </div>
 
+    <!-- FILTROS (INTERFAZ WEB) -->
     <div class="gyras-filter-bar">
         <div class="gyras-filter-group" style="flex: 2;">
             <label>Buscar por dirección u observación</label>
@@ -66,6 +64,7 @@
         </div>
     </div>
 
+    <!-- TABLA GENERAL (INTERFAZ WEB) -->
     <div class="gyras-table-container">
         <table id="table-history">
             <thead>
@@ -78,47 +77,166 @@
                     <th style="text-align: center;">Acciones</th>
                 </tr>
             </thead>
-            <tbody id="history-tbody">
-            </tbody>
+            <tbody id="history-tbody"></tbody>
         </table>
-        <div id="empty-state" class="gyras-empty-state" style="display: none;">No se encontraron registros en la bitácora histórica.</div>
+        <div id="empty-state" class="gyras-empty-state" style="display: none;">No se encontraron registros.</div>
     </div>
 
+    <!-- MODAL: LA HOJA DE PARTE RÉPLICA FÍSICA -->
     <div class="gyras-modal" id="detail-modal">
-        <div class="gyras-modal-content">
-            <div class="gyras-modal-header">
-                <h2 id="modal-title">DETALLES DE LA EMERGENCIA</h2>
-                <button class="gyras-modal-close" id="btn-close-modal">&times;</button>
-            </div>
-            <div class="gyras-modal-body">
-                <div class="gyras-detail-meta">
-                    <p>DIRECCIÓN GENERAL: <strong id="det-address">--</strong></p>
-                    <p>FECHA / HORA CIERRE: <strong id="det-date">--</strong></p>
-                    <p>OBSERVACIONES DE CENTRAL: <strong id="det-obs">--</strong></p>
+        <div class="gyras-modal-content-doc">
+            
+            <div class="gyras-doc-header-dark">
+                <h2 style="color: white; font-size: 1.1rem; margin:0;">VISOR DE PARTE DE DESPACHO</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR / PDF</button>
+                    <button class="gyras-modal-close" id="btn-close-modal" style="color: white;">&times;</button>
                 </div>
+            </div>
 
-                <h3 style="margin-bottom: 10px; font-size: 1rem; text-transform: uppercase; color: var(--c-yellow);">Registro cronológico de tiempos por unidad</h3>
-                <table class="gyras-sub-table">
-                    <thead>
-                        <tr>
-                            <th>CARRO</th>
-                            <th>6-3 (Salida)</th>
-                            <th>6-0 (Lugar)</th>
-                            <th>6-7 (Retorno)</th>
-                            <th>6-8 (Dispo)</th>
-                            <th>6-9 (Retirada)</th>
-                            <th>6-10 (Cuartel)</th>
-                            <th>KM FINAL</th>
-                            <th>COMBUSTIBLE</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modal-tbody-logs">
-                    </tbody>
-                </table>
+            <div class="gyras-modal-body" style="background: #E5E5EA; padding: 20px; overflow-y: auto;">
+                
+                <!-- LA HOJA BLANCA -->
+                <div class="gyras-paper" id="hoja-parte-doc">
+                    
+                    <div class="gp-header">
+                        <div style="font-size: 26px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 30px;">🛡️</span> 1909 GYRAS
+                        </div>
+                        <div class="gp-title">REGISTRO DE DATOS DE SERVICIOS DE EMERGENCIAS.</div>
+                    </div>
+
+                    <div class="gp-top-row">
+                        <div>
+                            <span class="gp-label">Hora del llamado</span>
+                            <span class="gp-box" id="doc-hora-llamado"></span>
+                        </div>
+                        <div>
+                            <span class="gp-label">Fecha del llamado</span>
+                            <span class="gp-box" id="doc-fecha-llamado"></span>
+                        </div>
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">OPERADOR (A)</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-operador">
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">Clave</span>
+                        <div class="gp-input-line" id="doc-clave" style="font-weight:bold; letter-spacing: 1px;"></div>
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">0-4</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-0-4">
+                    </div>
+                    
+                    <div class="gp-row">
+                        <span class="gp-label">Dirección exacta:</span>
+                        <div class="gp-input-line" id="doc-direccion" style="font-weight:bold;"></div>
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">Punto de referencia:</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-referencia">
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">Nombre emisor de llamada:</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-emisor-nombre">
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">Teléfono emisor de llamada:</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-emisor-tel">
+                    </div>
+
+                    <div class="gp-row" style="margin-top: 15px; margin-bottom: 10px;">
+                        <span class="gp-label">Unidades Despachadas:</span>
+                        <div class="gp-input-line" id="doc-unidades-despachadas" style="font-weight: bold; border: none;"></div>
+                    </div>
+
+                    <!-- TABLA 1: UNIDADES Y PERSONAL -->
+                    <table class="gp-table">
+                        <thead>
+                            <tr>
+                                <th>HORA<br>6-0</th>
+                                <th>UNIDAD</th>
+                                <th>BOMBERO A<br>CARGO</th>
+                                <th>Nº DE<br>BOMBEROS</th>
+                                <th>MAQUINISTA</th>
+                                <th>HORA<br>6-3</th>
+                                <th>HORA<br>6-7</th>
+                                <th>HORA<br>6-9</th>
+                                <th>HORA<br>6-10</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc-tbody-unidades"></tbody>
+                    </table>
+
+                    <div style="font-size: 12px; font-weight: bold; margin-top: 15px;">
+                        0-1 INFORME DEL ACTO; A CARGO......................................................................................................... SE TRATA DE:
+                    </div>
+                    <textarea class="gp-textarea-container gyras-save" id="doc-informe" rows="2"></textarea>
+
+                    <div style="font-size: 12px; font-weight: bold;">
+                        0-1 Ampliación............................................................................................................................................................................
+                    </div>
+                    <textarea class="gp-textarea-container gyras-save" id="doc-ampliacion" rows="2"></textarea>
+
+                    <div style="font-size: 12px; font-weight: bold;">
+                        Observaciones............................................................................................................................................................................
+                    </div>
+                    <!-- Se carga la observación de la central por defecto si está vacía -->
+                    <textarea class="gp-textarea-container gyras-save" id="doc-observaciones" rows="2"></textarea>
+
+                    <!-- TABLA 2: APOYO EXTERNO -->
+                    <div class="gp-apoyo-header">REGISTRO DE LLEGADA AL LUGAR DE APOYO EXTERNO</div>
+                    <table class="gp-apoyo-table">
+                        <thead>
+                            <tr>
+                                <th>1-0</th>
+                                <th>1-2</th>
+                                <th>1-3</th>
+                                <th>1-4</th>
+                                <th>1-5</th>
+                                <th>1-8</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-0"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-2"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-3"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-4"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-5"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-8"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- TABLA 3: LOGÍSTICA -->
+                    <table class="gp-table" style="margin-top: -1px;">
+                        <thead>
+                            <tr>
+                                <th>UNIDAD</th>
+                                <th>KM. LLEGADA</th>
+                                <th>COMBUSTIBLE</th>
+                                <th>UNIDAD</th>
+                                <th>KM. LLEGADA</th>
+                                <th>COMBUSTIBLE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc-tbody-logistica"></tbody>
+                    </table>
+
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPT FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -142,6 +260,7 @@
         };
 
         let rawDataList = [];
+        let currentEmId = null;
 
         const tbody = document.getElementById('history-tbody');
         const searchInput = document.getElementById('search-input');
@@ -151,12 +270,8 @@
 
         onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
             rawDataList = [];
-            snapshot.forEach((doc) => {
-                rawDataList.push(doc.data());
-            });
-
+            snapshot.forEach((doc) => { rawDataList.push(doc.data()); });
             rawDataList.sort((a, b) => b.id - a.id);
-
             calcularEstadisticas(rawDataList);
             aplicarFiltros();
         });
@@ -185,15 +300,11 @@
 
         function renderTabla(list) {
             tbody.innerHTML = '';
-            if (list.length === 0) {
-                emptyState.style.display = 'block';
-                return;
-            }
+            if (list.length === 0) { emptyState.style.display = 'block'; return; }
             emptyState.style.display = 'none';
 
             list.forEach(em => {
                 let tr = document.createElement('tr');
-                
                 let dateStr = em.fecha_termino ? new Date(em.fecha_termino).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'}) : '--:--';
                 let shortId = em.id.toString().slice(-5);
                 
@@ -204,7 +315,6 @@
 
                 let labelDesc = descripciones[em.code] || 'Servicio';
                 let alarmText = em.alarma > 0 ? ` <span class="badge-alarma">${em.alarma}ª ALARMA</span>` : '';
-
                 let unitsBadges = (em.units || []).map(u => `<span class="badge-unit">${u}</span>`).join('');
 
                 tr.innerHTML = `
@@ -213,7 +323,7 @@
                     <td style="font-weight:bold; text-transform:uppercase;">${em.address}</td>
                     <td>${unitsBadges}</td>
                     <td style="color:var(--text-muted); font-size:0.85rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${em.obs || 'Sin observaciones'}</td>
-                    <td style="text-align:center;"><button class="btn-view" data-id="${em.id}">Ver Libro</button></td>
+                    <td style="text-align:center;"><button class="btn-view" data-id="${em.id}">VER LIBRO</button></td>
                 `;
 
                 tr.querySelector('.btn-view').addEventListener('click', () => abrirDetalles(em));
@@ -221,53 +331,126 @@
             });
         }
 
-        function abrirDetalles(em) {
-            document.getElementById('modal-title').innerText = `REGISTRO OPERATIVO DE EMERGENCIA #${em.id.toString().slice(-5)}`;
-            document.getElementById('det-address').innerText = em.address.toUpperCase();
-            document.getElementById('det-date').innerText = em.fecha_termino ? new Date(em.fecha_termino).toLocaleString('es-CL') : 'No registrada';
-            document.getElementById('det-obs').innerText = em.obs || 'Sin observaciones de despacho.';
+        // LÓGICA DE LA HOJA DE PARTE Y AUTO-GUARDADO
+        window.abrirDetalles = function(em) {
+            currentEmId = em.id;
 
-            const tbodyLogs = document.getElementById('modal-tbody-logs');
-            tbodyLogs.innerHTML = '';
+            // Datos Fijos Generales
+            document.getElementById('doc-clave').innerText = em.code + (em.alarma > 0 ? ` (${em.alarma}ª ALARMA)` : '');
+            document.getElementById('doc-direccion').innerText = em.address.toUpperCase();
+            document.getElementById('doc-unidades-despachadas').innerText = (em.units || []).join(', ');
+            
+            let dateObj = em.fecha_termino ? new Date(em.fecha_termino) : new Date(em.id);
+            document.getElementById('doc-fecha-llamado').innerText = dateObj.toLocaleDateString('es-CL');
+            document.getElementById('doc-hora-llamado').innerText = dateObj.toLocaleTimeString('es-CL', {hour: '2-digit', minute:'2-digit'});
 
-            em.units.forEach(unitId => {
-                const logsCarro = (em.logs && em.logs[unitId]) ? em.logs[unitId] : {};
+            // Tablas de Máquinas
+            const tbodyUnidades = document.getElementById('doc-tbody-unidades');
+            const tbodyLogistica = document.getElementById('doc-tbody-logistica');
+            tbodyUnidades.innerHTML = '';
+            tbodyLogistica.innerHTML = '';
+
+            let logisticaRows = '';
+
+            em.units.forEach((u, index) => {
+                const logsCarro = (em.logs && em.logs[u]) ? em.logs[u] : {};
                 
-                let trLog = document.createElement('tr');
-                trLog.innerHTML = `
-                    <td style="font-weight:bold; color:var(--c-yellow); background:rgba(255,255,255,0.02);">${unitId}</td>
-                    <td>${logsCarro['6-3'] || '--:--'}</td>
-                    <td style="color:var(--c-orange); font-weight:bold;">${logsCarro['6-0'] || '--:--'}</td>
-                    <td>${logsCarro['6-7'] || '--:--'}</td>
-                    <td>${logsCarro['6-8'] || '--:--'}</td>
-                    <td>${logsCarro['6-9'] || '--:--'}</td>
-                    <td style="color:var(--c-green);">${logsCarro['6-10'] || '--:--'}</td>
-                    <td style="font-weight:bold;">${logsCarro.km ? logsCarro.km + ' Km' : '--'}</td>
-                    <td>${formatCombustible(logsCarro.combustible)}</td>
+                // Tabla Principal (1 fila por carro)
+                let trU = document.createElement('tr');
+                trU.innerHTML = `
+                    <td>${logsCarro['6-0'] || ''}</td>
+                    <td style="font-weight:bold;">${u}</td>
+                    <td><input type="text" class="gp-table-input gyras-save" id="doc-cargo-${u}"></td>
+                    <td><input type="text" class="gp-table-input gyras-save" id="doc-vol-${u}"></td>
+                    <td><input type="text" class="gp-table-input gyras-save" id="doc-maq-${u}"></td>
+                    <td>${logsCarro['6-3'] || ''}</td>
+                    <td>${logsCarro['6-7'] || ''}</td>
+                    <td>${logsCarro['6-9'] || ''}</td>
+                    <td>${logsCarro['6-10'] || ''}</td>
                 `;
-                tbodyLogs.appendChild(trLog);
+                tbodyUnidades.appendChild(trU);
+
+                // Tabla Logística (2 carros por fila para replicar el espacio del papel original)
+                let logHTML = `
+                    <td style="font-weight:bold;">${u}</td>
+                    <td>${logsCarro.km || ''}</td>
+                    <td>${logsCarro.combustible || ''}</td>
+                `;
+                
+                if (index % 2 === 0) {
+                    logisticaRows += `<tr>${logHTML}`;
+                    if (index === em.units.length - 1) {
+                        logisticaRows += `<td></td><td></td><td></td></tr>`; // Rellena si es impar
+                    }
+                } else {
+                    logisticaRows += `${logHTML}</tr>`;
+                }
+            });
+            tbodyLogistica.innerHTML = logisticaRows;
+
+            // Limpiar todo antes de cargar
+            limpiarInputsManuales();
+
+            // Cargar datos escritos a mano desde la memoria local
+            cargarBorradorLocal(em);
+
+            // Poblar las Observaciones de la central si el campo está vacío
+            let obsInput = document.getElementById('doc-observaciones');
+            if (obsInput.value.trim() === '' && em.obs) {
+                obsInput.value = em.obs;
+            }
+
+            // Inyectar datos de apoyo externo desde Firebase (si se transmitieron con la Central)
+            ['1-0', '1-2', '1-3', '1-4', '1-5', '1-8'].forEach(clave => {
+                em.units.forEach(u => {
+                    let logs = (em.logs && em.logs[u]) ? em.logs[u] : {};
+                    if(logs[clave]) {
+                        let inputApoyo = document.getElementById(`doc-${clave}`);
+                        if(inputApoyo.value.trim() === '') inputApoyo.value = logs[clave];
+                    }
+                });
+            });
+
+            // Conectar el guardado automático
+            document.querySelectorAll('.gyras-save').forEach(input => {
+                input.addEventListener('input', guardarBorradorLocal);
             });
 
             document.getElementById('detail-modal').style.display = 'flex';
         }
 
-        function formatCombustible(val) {
-            if(!val) return '--';
-            if(val === '100') return '<span style="color:var(--c-green);">FULL</span>';
-            return `<span style="color:var(--c-orange);">${val}%</span>`;
+        // AUTO-GUARDADO (Memoria Local de la Tablet/PC)
+        function guardarBorradorLocal() {
+            if(!currentEmId) return;
+            let draft = {};
+            document.querySelectorAll('.gyras-save').forEach(input => {
+                if(input.value) draft[input.id] = input.value;
+            });
+            localStorage.setItem(`gyras_draft_hist_${currentEmId}`, JSON.stringify(draft));
         }
 
+        function cargarBorradorLocal(em) {
+            let draftStr = localStorage.getItem(`gyras_draft_hist_${em.id}`);
+            if(draftStr) {
+                let draft = JSON.parse(draftStr);
+                for(let key in draft) {
+                    let input = document.getElementById(key);
+                    if(input) input.value = draft[key];
+                }
+            }
+        }
+
+        function limpiarInputsManuales() {
+            document.querySelectorAll('.gyras-save').forEach(input => input.value = '');
+        }
+
+        // Filtros y Cierre
         searchInput.addEventListener('input', aplicarFiltros);
         filterCode.addEventListener('change', aplicarFiltros);
         filterUnit.addEventListener('change', aplicarFiltros);
 
-        document.getElementById('btn-close-modal').addEventListener('click', () => {
-            document.getElementById('detail-modal').style.display = 'none';
-        });
-        window.addEventListener('click', (e) => {
-            const modal = document.getElementById('detail-modal');
-            if (e.target === modal) modal.style.display = 'none';
-        });
+        document.getElementById('btn-close-modal').addEventListener('click', () => { document.getElementById('detail-modal').style.display = 'none'; currentEmId = null; });
+        window.addEventListener('click', (e) => { if (e.target === document.getElementById('detail-modal')) { document.getElementById('detail-modal').style.display = 'none'; currentEmId = null; } });
     </script>
 </body>
 </html>
