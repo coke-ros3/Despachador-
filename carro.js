@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // dibuja UI
+    // dibuja UI y carga mapa personalizado actualizado
     function procesarDespacho(em) {
         try {
             let codigoMostrar = em.code || '10-0';
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!map) {
                 map = L.map('carro-map', { zoomControl: false }).setView(baseLocation, 15);
-                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21yazBmNngzMDBiNDJ5b2pkMjF3dHljbCJ9.cbcHOpTihe9Y-9l6HZHjAw', {
+                L.tileLayer('https://api.mapbox.com/styles/v1/jorgelander/cmrp6ml2r009y01s1drm39dhw/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21ycDZrNjc5Mjh0dTVzcTFsNThnZDVybiJ9.YeBk7kJuK-Hq5_kKuBY8fw', {
                     attribution: '© Mapbox', maxZoom: 19
                 }).addTo(map);
                 L.control.zoom({ position: 'topright' }).addTo(map);

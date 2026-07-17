@@ -155,11 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
         clavesContainer.appendChild(btn);
     });
 
-    // token mapbox
-    const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21yazBmNngzMDBiNDJ5b2pkMjF3dHljbCJ9.cbcHOpTihe9Y-9l6HZHjAw';
+    // token mapbox actualizado y estilo de mapa custom
+    const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21ycDZrNjc5Mjh0dTVzcTFsNThnZDVybiJ9.YeBk7kJuK-Hq5_kKuBY8fw';
     var map = L.map('map').setView(appState.stationLocation, 17);
     
-    L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
+    L.tileLayer(`https://api.mapbox.com/styles/v1/jorgelander/cmrp6ml2r009y01s1drm39dhw/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
         attribution: '© Mapbox', maxZoom: 19
     }).addTo(map);
 
