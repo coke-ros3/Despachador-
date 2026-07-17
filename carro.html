@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MDT - TERMINAL DE DATOS MÓVIL</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <style>
+        :root {
+            /* colores */
+            --bg-dark: #11131C; 
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-light: #FFFFFF; 
+            --text-muted: #9CA3AF;
+            
+            --c-red: #D32F2F; 
+            --c-green: #2E7D32; 
+            --c-blue: #1976D2; 
+            --c-orange: #F57C00; 
+            --c-gray: #4B5563;
+
+            --glass-bg: rgba(20, 24, 36, 0.75);
+            --glass-red: rgba(211, 47, 47, 0.85);
+            --glass-orange: rgba(245, 124, 0, 0.85);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); height: 100vh; overflow: hidden; }
+        
+        /* config mdt */
+        #unit-selection-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; background: var(--bg-dark); z-index: 1000; }
+        .unit-selection-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
+        .btn-select-unit { padding: 20px; font-size: 1.5rem; font-weight: 900; background: var(--glass-bg); color: var(--text-light); border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-select-unit:active { background: var(--c-blue); border-color: var(--c-blue); transform: scale(0.95); }
+
+        #standby-screen { display: none; height: 100vh; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; background: var(--bg-dark); }
+        .pulse-line { width: 80px; height: 2px; background: var(--c-blue); animation: pulse 2s infinite; margin-bottom: 20px; }
+        @keyframes pulse { 0% { opacity: 0.3; transform: scaleX(0.8); } 50% { opacity: 1; transform: scaleX(1.2); } 100% { opacity: 0.3; transform: scaleX(0.8); } }
+
+        /* pantalla activa */
+        #active-screen { display: none; width: 100vw; height: 100vh; position: relative; }
+        
+        /* mapa fondo */
+        .map-layer { position: absolute; inset: 0; z-index: 1; }
+        #carro-map { width: 100%; height: 100%; }
+
+        /* nav arriba */
+        .top-unit-banner { position: absolute; top: 0; left: 0; right: 0; background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 20px; z-index: 20; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .top-unit-banner span { font-weight: bold; font-size: 0.85rem; color: var(--text-muted); }
+        .btn-change-unit { background: transparent; color: var(--c-blue); border: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; text-transform: uppercase; }
+
+        /* paneles flotantes */
+        .ui-overlay { position: absolute; top: 40px; left: 0; right: 0; bottom: 0; z-index: 10; padding: 25px; display: flex; justify-content: space-between; pointer-events: none; }
+        .glass-panel { pointer-events: auto; background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        /* paneles laterales */
+        .overlay-left { display: flex; flex-direction: column; justify-content: space-between; width: 380px; gap: 15px; }
+        .info-banner { background: var(--glass-red); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .info-banner.update-mode { background: var(--glass-orange); }
+        .info-banner h1 { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin: 0; line-height: 1; }
+        .info-banner p { font-size: 1.2rem; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0; }
+        .units-label { font-size: 1rem; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; font-weight: bold; display: inline-block; width: fit-content; }
+
+        .obs-box h3, .metric-box h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .obs-box p, .metric-box p { font-size: 1.1rem; font-weight: 500; line-height: 1.4; color: var(--text-light); margin: 0; }
+
+        .overlay-right { display: flex; flex-direction: column; justify-content: flex-end; width: 340px; gap: 15px; }
+
+        /* botones */
+        .status-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-status { width: 100%; padding: 18px 5px; font-size: 1.8rem; font-weight: 900; border-radius: 12px; cursor: pointer; color: var(--text-light); background-color: rgba(0,0,0,0.4); transition: all 0.2s; text-transform: uppercase; border: 2px solid; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .btn-6-0 { border-color: var(--c-orange); } .btn-6-0:active { background-color: var(--c-orange); }
+        .btn-6-3 { border-color: var(--c-red); }    .btn-6-3:active { background-color: var(--c-red); }
+        .btn-6-7 { border-color: var(--c-blue); }   .btn-6-7:active { background-color: var(--c-blue); }
+        .btn-6-8 { border-color: var(--c-blue); }   .btn-6-8:active { background-color: var(--c-blue); }
+        .btn-6-9 { border-color: var(--c-orange); } .btn-6-9:active { background-color: var(--c-orange); }
+        .btn-6-10{ border-color: var(--c-green); }  .btn-6-10:active { background-color: var(--c-green); }
+        
+        .btn-grifos { padding: 15px; background-color: rgba(255,255,255,0.1); color: var(--text-light); border: 1px solid var(--border-color); border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-grifos:active { background-color: rgba(255,255,255,0.2); }
+        .btn-apoyo { background-color: rgba(25, 118, 210, 0.4); border-color: var(--c-blue); }
+        
+        /* modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--bg-panel); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        
+        .input-modal { width: 100%; padding: 15px; font-size: 1.2rem; background: rgba(0,0,0,0.5); color: var(--text-light); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; text-align: center; outline: none; font-weight: bold; }
+        .input-modal:focus { border-color: var(--c-blue); }
+        .label-modal { display:block; margin-bottom: 8px; color: var(--text-muted); font-weight: bold; text-align: center; font-size: 0.85rem; text-transform: uppercase; }
+        
+        .btn-apoyo-ext { font-size: 1.1rem; padding: 12px; border-color: var(--c-blue); border-radius: 8px; }
+        .btn-apoyo-ext:active { background-color: var(--c-blue); }
+
+        /* celular */
+        @media (max-width: 850px) {
+            .ui-overlay { flex-direction: column; padding: 15px; overflow-y: auto; pointer-events: auto; }
+            .overlay-left, .overlay-right { width: 100%; }
+            .map-layer { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- config base -->
+    <div id="unit-selection-screen">
+        <h2 style="color: var(--text-light); font-size: 1.8rem; font-weight: 900;">CONFIGURACIÓN MDT</h2>
+        <p style="color: var(--text-muted); margin-bottom: 15px;">Seleccione la unidad en la que se encuentra</p>
+        <div class="unit-selection-grid" id="selection-grid"></div>
+    </div>
+
+    <!-- top banner -->
+    <div class="top-unit-banner" id="top-unit-banner">
+        <span>UNIDAD ACTIVA: <strong id="lbl-active-unit" style="color: var(--text-light); font-size: 1rem;">--</strong></span>
+        <button type="button" class="btn-change-unit" id="btn-change-unit">[ CAMBIAR UNIDAD ]</button>
+    </div>
+
+    <!-- loading -->
+    <div id="standby-screen">
+        <div class="pulse-line"></div>
+        <h2>TERMINAL DE DATOS MÓVIL</h2>
+        <p style="color: var(--text-muted); margin-top: 8px; font-size: 1rem; letter-spacing: 0.5px;">EN ESPERA DE ASIGNACIÓN DESDE LA CENTRAL</p>
+    </div>
+    
+    <!-- pantalla activa -->
+    <div id="active-screen">
+        
+        <div class="map-layer">
+            <div id="carro-map"></div>
+        </div>
+        
+        <div class="ui-overlay">
+            <div class="overlay-left">
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="glass-panel info-banner" id="banner-estado">
+                        <h1 id="carro-code">10-0</h1>
+                        <p id="carro-address">DIRECCIÓN DE LA EMERGENCIA</p>
+                        <span class="units-label" id="carro-units">MATERIAL MAYOR</span>
+                    </div>
+
+                    <div class="glass-panel obs-box">
+                        <h3>Detalles / Observaciones</h3>
+                        <p id="carro-obs">Sin observaciones registradas.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel metric-box" id="routing-metrics" style="display: none;">
+                    <h3>Indicadores de Ruta</h3>
+                    <p id="metric-text">Calculando ruta óptima...</p>
+                </div>
+            </div>
+
+            <div class="overlay-right">
+                <div class="glass-panel" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" id="btn-toggle-grifos" class="btn-grifos" style="flex: 1;">[ GRIFOS ]</button>
+                        <button type="button" id="btn-modal-apoyo" class="btn-grifos btn-apoyo" style="flex: 1;">[ APOYO EXT ]</button>
+                    </div>
+
+                    <div class="status-controls">
+                        <button class="btn-status btn-6-0" id="btn-6-0">6-0</button>
+                        <button class="btn-status btn-6-3" id="btn-6-3">6-3</button>
+                        <button class="btn-status btn-6-7" id="btn-6-7">6-7</button>
+                        <button class="btn-status btn-6-8" id="btn-6-8">6-8</button>
+                        <button class="btn-status btn-6-9" id="btn-6-9">6-9</button>
+                        <button class="btn-status btn-6-10" id="btn-6-10">6-10</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modales ocultos -->
+    <div id="modal-6-0" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: var(--text-light); margin-bottom: 20px; text-align: center; text-transform: uppercase;">REPORTE 6-0 (SALIDA)</h2>
+            
+            <label class="label-modal">BOMBERO A CARGO</label>
+            <input type="text" id="input-cargo" class="input-modal" placeholder="Ej: Teniente 1...">
+
+            <label class="label-modal">Nº DE VOLUNTARIOS</label>
+            <input type="tel" id="input-vol" inputmode="numeric" pattern="[0-9]*" class="input-modal" placeholder="Ej: 5">
+
+            <label class="label-modal">MAQUINISTA</label>
+            <input type="text" id="input-maq" class="input-modal" placeholder="Ej: Juan Perez">
+
+            <button type="button" id="btn-submit-6-0" style="width: 100%; padding: 15px; background: var(--c-blue); color: var(--text-light); font-weight: bold; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 10px;">Enviar 6-0</button>
+            <button type="button" id="btn-cancel-6-0" style="width: 100%; padding: 12px; background: transparent; color: var(--text-muted); border: none; margin-top: 5px; cursor: pointer; font-weight: bold;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-apoyo" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <h2 style="color: var(--text-light); margin-bottom: 10px; text-align: center; text-transform: uppercase;">REGISTRAR APOYO</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Llegada de instituciones externas</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <button class="btn-status btn-apoyo-ext" onclick="transmitirApoyo('1-0')">1-0 (Carab.)</button>
+                <button class="btn-status btn-apoyo-ext" onclick="transmitirApoyo('1-2')">1-2 (Ambul.)</button>
+                <button class="btn-status btn-apoyo-ext" onclick="transmitirApoyo('1-3')">1-3 (Emerg.)</button>
+                <button class="btn-status btn-apoyo-ext" onclick="transmitirApoyo('1-4')">1-4 (Empresa)</button>
+                <button class="btn-status btn-apoyo-ext" onclick="transmitirApoyo('1-5')">1-5 (CONAF)</button>
+                <button class="btn-status btn-apoyo-ext" onclick="transmitirApoyo('1-8')">1-8 (DET)</button>
+            </div>
+
+            <button type="button" id="btn-cancel-apoyo" style="width: 100%; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; font-weight: bold;">Cerrar Panel</button>
+        </div>
+    </div>
+
+    <div id="modal-6-10" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: var(--text-light); margin-bottom: 20px; text-align: center; text-transform: uppercase;">REPORTE 6-10 (CUARTEL)</h2>
+            
+            <label class="label-modal">KILOMETRAJE DE LLEGADA</label>
+            <input type="tel" id="input-km" inputmode="numeric" pattern="[0-9]*" class="input-modal" placeholder="Ej: 12500">
+
+            <label class="label-modal">NIVEL DE COMBUSTIBLE</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
+                <button type="button" class="btn-fuel" data-fuel="Lleno" style="padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">Lleno</button>
+                <button type="button" class="btn-fuel" data-fuel="3/4" style="padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">3/4</button>
+                <button type="button" class="btn-fuel" data-fuel="Medio" style="padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">Medio</button>
+                <button type="button" class="btn-fuel" data-fuel="1/4" style="padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">1/4</button>
+            </div>
+
+            <button type="button" id="btn-submit-6-10" style="width: 100%; padding: 15px; background: var(--c-blue); color: var(--text-light); font-weight: bold; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase;">Enviar Reporte</button>
+            <button type="button" id="btn-cancel-6-10" style="width: 100%; padding: 12px; background: transparent; color: var(--text-muted); border: none; margin-top: 5px; cursor: pointer; font-weight: bold;">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    
+    <div style="position: fixed; bottom: 15px; left: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--c-orange); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL</option>
+            <option value="carro.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CARROS</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[3] MAQUINISTAS</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[4] GYRAS</option>
+        </select>
+    </div>
+    <script>document.getElementById('vista-selector').value = 'carro.html';</script>
+    
+    <script type="module" src="carro.js"></script>
+</body>
+</html>

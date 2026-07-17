@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CENTRAL DE ALARMAS Y TELECOMUNICACIONES</title>
+  <meta name="theme-color" content="#11131C">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- topbar con el candado -->
+    <header class="topbar">
+        <h1>CENTRAL DE ALARMAS Y TELECOMUNICACIONES</h1>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button id="btn-edit-layout" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer;" title="Desbloquear pantalla">🔒</button>
+            <div id="clock">00:00:00</div>
+        </div>
+    </header>
+
+<main class="dashboard triptych">
+        <!-- panel izquierdo -->
+        <section class="panel panel-left">
+            <h2>Claves de Emergencia</h2>
+            <div id="claves-container" class="claves-list"></div>
+            
+            <div class="units-section">
+                <h2>Unidades a Despachar</h2>
+                <div id="units-container" class="units-grid"></div>
+            </div>
+
+            <div class="maquinistas-section" style="margin-top: 15px;">
+                <button type="button" id="toggle-maquinistas" class="btn-secondary" style="text-align: left; padding-left: 15px;">VER MAQUINISTAS ▼</button>
+                <div id="maquinistas-container" class="units-grid" style="display: none; margin-top: 10px;"></div>
+            </div>
+        </section>
+
+        <!-- separador invisible 1 -->
+        <div class="resizer" id="resizer-L"></div>
+
+    <!-- panel central -->
+    <section class="panel panel-center">
+            <h2>Datos Operativos</h2>
+            
+            <form id="dispatch-form" class="dispatch-form-layout">
+                <div class="form-group address-group">
+                <input type="text" id="address-input" placeholder="Buscar dirección en la comuna..." autocomplete="off" required>
+                    <button type="button" id="btn-manual-mark" class="btn-primary">MARCAR UBICACIÓN (RURAL)</button>
+                    <ul id="address-suggestions" class="suggestions-list"></ul>
+                </div>
+                
+        <div class="routing-info" id="pending-routing-info" style="display:none;">
+            <span id="route-distance">Distancia: -- km</span> | 
+            <span id="route-time">Tiempo estimado: -- min</span>
+                </div>
+
+                <div id="map-container" class="mini-map">
+                    <div id="map"></div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" id="btn-toggle-grifos" class="btn-secondary" style="flex: 1; margin-top:0;">[ MOSTRAR GRIFOS ]</button>
+                    <button type="button" id="btn-link-gps" class="btn-primary" style="flex: 1; margin-top:0; background-color: var(--c-blue);">[ COPIAR LINK GPS ]</button>
+                    <button type="button" id="btn-clear-gps" class="btn-secondary" style="flex: 1; margin-top:0;">[ LIMPIAR GPS ]</button>
+                    <button type="button" id="btn-master-reset" class="btn-destructive" style="flex: 1; margin-top:0;">[ RESET GENERAL ]</button>
+                </div>
+
+                <!-- div pegajoso pa que no se corte el despachar -->
+                <div class="form-footer-stick">
+                    <textarea id="observations" rows="2" placeholder="Descripción y detalles adicionales..."></textarea>
+                    <button type="submit" class="btn-dispatch">DESPACHAR EMERGENCIA</button>
+                </div>
+            </form>
+
+            <!-- panel oculto -->
+            <div id="apoyo-panel" style="display:none; flex-direction:column; height:100%;">
+                <div style="background:var(--c-blue); padding:10px; border-radius:5px; text-align:center; font-weight:bold; margin-bottom:15px; color:var(--text-light);">
+                    MODO GESTIÓN DE APOYO Y ALARMAS
+                </div>
+        <h3 id="apoyo-title" style="color:var(--text-light); margin-bottom:5px; font-size:1.3rem;">10-0</h3>
+        <p style="margin-bottom:15px; color:var(--text-muted);">Unidades trabajando: <strong id="apoyo-current-units" style="color:var(--text-light);"></strong></p>
+                
+                <div class="form-group" id="apoyo-alarm-group">
+                    <label style="color:var(--text-muted); font-weight:bold;">Escalar Nivel de Emergencia:</label>
+                    <select id="apoyo-alarm-select" style="margin-top:5px;">
+                        <option value="0">Mantener Nivel Actual (Solo enviar apoyo)</option>
+                        <option value="1">Declarar 1ª Alarma de Incendio</option>
+                        <option value="2">Declarar 2ª Alarma de Incendio</option>
+                        <option value="3">Declarar 3ª Alarma de Incendio</option>
+                    </select>
+                </div>
+
+                <div style="border:1px dashed var(--c-blue); padding:15px; border-radius:5px; margin-bottom:15px; text-align:center;">
+                    <p style="color:var(--text-muted); font-size:1rem;">SELECCIONE EN EL PANEL IZQUIERDO LAS <strong>NUEVAS UNIDADES</strong> QUE DESPACHARÁ AL LUGAR.</p>
+                </div>
+
+                <button type="button" id="btn-confirm-apoyo" class="btn-primary" style="margin-top:auto; padding:15px; font-size:1.1rem;">TRANSMITIR APOYO / ALARMA</button>
+                <button type="button" id="btn-cancel-apoyo" class="btn-secondary" style="background:transparent; border:1px solid var(--border-color); color:var(--text-muted);">Cancelar y volver al mapa</button>
+            </div>
+    </section>
+
+        <!-- separador invisible 2 -->
+        <div class="resizer" id="resizer-R"></div>
+
+        <!-- panel derecho -->
+        <section class="panel panel-right">
+            <h2>Emergencias Activas</h2>
+            <div id="active-emergencies-container" class="active-emergencies-container"></div>
+        </section>
+</main>
+
+    <!-- modal -->
+    <div id="modal-bitacora" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; text-align: center;">BITÁCORA Y TIEMPOS DE UNIDADES</h2>
+            <h3 id="bitacora-title" style="text-align: center; color: var(--text-light); margin-top: 10px;">--</h3>
+            
+            <table class="table-bitacora">
+                <thead>
+                    <tr>
+                        <th>UNIDAD</th>
+                        <th>6-0</th>
+                        <th>6-3</th>
+                        <th>6-7</th>
+                        <th>6-8</th>
+                        <th>6-9</th>
+                        <th>6-10</th>
+                        <th>KM</th>
+                        <th>COMBUST.</th>
+                    </tr>
+                </thead>
+                <tbody id="bitacora-tbody">
+                </tbody>
+            </table>
+            <button type="button" id="btn-close-bitacora" class="btn-secondary" style="margin-top: 20px;">CERRAR BITÁCORA</button>
+        </div>
+    </div>
+
+    <!-- scripts mapa -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--c-blue); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL</option>
+            <option value="carro.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CARROS</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[3] MAQUINISTAS</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[4] GYRAS</option>
+        </select>
+    </div>
+    <script>document.getElementById('vista-selector').value = 'central.html';</script>
+    
+    <script type="module" src="app.js"></script>
+</body>
+</html>

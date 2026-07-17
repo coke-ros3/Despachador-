@@ -1,0 +1,17 @@
+{
+  "name": "CAD Operativo - Central de Alarmas",
+    "short_name": "CAD Central",
+  "description": "Sistema de despacho de emergencias y terminal de datos móviles.",
+"start_url": "./index.html",
+  "display": "standalone",
+"background_color": "#1e1e2f",
+    "theme_color": "#e74c3c",
+  "icons": [
+    {
+    "src": "https://cdn-icons-png.flaticon.com/512/784/784115.png",
+      "sizes": "512x512",
+      "type": "image/png",
+    "purpose": "any maskable"
+    }
+  ]
+}

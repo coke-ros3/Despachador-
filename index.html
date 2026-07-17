@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PORTAL DE INICIO - SISTEMA INTEGRAL</title>
+    <style>
+        :root { --bg-dark: #11131C; --bg-panel: #1D2130; --c-blue: #1976D2; --c-red: #D32F2F; --c-green: #2E7D32; --c-orange: #F57C00; --text-light: #FFFFFF; --text-muted: #9CA3AF; --border-color: #374151; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        
+        .header { text-align: center; margin-bottom: 50px; }
+        .header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: 2px; color: var(--text-light); margin-bottom: 10px; text-transform: uppercase; }
+        .header p { color: var(--text-muted); font-size: 1.1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 900px; }
+        
+        .card { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .card:hover { transform: translateY(-5px); background: #23283B; }
+        .card h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; color: var(--text-light); }
+        .card p { font-size: 0.95rem; color: var(--text-muted); font-weight: 600; }
+        
+        .card-cad { border-top: 4px solid var(--c-red); }
+        .card-gyras { border-top: 4px solid var(--c-blue); }
+        .card-mdt { border-top: 4px solid var(--c-orange); }
+        .card-maq { border-top: 4px solid var(--c-green); }
+
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- encabezado -->
+    <div class="header">
+        <h1>SISTEMA OPERATIVO DE DESPACHO</h1>
+        <p>CUERPO DE BOMBEROS DE NUEVA IMPERIAL</p>
+    </div>
+
+    <!-- menu principal -->
+    <div class="grid-container">
+        <a href="central.html" class="card card-cad">
+            <h2><span style="color: var(--c-red);">[1]</span> CENTRAL DE ALARMAS</h2>
+            <p>Despacho CAD, mapa y control de recursos</p>
+        </a>
+
+        <a href="gyras.html" class="card card-gyras">
+            <h2><span style="color: var(--c-blue);">[2]</span> SISTEMA GYRAS</h2>
+            <p>Partes de servicio y bitácoras digitales</p>
+        </a>
+
+        <a href="carro.html" class="card card-mdt">
+            <h2><span style="color: var(--c-orange);">[3]</span> TABLET CARROS (MDT)</h2>
+            <p>Navegación y transmisión de tiempos</p>
+        </a>
+
+        <a href="maquinista.html" class="card card-maq">
+            <h2><span style="color: var(--c-green);">[4]</span> CONDUCTORES</h2>
+            <p>Reporte de disponibilidad en línea</p>
+        </a>
+    </div>
+
+    <!-- menu flotante -->
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL</option>
+            <option value="carro.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CARROS</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[3] MAQUINISTAS</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[4] GYRAS</option>
+        </select>
+    </div>
+    <script>document.getElementById('vista-selector').value = 'index.html';</script>
+</body>
+</html>

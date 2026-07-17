@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYRAS - Partes de Servicio</title>
+    <style>
+        :root { --bg-dark: #11131C; --bg-panel: #1D2130; --border-color: #374151; --c-blue: #1976D2; --c-red: #D32F2F; --text-light: #FFFFFF; --text-muted: #9CA3AF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* topbar */
+        .topbar { background-color: var(--bg-dark); padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .topbar h1 { font-size: 1.5rem; color: var(--text-light); font-weight: 900; letter-spacing: 1px; }
+        .btn-home { background: transparent; color: var(--text-light); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-weight: bold; transition: 0.2s; }
+        .btn-home:hover { border-color: var(--text-muted); }
+
+        /* layout base */
+        .gyras-layout { display: grid; grid-template-columns: 300px 1fr; height: calc(100vh - 65px); }
+        
+        /* lista izq */
+        .inbox { background: var(--bg-panel); border-right: 1px solid var(--border-color); overflow-y: auto; padding: 15px; }
+        .inbox h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
+        
+        .emergencia-item { padding: 15px; background: var(--bg-dark); border-left: 5px solid var(--border-color); margin-bottom: 10px; cursor: pointer; border-radius: 4px; transition: 0.2s; border: 1px solid var(--border-color); display: block; }
+        .emergencia-item.activa { border-left-color: var(--c-red); background: var(--bg-panel); }
+        .emergencia-item:hover { border-color: var(--text-muted); }
+        .emergencia-item strong { color: var(--c-red); font-size: 1.1rem; }
+        .emergencia-item p { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; font-weight: bold; }
+
+        /* zona documento */
+        .document-area { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; background: var(--bg-dark); position: relative; }
+        
+        /* boton imprimir */
+        .btn-print-container { width: 100%; max-width: 950px; display: flex; justify-content: flex-end; margin-bottom: 15px; display: none; }
+        .btn-print { background-color: var(--c-blue); color: white; border: none; padding: 10px 20px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .btn-print:hover { opacity: 0.9; }
+
+        /* hoja papel */
+        .hoja-parte { background: #ffffff; color: black; width: 100%; max-width: 950px; padding: 40px; border-radius: 2px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); min-height: 1000px; margin: 0 auto; display: none; }
+        
+        .hoja-header { border-bottom: 3px solid black; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .hoja-header-text h2 { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+        .hoja-header-text p { font-weight: bold; font-size: 0.9rem; color: #555; }
+        
+        .header-datos-grid { display: flex; gap: 20px; text-align: left; }
+        .header-caja { display: flex; flex-direction: column; }
+        .header-caja span.etiqueta { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #555; }
+        .header-caja span.valor { font-size: 1.1rem; font-weight: 900; font-family: 'Courier New', Courier, monospace; color: #D32F2F; }
+        
+        /* inputs texto */
+        .campo-linea { display: flex; margin-bottom: 10px; font-size: 0.95rem; font-weight: bold; align-items: center; }
+        .campo-linea .etiqueta { white-space: nowrap; margin-right: 10px; text-transform: uppercase; }
+        .campo-linea .valor { flex-grow: 1; border-bottom: 1px dashed black; color: #D32F2F; font-family: 'Courier New', Courier, monospace; font-weight: 900; padding-left: 5px; font-size: 1.1rem; min-height: 1.2rem; }
+
+        .valor-input-text { border: none; background: transparent; flex-grow: 1; color: #1976D2; font-weight: 900; font-family: 'Courier New', Courier, monospace; font-size: 1.1rem; outline: none; border-bottom: 1px dashed #9CA3AF; padding-left: 5px; }
+        .valor-input-text:focus { border-bottom: 1px dashed black; }
+
+        .seccion-titulo { margin-top: 35px; margin-bottom: 12px; font-weight: 900; border-bottom: 2px solid black; padding-bottom: 5px; font-size: 1.1rem; text-transform: uppercase; background-color: #f4f5f7; padding-left: 10px; }
+        
+        .grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 10px; }
+        
+        /* tablas */
+        .tabla-gyras { width: 100%; border-collapse: collapse; border: 2px solid black; background: white; table-layout: fixed; }
+        .tabla-gyras th, .tabla-gyras td { border: 1px solid black; padding: 10px 4px; text-align: center; font-size: 0.85rem; font-weight: bold; word-wrap: break-word; }
+        .tabla-gyras th { background: #e0e0e0; font-size: 0.75rem; text-transform: uppercase; }
+        
+        .celda-input { border: none; background: transparent; width: 100%; text-align: center; color: #1976D2; font-weight: 900; font-family: 'Courier New', Courier, monospace; font-size: 1rem; outline: none; }
+        .celda-readonly { color: #D32F2F; font-weight: 900; font-family: 'Courier New', Courier, monospace; font-size: 1rem; }
+
+        /* css para imprimir */
+        @media print {
+            @page { size: portrait; margin: 15mm; }
+            body { background-color: white !important; color: black !important; }
+            .topbar, .inbox, #vista-selector, .btn-print-container { display: none !important; }
+            .gyras-layout { display: block !important; height: auto !important; }
+            .document-area { background: transparent !important; padding: 0 !important; overflow: visible !important; }
+            .hoja-parte { box-shadow: none !important; padding: 0 !important; margin: 0 !important; max-width: 100% !important; min-height: auto !important; }
+            
+            .valor, .celda-readonly { color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .valor-input-text, .celda-input, textarea { color: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .seccion-titulo { background-color: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
+        @media (max-width: 900px) {
+            .gyras-layout { grid-template-columns: 250px 1fr; }
+            .hoja-parte { padding: 15px; }
+            .tabla-gyras th, .tabla-gyras td { font-size: 0.75rem; padding: 5px 2px; }
+            .celda-input, .celda-readonly { font-size: 0.85rem; }
+            .header-datos-grid { flex-direction: column; gap: 5px; text-align: right; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <h1>SISTEMA GYRAS</h1>
+        <a href="index.html" class="btn-home">VOLVER AL INICIO</a>
+    </div>
+
+    <div class="gyras-layout">
+        <div class="inbox" id="inbox-emergencies">
+            <h2>EMERGENCIAS ACTIVAS</h2>
+            <div id="lista-emergencias-container"></div>
+        </div>
+
+        <div class="document-area">
+            <div id="mensaje-vacio" style="color: var(--text-muted); font-weight: bold; margin-top: 50px; font-size: 1.2rem;">SELECCIONE UNA EMERGENCIA PARA VER EL PARTE</div>
+            
+            <div class="btn-print-container" id="btn-print-container">
+                <button class="btn-print" onclick="window.print()">[ Exportar a PDF / Imprimir ]</button>
+            </div>
+
+            <div class="hoja-parte" id="hoja-parte">
+                
+                <!-- titulo hoja -->
+                <div class="hoja-header">
+                    <div class="hoja-header-text">
+                        <h2>REGISTRO DE DATOS DE SERVICIOS</h2>
+                        <p>Central de Alarmas y Telecomunicaciones</p>
+                        <p>Cuerpo de Bomberos Nueva Imperial</p>
+                    </div>
+                    <div class="header-datos-grid">
+                        <div class="header-caja">
+                            <span class="etiqueta">Hora del llamado</span>
+                            <span class="valor" id="gyras-hora">--:--</span>
+                        </div>
+                        <div class="header-caja">
+                            <span class="etiqueta">Fecha del llamado</span>
+                            <span class="valor" id="gyras-fecha">--/--/----</span>
+                        </div>
+                        <div class="header-caja" style="margin-left: 10px;">
+                            <span class="etiqueta">Nº Parte</span>
+                            <input type="text" class="valor-input-text" id="gyras-parte" style="width: 80px; text-align: center; color: #D32F2F;" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- claves -->
+                <div class="grid-2-cols">
+                    <div class="campo-linea"><span class="etiqueta">Clave del servicio:</span><span class="valor" id="gyras-clave"></span></div>
+                    <div class="campo-linea"><span class="etiqueta">Se trata de:</span><span class="valor" id="gyras-04"></span></div>
+                </div>
+                <div class="campo-linea" style="margin-top: -5px; margin-bottom: 25px;"><span class="etiqueta">Operador(a):</span><input type="text" class="valor-input-text" id="gyras-operador"></div>
+
+                <!-- info llamado -->
+                <div class="seccion-titulo">DATOS DEL LLAMADO</div>
+                <div class="grid-2-cols">
+                    <div class="campo-linea"><span class="etiqueta">Dirección exacta:</span><span class="valor" id="gyras-direccion"></span></div>
+                    <div class="campo-linea"><span class="etiqueta">N°:</span><input type="text" class="valor-input-text" id="gyras-numero"></div>
+                </div>
+                <div class="grid-2-cols">
+                    <div class="campo-linea"><span class="etiqueta">Punto de referencia:</span><input type="text" class="valor-input-text" id="gyras-referencia"></div>
+                    <div class="campo-linea"><span class="etiqueta">Nombre emisor de llamada:</span><input type="text" class="valor-input-text" id="gyras-emisor-nombre"></div>
+                </div>
+                <div class="campo-linea"><span class="etiqueta">Teléfono emisor de llamada:</span><input type="text" class="valor-input-text" id="gyras-emisor-tel"></div>
+
+                <!-- unidades tabla -->
+                <div class="seccion-titulo">CONTROL DE UNIDADES</div>
+                <table class="tabla-gyras">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">UNIDAD</th>
+                            <th style="width: 10%;">HORA 6-0</th>
+                            <th style="width: 19%;">BOMBERO A CARGO</th>
+                            <th style="width: 9%;">Nº BOMBEROS</th>
+                            <th style="width: 18%;">MAQUINISTA</th>
+                            <th style="width: 9%;">HORA 6-3</th>
+                            <th style="width: 9%;">HORA 6-7</th>
+                            <th style="width: 9%;">HORA 6-9</th>
+                            <th style="width: 9%;">HORA 6-10</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gyras-unidades-tbody">
+                    </tbody>
+                </table>
+
+                <!-- texto informe -->
+                <div class="seccion-titulo">INFORME DEL ACTO</div>
+                <div class="campo-linea" style="margin-bottom: 15px;"><span class="etiqueta">A cargo de la emergencia:</span><input type="text" class="valor-input-text" id="gyras-oficial-cargo"></div>
+                <span style="font-size: 0.85rem; font-weight: bold; text-transform: uppercase; color: #555;">Informe / Ampliación / Observaciones:</span>
+                <textarea id="gyras-ampliacion" style="width: 100%; height: 100px; padding: 10px; border: 1px solid black; font-family: 'Courier New', Courier, monospace; font-size: 1rem; color: #1976D2; font-weight: bold; outline: none; resize: none; margin-top: 5px;"></textarea>
+
+                <!-- apoyo ext tabla -->
+                <div class="seccion-titulo">REGISTRO DE LLEGADA AL LUGAR DE APOYO EXTERNO</div>
+                <table class="tabla-gyras">
+                    <thead>
+                        <tr>
+                            <th>1-0</th>
+                            <th>1-2</th>
+                            <th>1-3</th>
+                            <th>1-4</th>
+                            <th>1-5</th>
+                            <th>1-8</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" class="celda-input" id="gyras-1-0"></td>
+                            <td><input type="text" class="celda-input" id="gyras-1-2"></td>
+                            <td><input type="text" class="celda-input" id="gyras-1-3"></td>
+                            <td><input type="text" class="celda-input" id="gyras-1-4"></td>
+                            <td><input type="text" class="celda-input" id="gyras-1-5"></td>
+                            <td><input type="text" class="celda-input" id="gyras-1-8"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- tabla bencina -->
+                <div class="seccion-titulo">REGISTRO DE LOGÍSTICA (CUARTEL)</div>
+                <table class="tabla-gyras" style="width: 50%;">
+                    <thead>
+                        <tr>
+                            <th>UNIDAD</th>
+                            <th>KM. LLEGADA</th>
+                            <th>COMBUSTIBLE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gyras-logistica-tbody">
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- js app -->
+    <script type="module" src="gyras.js"></script>
+
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--c-blue); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL</option>
+            <option value="carro.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CARROS</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[3] MAQUINISTAS</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[4] GYRAS</option>
+        </select>
+    </div>
+    <script>document.getElementById('vista-selector').value = 'gyras.html';</script>
+</body>
+</html>
