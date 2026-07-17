@@ -4,26 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compartir Ubicación</title>
-    <style>
-        body { background-color: #11131C; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 20px; }
-        .box { background: #1D2130; padding: 30px; border-radius: 10px; border: 1px solid #374151; width: 100%; max-width: 350px; }
-        h2 { color: #D32F2F; margin-top: 0; font-size: 1.5rem; text-transform: uppercase; }
-        p { color: #9CA3AF; margin-bottom: 25px; font-size: 0.95rem; }
-        button { background: #1976D2; color: white; border: none; padding: 15px; width: 100%; font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; text-transform: uppercase; }
-        button:active { transform: scale(0.95); }
-        #mensaje { margin-top: 15px; font-weight: bold; color: #2E7D32; display: none; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="loc-body">
 
-    <div class="box">
+    <div class="loc-box">
         <h2>Bomberos Nueva Imperial</h2>
         <p>Para enviar la unidad de emergencia al lugar exacto, necesitamos su ubicación.</p>
-        <button id="btn-gps">ENVIAR MI UBICACIÓN</button>
-        <div id="mensaje">¡Ubicación enviada! La ayuda va en camino.</div>
+        <button id="btn-gps" class="btn-loc">ENVIAR MI UBICACIÓN</button>
+        <div id="mensaje-loc">¡Ubicación enviada! La ayuda va en camino.</div>
     </div>
 
-    <!-- script firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -40,7 +31,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // lee url
         const urlParams = new URLSearchParams(window.location.search);
         const chatId = urlParams.get('id');
 
@@ -58,10 +48,9 @@
                     };
                     
                     try {
-                        // envia gps
                         await setDoc(doc(db, "ubicaciones_externas", chatId), payload);
                         document.getElementById('btn-gps').style.display = 'none';
-                        document.getElementById('mensaje').style.display = 'block';
+                        document.getElementById('mensaje-loc').style.display = 'block';
                     } catch (e) {
                         alert("Error al enviar. Revise su internet.");
                         document.getElementById('btn-gps').innerText = "REINTENTAR";

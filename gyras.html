@@ -2,32 +2,126 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GYRAS - Histórico de Emergencias</title>
-    <style>
-        body { font-family: sans-serif; background: #0A0A0C; color: white; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #333; padding: 10px; text-align: left; }
-        th { background: #111; color: #FFEB3B; }
-        h1 { color: #FFEB3B; text-transform: uppercase; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYRAS - Bitácora Histórica Digital</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <h1>GYRAS - Historial de Emergencias</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Fecha Cierre</th>
-                <th>Clave</th>
-                <th>Dirección</th>
-                <th>Unidades</th>
-            </tr>
-        </thead>
-        <tbody id="historial-tbody"></tbody>
-    </table>
+<body class="gyras-body">
+
+    <div class="gyras-header">
+        <h1>GYRAS: <span>SISTEMA DE ARCHIVO OPERATIVO</span></h1>
+        <div class="gyras-station-tag">CUARTEL CENTRAL - NUEVA IMPERIAL</div>
+    </div>
+
+    <div class="gyras-stats-grid">
+        <div class="gyras-stat-card total">
+            <h3>Total Emergencias</h3>
+            <div class="num" id="stat-total">0</div>
+        </div>
+        <div class="gyras-stat-card">
+            <h3>Estructurales (10-0)</h3>
+            <div class="num" id="stat-100">0</div>
+        </div>
+        <div class="gyras-stat-card">
+            <h3>Pastizales (10-2)</h3>
+            <div class="num" id="stat-102">0</div>
+        </div>
+        <div class="gyras-stat-card">
+            <h3>Accidentes (10-4)</h3>
+            <div class="num" id="stat-104">0</div>
+        </div>
+    </div>
+
+    <div class="gyras-filter-bar">
+        <div class="gyras-filter-group" style="flex: 2;">
+            <label>Buscar por dirección u observación</label>
+            <input type="text" id="search-input" placeholder="Escriba calle, sector, observaciones...">
+        </div>
+        <div class="gyras-filter-group">
+            <label>Clave Radial</label>
+            <select id="filter-code">
+                <option value="todos">TODAS LAS CLAVES</option>
+                <option value="10-0">10-0 ESTRUCTURAL</option>
+                <option value="10-1">10-1 VEHÍCULO</option>
+                <option value="10-2">10-2 PASTIZAL</option>
+                <option value="10-3">10-3 RESCATE SIMPLE</option>
+                <option value="10-4">10-4 ACCIDENTE</option>
+                <option value="10-7">10-7 ELÉCTRICO</option>
+            </select>
+        </div>
+        <div class="gyras-filter-group">
+            <label>Unidad Mayor</label>
+            <select id="filter-unit">
+                <option value="todos">TODOS LOS CARROS</option>
+                <option value="B-1">B-1</option>
+                <option value="Z-1">Z-1</option>
+                <option value="BT-1">BT-1</option>
+                <option value="B-2">B-2</option>
+                <option value="R-2">R-2</option>
+                <option value="BX-2">BX-2</option>
+                <option value="B-3">B-3</option>
+                <option value="BX-3">BX-3</option>
+                <option value="G-3">G-3</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="gyras-table-container">
+        <table id="table-history">
+            <thead>
+                <tr>
+                    <th>ID / Cierre</th>
+                    <th>Clave</th>
+                    <th>Dirección / Ubicación</th>
+                    <th>Unidades Concurrentes</th>
+                    <th>Observaciones</th>
+                    <th style="text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="history-tbody">
+            </tbody>
+        </table>
+        <div id="empty-state" class="gyras-empty-state" style="display: none;">No se encontraron registros en la bitácora histórica.</div>
+    </div>
+
+    <div class="gyras-modal" id="detail-modal">
+        <div class="gyras-modal-content">
+            <div class="gyras-modal-header">
+                <h2 id="modal-title">DETALLES DE LA EMERGENCIA</h2>
+                <button class="gyras-modal-close" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="gyras-modal-body">
+                <div class="gyras-detail-meta">
+                    <p>DIRECCIÓN GENERAL: <strong id="det-address">--</strong></p>
+                    <p>FECHA / HORA CIERRE: <strong id="det-date">--</strong></p>
+                    <p>OBSERVACIONES DE CENTRAL: <strong id="det-obs">--</strong></p>
+                </div>
+
+                <h3 style="margin-bottom: 10px; font-size: 1rem; text-transform: uppercase; color: var(--c-yellow);">Registro cronológico de tiempos por unidad</h3>
+                <table class="gyras-sub-table">
+                    <thead>
+                        <tr>
+                            <th>CARRO</th>
+                            <th>6-3 (Salida)</th>
+                            <th>6-0 (Lugar)</th>
+                            <th>6-7 (Retorno)</th>
+                            <th>6-8 (Dispo)</th>
+                            <th>6-9 (Retirada)</th>
+                            <th>6-10 (Cuartel)</th>
+                            <th>KM FINAL</th>
+                            <th>COMBUSTIBLE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tbody-logs">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -38,25 +132,142 @@
             appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
         };
 
-        const db = getFirestore(initializeApp(firebaseConfig));
-        const tbody = document.getElementById('historial-tbody');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        async function cargarHistorial() {
-            const q = query(collection(db, "historial_emergencias"));
-            const snapshot = await getDocs(q);
+        const descripciones = {
+            '10-0': 'Estructural', '10-1': 'Vehículo', '10-2': 'Pastizal', '10-3': 'Rescate',
+            '10-4': 'Accidente', '10-5': 'Hazmat', '10-6': 'Gas', '10-7': 'Eléctrico',
+            '10-8': 'No Clasificado', '10-9': 'Servicios', '10-10': 'Escombros', '10-12': 'Apoyo'
+        };
+
+        let rawDataList = [];
+
+        const tbody = document.getElementById('history-tbody');
+        const searchInput = document.getElementById('search-input');
+        const filterCode = document.getElementById('filter-code');
+        const filterUnit = document.getElementById('filter-unit');
+        const emptyState = document.getElementById('empty-state');
+
+        onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
+            rawDataList = [];
+            snapshot.forEach((doc) => {
+                rawDataList.push(doc.data());
+            });
+
+            rawDataList.sort((a, b) => b.id - a.id);
+
+            calcularEstadisticas(rawDataList);
+            aplicarFiltros();
+        });
+
+        function calcularEstadisticas(data) {
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-100').innerText = data.filter(e => e.code === '10-0').length;
+            document.getElementById('stat-102').innerText = data.filter(e => e.code === '10-2').length;
+            document.getElementById('stat-104').innerText = data.filter(e => e.code === '10-4').length;
+        }
+
+        function aplicarFiltros() {
+            const queryText = searchInput.value.toLowerCase();
+            const codeVal = filterCode.value;
+            const unitVal = filterUnit.value;
+
+            const filtered = rawDataList.filter(em => {
+                const matchText = em.address.toLowerCase().includes(queryText) || (em.obs && em.obs.toLowerCase().includes(queryText));
+                const matchCode = (codeVal === 'todos') || (em.code === codeVal);
+                const matchUnit = (unitVal === 'todos') || (em.units && em.units.includes(unitVal));
+                return matchText && matchCode && matchUnit;
+            });
+
+            renderTabla(filtered);
+        }
+
+        function renderTabla(list) {
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const em = doc.data();
-                const fecha = new Date(em.fecha_termino).toLocaleString('es-CL');
-                tbody.innerHTML += `<tr>
-                    <td>${fecha}</td>
-                    <td>${em.code}</td>
-                    <td>${em.address}</td>
-                    <td>${em.units.join(', ')}</td>
-                </tr>`;
+            if (list.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            emptyState.style.display = 'none';
+
+            list.forEach(em => {
+                let tr = document.createElement('tr');
+                
+                let dateStr = em.fecha_termino ? new Date(em.fecha_termino).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'}) : '--:--';
+                let shortId = em.id.toString().slice(-5);
+                
+                let classClave = 'badge-code';
+                if(em.code === '10-0') classClave += ' estructural';
+                if(em.code === '10-2') classClave += ' pastizal';
+                if(em.code === '10-4') classClave += ' rescate';
+
+                let labelDesc = descripciones[em.code] || 'Servicio';
+                let alarmText = em.alarma > 0 ? ` <span class="badge-alarma">${em.alarma}ª ALARMA</span>` : '';
+
+                let unitsBadges = (em.units || []).map(u => `<span class="badge-unit">${u}</span>`).join('');
+
+                tr.innerHTML = `
+                    <td><span style="font-weight:bold; color:var(--c-blue);">#${shortId}</span><br><span style="font-size:0.75rem; color:var(--text-muted);">${dateStr} Hrs</span></td>
+                    <td><span class="${classClave}">${em.code}</span><br><span style="font-size:0.75rem; color:var(--text-muted);">${labelDesc}</span>${alarmText}</td>
+                    <td style="font-weight:bold; text-transform:uppercase;">${em.address}</td>
+                    <td>${unitsBadges}</td>
+                    <td style="color:var(--text-muted); font-size:0.85rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${em.obs || 'Sin observaciones'}</td>
+                    <td style="text-align:center;"><button class="btn-view" data-id="${em.id}">Ver Libro</button></td>
+                `;
+
+                tr.querySelector('.btn-view').addEventListener('click', () => abrirDetalles(em));
+                tbody.appendChild(tr);
             });
         }
-        cargarHistorial();
+
+        function abrirDetalles(em) {
+            document.getElementById('modal-title').innerText = `REGISTRO OPERATIVO DE EMERGENCIA #${em.id.toString().slice(-5)}`;
+            document.getElementById('det-address').innerText = em.address.toUpperCase();
+            document.getElementById('det-date').innerText = em.fecha_termino ? new Date(em.fecha_termino).toLocaleString('es-CL') : 'No registrada';
+            document.getElementById('det-obs').innerText = em.obs || 'Sin observaciones de despacho.';
+
+            const tbodyLogs = document.getElementById('modal-tbody-logs');
+            tbodyLogs.innerHTML = '';
+
+            em.units.forEach(unitId => {
+                const logsCarro = (em.logs && em.logs[unitId]) ? em.logs[unitId] : {};
+                
+                let trLog = document.createElement('tr');
+                trLog.innerHTML = `
+                    <td style="font-weight:bold; color:var(--c-yellow); background:rgba(255,255,255,0.02);">${unitId}</td>
+                    <td>${logsCarro['6-3'] || '--:--'}</td>
+                    <td style="color:var(--c-orange); font-weight:bold;">${logsCarro['6-0'] || '--:--'}</td>
+                    <td>${logsCarro['6-7'] || '--:--'}</td>
+                    <td>${logsCarro['6-8'] || '--:--'}</td>
+                    <td>${logsCarro['6-9'] || '--:--'}</td>
+                    <td style="color:var(--c-green);">${logsCarro['6-10'] || '--:--'}</td>
+                    <td style="font-weight:bold;">${logsCarro.km ? logsCarro.km + ' Km' : '--'}</td>
+                    <td>${formatCombustible(logsCarro.combustible)}</td>
+                `;
+                tbodyLogs.appendChild(trLog);
+            });
+
+            document.getElementById('detail-modal').style.display = 'flex';
+        }
+
+        function formatCombustible(val) {
+            if(!val) return '--';
+            if(val === '100') return '<span style="color:var(--c-green);">FULL</span>';
+            return `<span style="color:var(--c-orange);">${val}%</span>`;
+        }
+
+        searchInput.addEventListener('input', aplicarFiltros);
+        filterCode.addEventListener('change', aplicarFiltros);
+        filterUnit.addEventListener('change', aplicarFiltros);
+
+        document.getElementById('btn-close-modal').addEventListener('click', () => {
+            document.getElementById('detail-modal').style.display = 'none';
+        });
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('detail-modal');
+            if (e.target === modal) modal.style.display = 'none';
+        });
     </script>
 </body>
 </html>

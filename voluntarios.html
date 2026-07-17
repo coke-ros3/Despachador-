@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alertas - Voluntarios</title>
+    <!-- CSS Externos -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body class="voluntarios-body">
+
+    <!-- PANTALLA 1: LISTA -->
+    <div id="view-list" class="vol-view view-active">
+        <div class="ios-header">
+            <button class="header-btn" onclick="window.location.href='index.html'">
+                <span>❮</span> Canales
+            </button>
+            <span class="header-title">Bomberos Nueva Imperial</span>
+            <span style="color: #3498DB; font-size: 1.2rem;">🔊</span>
+        </div>
+        <div class="feed-container" id="feed-list">
+            <div style="padding: 20px; text-align: center; color: #8E8E93;">Cargando canales...</div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: DETALLE -->
+    <div id="view-detail" class="vol-view view-hidden-right">
+        <div class="ios-header">
+            <button class="header-btn" onclick="volverALista()">
+                <span>❮</span> Atrás
+            </button>
+            <span class="header-title">Notificación</span>
+            <span style="width: 50px;"></span> 
+        </div>
+
+        <div class="detail-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/784/784115.png" alt="Escudo">
+            <h2>Bomberos Nueva Imperial</h2>
+        </div>
+
+        <div class="blue-banner" id="det-banner">
+            10-0 DIRECCIÓN DE PRUEBA / INTERSECCIÓN B1
+        </div>
+
+        <div class="detail-info">
+            <div style="color: #8E8E93; font-size: 0.8rem; margin-bottom: 5px;">OBSERVACIONES</div>
+            <strong id="det-obs">Sin observaciones</strong><br>
+            <div class="unit-box" id="det-units">B1</div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="#" id="btn-waze" class="btn-nav-map">📍 Waze</a>
+            <a href="#" id="btn-gmaps" class="btn-nav-map">🗺️ Google Maps</a>
+        </div>
+
+        <div class="map-container">
+            <div id="map-voluntarios"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
+            authDomain: "despachador-58fb8.firebaseapp.com",
+            projectId: "despachador-58fb8",
+            storageBucket: "despachador-58fb8.firebasestorage.app",
+            messagingSenderId: "1024295745401",
+            appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let listaEmergencias = [];
+        let emergenciaActiva = null;
+        let map = null;
+        let mapMarker = null;
+
+        const feedContainer = document.getElementById('feed-list');
+
+        onSnapshot(doc(db, "operaciones", "despacho_actual"), (docSnap) => {
+            if (docSnap.exists()) {
+                emergenciaActiva = docSnap.data();
+                emergenciaActiva.isLive = true;
+            } else {
+                emergenciaActiva = null;
+            }
+            renderizarFeed();
+        });
+
+        onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
+            listaEmergencias = [];
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                data.isLive = false;
+                listaEmergencias.push(data);
+            });
+            listaEmergencias.sort((a, b) => b.id - a.id);
+            renderizarFeed();
+        });
+
+        function renderizarFeed() {
+            feedContainer.innerHTML = '';
+            let listaCompleta = [];
+            
+            if (emergenciaActiva) listaCompleta.push(emergenciaActiva);
+            listaCompleta = listaCompleta.concat(listaEmergencias);
+
+            if(listaCompleta.length === 0) {
+                feedContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #8E8E93;">No hay registros.</div>';
+                return;
+            }
+
+            listaCompleta.forEach(em => {
+                let fecha = em.id ? new Date(em.id) : new Date();
+                let fechaStr = fecha.getFullYear() + "-" + 
+                               String(fecha.getMonth() + 1).padStart(2, '0') + "-" + 
+                               String(fecha.getDate()).padStart(2, '0') + " " + 
+                               String(fecha.getHours()).padStart(2, '0') + ":" + 
+                               String(fecha.getMinutes()).padStart(2, '0');
+
+                let title = `${em.code} ${em.address} ${(em.units || []).join(', ')}`;
+                
+                let item = document.createElement('div');
+                item.className = 'feed-item';
+                
+                // Si la emergencia está viva, le inyectamos la clase que hace el parpadeo rojo
+                if (em.isLive) {
+                    item.classList.add('feed-item-activa');
+                }
+                
+                item.innerHTML = `
+                    <div class="feed-content">
+                        <div class="feed-time">${fechaStr}</div>
+                        <div class="feed-title">${title.toUpperCase()}</div>
+                    </div>
+                    <div class="feed-arrow">›</div>
+                `;
+                
+                item.onclick = () => abrirDetalle(em);
+                feedContainer.appendChild(item);
+            });
+        }
+
+        window.abrirDetalle = function(em) {
+            document.getElementById('view-list').classList.remove('view-active');
+            document.getElementById('view-list').classList.add('view-hidden-left');
+            
+            document.getElementById('view-detail').classList.remove('view-hidden-right');
+            document.getElementById('view-detail').classList.add('view-active');
+
+            let tituloBanner = `${em.code} ${em.address} ${(em.units || []).join(' ')}`;
+            if(em.alarma > 0) tituloBanner = `${em.alarma}ª ALARMA - ${em.address} ${(em.units || []).join(' ')}`;
+            
+            document.getElementById('det-banner').innerText = tituloBanner.toUpperCase();
+            document.getElementById('det-obs').innerText = em.obs || "Sin observaciones registradas.";
+            document.getElementById('det-units').innerText = (em.units || []).join(' | ');
+
+            let lat = -38.7446590; 
+            let lng = -72.9521597;
+            if(em.markerLatLng) {
+                lat = em.markerLatLng.lat;
+                lng = em.markerLatLng.lng;
+            }
+
+            document.getElementById('btn-waze').href = `waze://?ll=${lat},${lng}&navigate=yes`;
+            document.getElementById('btn-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+            setTimeout(() => { cargarMapa(lat, lng); }, 350);
+        };
+
+        window.volverALista = function() {
+            document.getElementById('view-detail').classList.remove('view-active');
+            document.getElementById('view-detail').classList.add('view-hidden-right');
+            
+            document.getElementById('view-list').classList.remove('view-hidden-left');
+            document.getElementById('view-list').classList.add('view-active');
+        };
+
+        function cargarMapa(lat, lng) {
+            if (!map) {
+                map = L.map('map-voluntarios', { zoomControl: false }).setView([lat, lng], 16);
+                
+                const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21ycDZrNjc5Mjh0dTVzcTFsNThnZDVybiJ9.YeBk7kJuK-Hq5_kKuBY8fw';
+                L.tileLayer(`https://api.mapbox.com/styles/v1/jorgelander/cmrp6ml2r009y01s1drm39dhw/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
+                    attribution: '© Mapbox', maxZoom: 19
+                }).addTo(map);
+
+                const grifosData = {
+                    "type": "FeatureCollection", "features": [
+                        { "type": "Feature", "properties": { "id": "001", "caudal": "Alto", "diametro": "100mm" }, "geometry": { "type": "Point", "coordinates": [-72.9521597, -38.7446590] } },
+                        { "type": "Feature", "properties": { "id": "002", "caudal": "Medio", "diametro": "75mm" }, "geometry": { "type": "Point", "coordinates": [-72.9535000, -38.7450000] } }
+                    ]
+                };
+                L.geoJSON(grifosData, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, { radius: 7, fillColor: "#F1C40F", color: "#000", weight: 2, opacity: 1, fillOpacity: 1 }).bindPopup(`<b>GRIFO #${feature.properties.id}</b><br>Diámetro: ${feature.properties.diametro}`);
+                    }
+                }).addTo(map);
+            }
+
+            map.setView([lat, lng], 16);
+            if (mapMarker) map.removeLayer(mapMarker);
+            
+            mapMarker = L.marker([lat, lng], {
+                icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
+            }).addTo(map).bindPopup("<b>Lugar de la Emergencia</b>").openPopup();
+
+            map.invalidateSize();
+        }
+    </script>
+</body>
+</html>
