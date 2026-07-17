@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clavesContainer.appendChild(btn);
     });
 
-    // token mapbox actualizado y estilo de mapa custom
+    // token mapbox blindado y estilo personalizado
     const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21ycDZrNjc5Mjh0dTVzcTFsNThnZDVybiJ9.YeBk7kJuK-Hq5_kKuBY8fw';
     var map = L.map('map').setView(appState.stationLocation, 17);
     
@@ -315,7 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionsList = document.getElementById('address-suggestions');
     let timeoutId;
 
-    // bloquea enter
     addressInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -331,7 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let searchQuery = query.replace(/\bcon\b/gi, 'and').replace(/\by\b/gi, 'and');
         searchQuery += ', Nueva Imperial, Chile';
         
-        // caja estricta para imperial
         const bboxImperial = '-73.10,-38.85,-72.80,-38.65';
 
         timeoutId = setTimeout(() => {
@@ -353,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         suggestionsList.style.display = 'block';
                     } else { 
-                        // fix intersecciones
                         if(query.toLowerCase().includes(" con ") || query.toLowerCase().includes(" y ")) {
                             let callePrincipal = query.split(/ con | y /i)[0].trim() + ', Nueva Imperial, Chile';
                             fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(callePrincipal)}.json?access_token=${mapboxToken}&bbox=${bboxImperial}&proximity=-72.9521597,-38.7446590&country=cl&language=es&limit=5`)
@@ -544,7 +541,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // abre bitacora
     window.openBitacora = function(id) {
         let em = appState.activeEmergencies.find(e => e.id === id);
         if (!em) return;
@@ -567,17 +563,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-close-bitacora').addEventListener('click', () => { modalBitacora.style.display = 'none'; currentBitacoraId = null; });
 
-    // cierra emergencia
+    // cierra emergencia y la respalda en el archivo histórico eterno
     window.concludeEmergency = async function(id) {
         let index = appState.activeEmergencies.findIndex(e => e.id === id);
         if(index > -1) {
             let em = appState.activeEmergencies[index];
+
+            // 1. Preparar datos completos para el Gyras histórico
+            const historialPayload = {
+                id: em.id, 
+                code: em.code, 
+                address: em.address, 
+                obs: em.obs, 
+                units: em.units, 
+                alarma: em.alarma,
+                logs: em.logs || {},
+                fecha_termino: new Date().toISOString()
+            };
+
+            // 2. Crear/Guardar en la colección permanente de Firestore
+            try {
+                await setDoc(doc(db, "historial_emergencias", em.id.toString()), historialPayload);
+            } catch(error) {
+                console.error("Error guardando historial:", error);
+            }
+
+            // 3. Limpieza gráfica del mapa
             if(em.marker) map.removeLayer(em.marker);
             if(em.routing) map.removeControl(em.routing);
-            em.units.forEach(unitId => { let u = appState.units.find(x => x.id === unitId); if(u && ['despachada', 'en-ruta', 'emergencia'].includes(u.state)) { u.state = 'disponible'; } });
+            
+            em.units.forEach(unitId => { 
+                let u = appState.units.find(x => x.id === unitId); 
+                if(u && ['despachada', 'en-ruta', 'emergencia'].includes(u.state)) { 
+                    u.state = 'disponible'; 
+                } 
+            });
+            
             appState.activeEmergencies.splice(index, 1);
-            guardarEstadoLocal(); renderActiveEmergencies(); renderUnits();
-            try { await deleteDoc(doc(db, "operaciones", "despacho_actual")); } catch(e) { console.error(e); }
+            guardarEstadoLocal(); 
+            renderActiveEmergencies(); 
+            renderUnits();
+            
+            // 4. Borrar el despacho actual vivo para liberar las pantallas
+            try { 
+                await deleteDoc(doc(db, "operaciones", "despacho_actual")); 
+            } catch(e) { 
+                console.error(e); 
+            }
         }
     };
 
@@ -586,22 +618,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLinkId = null;
 
     document.getElementById('btn-link-gps').addEventListener('click', () => {
-        // id al azar
         currentLinkId = Math.floor(Math.random() * 10000).toString();
         
         let urlBase = window.location.origin + window.location.pathname.replace('central.html', '');
         let linkFinal = `${urlBase}loc.html?id=${currentLinkId}`;
         
-        // copiado 
         navigator.clipboard.writeText(linkFinal).then(() => {
             alert(`Link copiado al portapapeles:\n${linkFinal}\n\nPéguelo en WhatsApp. El mapa se marcará solo cuando el usuario lo abra.`);
             
-            // escucha a fb
             onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // marca auto
                     appState.isMarkingMode = false;
                     map.getContainer().style.cursor = '';
                     document.getElementById('btn-manual-mark').style.backgroundColor = 'var(--c-blue)';
