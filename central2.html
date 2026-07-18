@@ -3,24 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central 2 - Tiempos Operativos</title>
+    <title>Central 2 - Tiempos y Servicios</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="central-body">
 
     <div class="topbar">
-        <h1>SISTEMA C.A.D. - CENTRAL 2 (TIEMPOS OPERATIVOS)</h1>
+        <h1>SISTEMA C.A.D. - CENTRAL 2 (TIEMPOS Y SERVICIOS)</h1>
         <div id="clock">00:00:00</div>
     </div>
 
+    <!-- BARRA DE ACCIÓN SUPERIOR -->
+    <div style="background: var(--bg-panel); padding: 15px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: var(--text-muted); font-weight: bold; font-size: 1.1rem; text-transform: uppercase;">Monitor Logístico y Tiempos Radiales</span>
+        <button onclick="abrirModalServicio()" style="background: var(--c-orange); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(245, 124, 0, 0.3); transition: 0.2s;">
+            + INICIAR 6-13 Y OTROS
+        </button>
+    </div>
+
+    <!-- CONTENEDOR DE TARJETAS (EMERGENCIAS Y SERVICOS) -->
     <div class="c2-grid" id="c2-container">
         <!-- Las tarjetas se inyectan aquí con JS -->
     </div>
 
+    <!-- VENTANA EMERGENTE (MODAL) PARA NUEVO SERVICIO -->
+    <div id="modal-servicio" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: var(--bg-panel); border: 2px solid var(--c-orange); border-radius: 12px; padding: 25px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+            <h2 style="color: var(--c-orange); text-transform: uppercase; margin-bottom: 20px; font-weight: 900; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">REGISTRAR NUEVO SERVICIO</h2>
+            
+            <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">CLAVE DEL SERVICIO:</label>
+            <select id="s-clave" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: white; font-weight: bold; outline: none; cursor: pointer;">
+                <option value="6-13">6-13 TRÁMITE / TALLER</option>
+                <option value="6-14">6-14 SERVICENTRO</option>
+                <option value="6-15">6-15 TRASLADO LESIONADO</option>
+                <option value="6-17">6-17 EJERCICIO</option>
+                <option value="6-18">6-18 PRÁCTICA CONDUCTOR</option>
+            </select>
+
+            <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">UNIDAD:</label>
+            <select id="s-unidad" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: white; font-weight: bold; outline: none; cursor: pointer;">
+                <option value="B-1">B-1</option>
+                <option value="Z-1">Z-1</option>
+                <option value="BT-1">BT-1</option>
+                <option value="B-2">B-2</option>
+                <option value="R-2">R-2</option>
+                <option value="BX-2">BX-2</option>
+                <option value="B-3">B-3</option>
+                <option value="BX-3">BX-3</option>
+                <option value="G-3">G-3</option>
+            </select>
+
+            <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">DESTINO / MOTIVO:</label>
+            <input type="text" id="s-destino" placeholder="Ej: Servicentro Copec..." style="width: 100%; padding: 12px; margin-bottom: 25px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: white; font-weight: bold; outline: none;" autocomplete="off">
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="iniciarServicio()" style="flex: 1; background: var(--c-orange); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 1rem; transition: 0.2s;">INICIAR SERVICIO</button>
+                <button onclick="cerrarModalServicio()" style="flex: 1; background: transparent; color: var(--text-muted); border: 2px solid var(--border-color); padding: 15px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 1rem; transition: 0.2s;">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENÚ FLOTANTE CAMBIO RÁPIDO -->
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHO)</option>
+            <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
+            <option value="voluntarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] APP VOLUNTARIOS</option>
+        </select>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
             authDomain: "despachador-58fb8.firebaseapp.com",
@@ -33,7 +92,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // RELOJ 24 HRS
+        document.getElementById('vista-selector').value = 'central2.html';
+
+        // Reloj 24h
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('es-CL', { hour12: false });
@@ -42,12 +103,55 @@
         updateClock();
 
         const container = document.getElementById('c2-container');
+        const modalServicio = document.getElementById('modal-servicio');
 
+        // Control del Modal
+        window.abrirModalServicio = () => { modalServicio.style.display = 'flex'; };
+        window.cerrarModalServicio = () => { 
+            modalServicio.style.display = 'none'; 
+            document.getElementById('s-destino').value = '';
+        };
+
+        // INICIAR UN NUEVO TRÁMITE (6-X)
+        window.iniciarServicio = async function() {
+            const clave = document.getElementById('s-clave').value;
+            const unidad = document.getElementById('s-unidad').value;
+            const destino = document.getElementById('s-destino').value.toUpperCase();
+
+            if (!destino) {
+                alert("Debe ingresar un destino o motivo para la salida.");
+                return;
+            }
+
+            // Inicializamos los logs en blanco.
+            let initialLogs = {};
+            initialLogs[unidad] = { "6-0": "", "6-10": "", "km": "", "combustible": "" };
+
+            try {
+                await addDoc(collection(db, "emergencias_activas"), {
+                    code: clave,
+                    alarma: 0,
+                    address: destino,
+                    obs: "SALIDA A SERVICIO",
+                    isAtentado: false,
+                    units: [unidad],
+                    logs: initialLogs,
+                    timestamp: serverTimestamp()
+                });
+
+                cerrarModalServicio();
+            } catch (error) {
+                console.error("Error al crear servicio:", error);
+                alert("Error al conectar con la base de datos.");
+            }
+        };
+
+        // ESCUCHAR TODO LO ACTIVO (10-X y 6-X)
         onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
             container.innerHTML = '';
             
             if (snapshot.empty) {
-                container.innerHTML = '<div class="c2-empty">NO HAY EMERGENCIAS ACTIVAS</div>';
+                container.innerHTML = '<div class="c2-empty">SISTEMA DESPEJADO. NO HAY UNIDADES DESPACHADAS.</div>';
                 return;
             }
 
@@ -55,21 +159,31 @@
                 const data = docSnap.data();
                 const emId = docSnap.id;
                 
+                // Diferenciar visualmente: Emergencias (Rojo) y Servicios (Naranja)
+                const isServicio = data.code.startsWith('6-');
+                const themeColor = isServicio ? 'var(--c-orange)' : 'var(--c-red)';
+                
                 let card = document.createElement('div');
                 card.className = 'c2-card';
+                card.style.borderTop = `4px solid ${themeColor}`;
                 
-                card.innerHTML = `
-                    <div class="c2-card-header">
-                        <h2>${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}</h2>
-                        <p>${data.address}</p>
+                let cardHtml = `
+                    <div class="c2-card-header" style="border-bottom: 2px solid ${themeColor}; padding-bottom: 10px;">
+                        <h2 style="color: ${themeColor}; margin: 0; font-size: 1.4rem; font-weight: 900; text-transform: uppercase;">${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}</h2>
+                        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 1rem; font-weight: bold; text-transform: uppercase;">${data.address}</p>
                     </div>
-                    <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;"></div>
                 `;
+
+                // Botón exclusivo para cerrar Servicios Rápidos
+                if (isServicio) {
+                    cardHtml += `<button style="background: ${themeColor}; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase;" onclick="cerrarServicio('${emId}')">CERRAR Y ENVIAR AL GYRAS (6-10 FINAL)</button>`;
+                }
+
+                card.innerHTML = cardHtml;
                 container.appendChild(card);
 
                 const unitsContainer = document.getElementById(`units-container-${emId}`);
-                
-                // Asegurarnos de que los logs existan
                 const currentLogs = data.logs || {};
 
                 data.units.forEach(unit => {
@@ -77,7 +191,6 @@
                     let unitRow = document.createElement('div');
                     unitRow.className = 'c2-unit-row';
                     
-                    // Función auxiliar para renderizar los botones y mostrar la hora si ya fue marcada
                     const renderBtn = (claveLabel) => {
                         const timeVal = unitLogs[claveLabel];
                         const isMarked = timeVal && timeVal !== "";
@@ -86,36 +199,66 @@
                                 </button>`;
                     };
 
+                    // Si es emergencia muestra todos los botones. Si es servicio, muestra solo 6-0 y 6-10.
+                    let botonesHtml = '';
+                    if (isServicio) {
+                        botonesHtml = `
+                            <div class="c2-times-grid" style="grid-template-columns: 1fr 1fr;">
+                                ${renderBtn('6-0')}
+                                ${renderBtn('6-10')}
+                            </div>
+                        `;
+                    } else {
+                        botonesHtml = `
+                            <div class="c2-times-grid">
+                                ${renderBtn('6-0')}
+                                ${renderBtn('6-3')}
+                                ${renderBtn('6-7')}
+                                ${renderBtn('6-8')}
+                                ${renderBtn('6-9')}
+                                ${renderBtn('6-10')}
+                            </div>
+                        `;
+                    }
+
                     unitRow.innerHTML = `
-                        <span class="c2-unit-name">UNIDAD ${unit}</span>
-                        <div class="c2-times-grid">
-                            ${renderBtn('6-0')}
-                            ${renderBtn('6-3')}
-                            ${renderBtn('6-7')}
-                            ${renderBtn('6-8')}
-                            ${renderBtn('6-9')}
-                            ${renderBtn('6-10')}
-                        </div>
+                        <span class="c2-unit-name" style="color: ${themeColor};">UNIDAD ${unit}</span>
+                        ${botonesHtml}
                     `;
                     unitsContainer.appendChild(unitRow);
                 });
             });
         });
 
+        // MARCADOR DE TIEMPOS
         window.marcarTiempo = async function(emId, unit, clave) {
             const now = new Date();
             const timeString = now.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute:'2-digit' });
             
             const docRef = doc(db, "emergencias_activas", emId);
-            
             try {
-                // Actualiza directamente el campo específico dentro del objeto anidado en Firebase
-                await updateDoc(docRef, {
-                    [`logs.${unit}.${clave}`]: timeString
-                });
+                await updateDoc(docRef, { [`logs.${unit}.${clave}`]: timeString });
             } catch(e) {
                 console.error("Error actualizando tiempo: ", e);
-                alert("Error al marcar el tiempo. Revise conexión.");
+                alert("Error de conexión al guardar la hora.");
+            }
+        };
+
+        // CERRAR UN SERVICIO (Mueve el doc de activas al historial GYRAS)
+        window.cerrarServicio = async function(id) {
+            if(confirm('¿Confirmar el 6-10 final y archivar este trámite en el GYRAS?')) {
+                try {
+                    const docRef = doc(db, "emergencias_activas", id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        await addDoc(collection(db, "historial_emergencias"), data);
+                        await deleteDoc(docRef);
+                    }
+                } catch(e) {
+                    console.error("Error archivar: ", e);
+                    alert("Ocurrió un error al intentar archivar el servicio.");
+                }
             }
         };
     </script>

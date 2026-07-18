@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Despacho - Central de Alarmas</title>
+    <title>Central 1 - Despachos</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
@@ -16,10 +16,10 @@
 
     <div class="triptych">
         
-        <!-- PANEL IZQUIERDO: CLAVES -->
+        <!-- PANEL IZQUIERDO: CLAVES 10-X -->
         <div class="panel panel-left" id="panel-claves">
             <h2 style="font-size: 1rem; margin-bottom: 5px;">CLAVES 10-X</h2>
-            <div class="claves-list" id="claves-list" style="max-height: 35vh;">
+            <div class="claves-list" id="claves-list">
                 <button class="clave-btn" data-code="10-0" onclick="selectClave(this)">10-0 ESTRUCTURAL</button>
                 <button class="clave-btn" data-code="10-1" onclick="selectClave(this)">10-1 VEHÍCULOS</button>
                 <button class="clave-btn" data-code="10-2" onclick="selectClave(this)">10-2 PASTIZAL / BOSQUE</button>
@@ -37,18 +37,9 @@
                 <button class="clave-btn" data-code="10-17" onclick="selectClave(this)">10-17 INUNDACIÓN</button>
             </div>
             
-            <h2 style="font-size: 1rem; margin-top: 10px; margin-bottom: 5px;">SERVICIOS 6-X</h2>
-            <div class="claves-list" style="max-height: 20vh;">
-                <button class="clave-btn" data-code="6-13" onclick="selectClave(this)">6-13 TRÁMITE / TALLER</button>
-                <button class="clave-btn" data-code="6-14" onclick="selectClave(this)">6-14 SERVICENTRO</button>
-                <button class="clave-btn" data-code="6-15" onclick="selectClave(this)">6-15 TRASLADO LESIONADO</button>
-                <button class="clave-btn" data-code="6-17" onclick="selectClave(this)">6-17 EJERCICIO</button>
-                <button class="clave-btn" data-code="6-18" onclick="selectClave(this)">6-18 PRÁCTICA CONDUCTOR</button>
-            </div>
-            
-            <div style="margin-top: 5px;">
+            <div style="margin-top: 10px;">
                 <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">NIVEL DE ALARMA</label>
-                <select id="alarma-select" style="margin-top: 2px; padding: 8px;">
+                <select id="alarma-select" style="margin-top: 5px; padding: 8px;">
                     <option value="0">Despacho Inicial</option>
                     <option value="1">1ª Alarma</option>
                     <option value="2">2ª Alarma</option>
@@ -68,8 +59,8 @@
                 </div>
 
                 <div class="gps-btn-group">
-                    <button class="btn-gps-wa">📱 GPS x WHATSAPP</button>
-                    <button class="btn-gps-sms">✉️ GPS x SMS</button>
+                    <button class="btn-gps-wa" id="btn-link-gps-wa">📱 GPS x WHATSAPP</button>
+                    <button class="btn-gps-sms" id="btn-link-gps-sms">✉️ GPS x SMS</button>
                 </div>
 
                 <div class="form-group">
@@ -139,6 +130,18 @@
         </div>
     </div>
 
+    <!-- MENÚ FLOTANTE CAMBIO RÁPIDO -->
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHO)</option>
+            <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
+            <option value="voluntarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] APP VOLUNTARIOS</option>
+        </select>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script type="module">
@@ -157,7 +160,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // RELOJ 24 HRS
+        document.getElementById('vista-selector').value = 'central.html';
+
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('es-CL', { hour12: false });
@@ -165,7 +169,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // CONFIGURACIÓN MAPA MAPBOX
         let map = L.map('map', { zoomControl: false }).setView([-38.7423, -72.9538], 15);
         const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21yazBmNngzMDBiNDJ5b2pkMjF3dHljbCJ9.cbcHOpTihe9Y-9l6HZHjAw';
         
@@ -201,7 +204,7 @@
             const alarma = parseInt(document.getElementById('alarma-select').value);
             const isAtentado = document.getElementById('chk-atentado').checked;
             
-            if (!selectedClave) return alert("Debe seleccionar una Clave 10-X o 6-X");
+            if (!selectedClave) return alert("Debe seleccionar una Clave 10-X");
             if (!direccion) return alert("Debe ingresar una dirección");
             if (selectedUnits.length === 0) return alert("Debe seleccionar al menos una Unidad");
 
@@ -226,7 +229,6 @@
                     timestamp: serverTimestamp()
                 });
 
-                // Limpiar campos
                 document.getElementById('direccion').value = '';
                 document.getElementById('esquina').value = '';
                 document.getElementById('numero').value = '';
@@ -245,7 +247,6 @@
             }
         };
 
-        // ESCUCHAR EMERGENCIAS ACTIVAS EN TIEMPO REAL
         onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
             const container = document.getElementById('active-emergencies-list');
             container.innerHTML = '';
@@ -278,22 +279,15 @@
             });
         });
 
-        // FUNCIÓN AUTOMATIZADA: MOVER A HISTORIAL GYRAS Y BORRAR DE ACTIVAS
         window.cerrarEmergencia = async function(id) {
             if(confirm('¿Está seguro de dar el 6-10 Final y cerrar esta emergencia? Pasará automáticamente al historial GYRAS.')) {
                 try {
                     const docRef = doc(db, "emergencias_activas", id);
                     const docSnap = await getDoc(docRef);
-                    
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        
-                        // 1. Copiar a la colección del GYRAS
                         await addDoc(collection(db, "historial_emergencias"), data);
-                        
-                        // 2. Eliminar de las emergencias activas de la Central
                         await deleteDoc(docRef);
-                        
                     }
                 } catch(e) {
                     console.error("Error al cerrar y archivar: ", e);
@@ -301,6 +295,33 @@
                 }
             }
         };
+
+        document.getElementById('btn-link-gps-wa').addEventListener('click', () => generarLinkGPS('wa'));
+        document.getElementById('btn-link-gps-sms').addEventListener('click', () => generarLinkGPS('sms'));
+
+        function generarLinkGPS(metodo) {
+            const currentLinkId = Math.floor(Math.random() * 10000).toString();
+            const urlBase = window.location.origin + window.location.pathname.replace('central.html', '');
+            const linkFinal = `${urlBase}loc.html?id=${currentLinkId}`;
+            
+            navigator.clipboard.writeText(linkFinal).then(() => {
+                alert(`Link de Localización copiado al portapapeles:\n\n${linkFinal}\n\nPéguelo en ${metodo === 'wa' ? 'WhatsApp' : 'SMS'}. El mapa se actualizará solo cuando el usuario acepte compartir.`);
+                
+                onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('direccion').value = "UBICACIÓN OBTENIDA VÍA LINK GPS";
+                        map.setView([data.lat, data.lng], 17);
+                        L.marker([data.lat, data.lng], {
+                            icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
+                        }).addTo(map).bindPopup("<b>ALERTA</b><br>Ubicación reportada").openPopup();
+                        alert("¡El usuario ha compartido su ubicación con éxito!");
+                    }
+                });
+            }).catch(err => {
+                alert("No se pudo copiar el link automáticamente. Cópielo a mano: " + linkFinal);
+            });
+        }
     </script>
 </body>
 </html>

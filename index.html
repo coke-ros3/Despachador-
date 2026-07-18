@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="index-body">
+    
     <div class="index-header">
         <h1>SISTEMA OPERATIVO DE DESPACHO</h1>
         <p>CUERPO DE BOMBEROS DE NUEVA IMPERIAL</p>
@@ -14,36 +15,45 @@
 
     <div class="index-grid">
         <a href="central.html" class="index-card card-cad">
-            <h2><span style="color: var(--c-red);">[1]</span> CENTRAL DE ALARMAS</h2>
+            <h2><span style="color: var(--c-red);">[1]</span> CENTRAL 1 (DESPACHOS)</h2>
             <p>Despacho CAD, mapa y control de recursos</p>
         </a>
 
-        <a href="gyras.html" class="index-card card-gyras">
-            <h2><span style="color: var(--c-blue);">[2]</span> SISTEMA GYRAS</h2>
-            <p>Partes de servicio y bitácoras digitales</p>
+        <a href="central2.html" class="index-card card-cad" style="border-color: var(--c-orange);">
+            <h2><span style="color: var(--c-orange);">[2]</span> CENTRAL 2 (TIEMPOS)</h2>
+            <p>Registro rápido de horas y claves 6-X</p>
         </a>
 
-        <a href="carro.html" class="index-card card-mdt">
-            <h2><span style="color: var(--c-orange);">[3]</span> TABLET CARROS (MDT)</h2>
-            <p>Navegación y transmisión de tiempos</p>
+        <a href="gyras.html" class="index-card card-gyras">
+            <h2><span style="color: var(--c-blue);">[3]</span> SISTEMA GYRAS</h2>
+            <p>Partes de servicio y bitácoras digitales</p>
         </a>
 
         <a href="maquinista.html" class="index-card card-maq">
             <h2><span style="color: var(--c-green);">[4]</span> CONDUCTORES</h2>
             <p>Reporte de disponibilidad en línea</p>
         </a>
+
+        <a href="voluntarios.html" class="index-card card-mdt" style="border-color: var(--c-yellow);">
+            <h2><span style="color: var(--c-yellow);">[5]</span> APP VOLUNTARIOS</h2>
+            <p>Visualizador móvil de alertas y GPS</p>
+        </a>
     </div>
 
+    <!-- MENÚ FLOTANTE CAMBIO RÁPIDO -->
     <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
         <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
             <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
-            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL</option>
-            <option value="carro.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CARROS</option>
-            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[3] MAQUINISTAS</option>
-            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[4] GYRAS</option>
-            <option value="voluntarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] ALERTAS VOL.</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHO)</option>
+            <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
+            <option value="voluntarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] APP VOLUNTARIOS</option>
         </select>
     </div>
-    <script>document.getElementById('vista-selector').value = 'index.html';</script>
+    
+    <script>
+        document.getElementById('vista-selector').value = 'index.html';
+    </script>
 </body>
 </html>
