@@ -30,7 +30,7 @@
     <!-- =========================================
          VISTA 2: DETALLE DE LA EMERGENCIA
          ========================================= -->
-    <div id="v-detail-view">
+    <div id="v-detail-view" style="display: none;">
         <div class="v-nav-bar">
             <button class="v-nav-btn" onclick="cerrarDetalle()"><span>&#10094;</span> Atrás</button>
             <div class="v-nav-title">Notificación</div>
@@ -55,9 +55,11 @@
             <!-- Ej: <div class="v-unit-badge">B-1</div> -->
         </div>
 
+        <!-- BOTONES DE NAVEGACIÓN -->
         <div class="v-action-bar">
             <button class="v-action-btn" id="v-btn-waze">📍 Waze</button>
             <button class="v-action-btn" id="v-btn-maps">🗺️ Google Maps</button>
+            <button class="v-action-btn" id="v-btn-apple">🍏 Apple Maps</button>
         </div>
 
         <!-- Mapa -->
@@ -80,6 +82,7 @@
         // Variables del mapa
         let map;
         const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21yazBmNngzMDBiNDJ5b2pkMjF3dHljbCJ9.cbcHOpTihe9Y-9l6HZHjAw';
+        let volunteerMarker = null; // Rastrea el pin para no duplicarlo
 
         // Escuchar emergencias activas (ordenadas por fecha descendente)
         const q = query(collection(db, "emergencias_activas"), orderBy("timestamp", "desc"));
@@ -135,7 +138,7 @@
                 unitsContainer.appendChild(badge);
             });
 
-            // Configurar botones de navegación GPS
+            // Configurar botones de navegación externa
             const encodedAddress = encodeURIComponent(d.address + ", Nueva Imperial, Chile");
             document.getElementById('v-btn-waze').onclick = () => {
                 window.location.href = `https://waze.com/ul?q=${encodedAddress}`;
@@ -143,16 +146,36 @@
             document.getElementById('v-btn-maps').onclick = () => {
                 window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
             };
+            document.getElementById('v-btn-apple').onclick = () => {
+                window.location.href = `http://maps.apple.com/?q=${encodedAddress}`;
+            };
 
-            // Iniciar o actualizar el Mapa (con pequeño retraso para que el contenedor exista visualmente)
+            // CONFIGURACIÓN DINÁMICA DEL MAPA (Reacciona a las coordenadas de la central)
             setTimeout(() => {
                 if (!map) {
-                    map = L.map('v-map-container', { zoomControl: false }).setView([-38.7423, -72.9538], 15);
+                    map = L.map('v-map-container', { zoomControl: false });
                     L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
                         maxZoom: 19
                     }).addTo(map);
                     L.control.zoom({ position: 'bottomright' }).addTo(map);
                 }
+
+                // Si la emergencia tiene coordenadas, pon el pin y centra el mapa ahí
+                if (d.markerLatLng) {
+                    const emergencyPos = [d.markerLatLng.lat, d.markerLatLng.lng];
+                    map.setView(emergencyPos, 16);
+
+                    if (volunteerMarker) map.removeLayer(volunteerMarker);
+                    
+                    volunteerMarker = L.marker(emergencyPos, {
+                        icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
+                    }).addTo(map).bindPopup(`<b>${d.code}</b><br>${d.address}`).openPopup();
+                } else {
+                    // Posición por defecto en Nueva Imperial si la central no marcó un punto
+                    map.setView([-38.7423, -72.9538], 15);
+                    if (volunteerMarker) map.removeLayer(volunteerMarker);
+                }
+
                 map.invalidateSize(); 
             }, 300);
         };

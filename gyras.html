@@ -3,377 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYRAS - Bitácora Histórica</title>
+    <title>GYRAS - Archivo Legal y Bitácora</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="gyras-body">
 
-    <!-- CABECERA WEB -->
+    <!-- CABECERA WEB (Oculta en impresión) -->
     <div class="gyras-header">
         <h1>GYRAS: <span>SISTEMA DE ARCHIVO OPERATIVO</span></h1>
         <div class="gyras-station-tag">CUARTEL CENTRAL - NUEVA IMPERIAL</div>
     </div>
 
-    <!-- TABLA GENERAL -->
+    <!-- TABLA GENERAL DE EMERGENCIAS (Oculta en impresión) -->
     <div class="gyras-table-container">
         <table id="table-history">
             <thead>
-                <tr><th>Hora</th><th>Clave</th><th>Dirección</th><th>Unidades</th><th style="text-align: center;">Acciones</th></tr>
+                <tr>
+                    <th>Hora</th><th>Clave</th><th>Dirección</th><th>Unidades</th><th>Acciones</th>
+                </tr>
             </thead>
             <tbody id="history-tbody"></tbody>
         </table>
     </div>
 
-    <!-- EL MODAL (SÚPER DOCUMENTO OFICIO 4 EN 1) -->
+    <!-- VISOR DE DOCUMENTO (MODAL) -->
     <div class="gyras-modal" id="detail-modal">
-        <div class="gyras-modal-content-doc">
-            <div class="gyras-doc-header-dark">
-                <h2 style="color: white; font-size: 1.1rem; margin:0;">VISOR DE PARTE (FORMATO OFICIO)</h2>
-                <div>
-                    <button class="btn-print" id="btn-toggle-cic" style="background:var(--c-orange); margin-right:10px;">VER FORMATO C.I.C.</button>
-                    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR OFICIO</button>
-                    <button class="gyras-modal-close" id="btn-close-modal" style="color: white; margin-left:15px; font-size:1.5rem; background:none; border:none; cursor:pointer;">&times;</button>
+        <div class="gyras-doc-header-dark">
+            <h2>VISOR DE PARTE (FORMATO OFICIO)</h2>
+            <div>
+                <select id="selector-plantilla">
+                    <option value="template-general">DATOS GENERALES (10-X)</option>
+                    <option value="template-servicio">SERVICIO (6-X)</option>
+                    <option value="template-atentado">ATENTADO</option>
+                    <option value="template-cic">C.I.C. (Comando de Incidente)</option>
+                </select>
+                <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR OFICIO</button>
+                <button id="btn-close-modal">&times;</button>
+            </div>
+        </div>
+
+        <div class="gyras-modal-body">
+            
+            <!-- ==========================================
+                 1. PLANTILLA: DATOS GENERALES (10-X)
+                 ========================================== -->
+            <div class="gyras-oficio-paper active" id="template-general">
+                <div class="oficio-header">
+                    <div class="logo-cb">
+                        <span class="star">★</span><div class="year">1909</div>
+                        <div class="motto">14 de Junio<br>Unidos para Servir</div>
+                        <div class="cb-name">CUERPO DE BOMBEROS<br>NUEVA IMPERIAL</div>
+                    </div>
+                    <div class="gyras-title">
+                        <div class="gyras-big">GYRAS</div>
+                        <div class="gyras-sub">GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO</div>
+                        <div class="gyras-sub2">Central de Alarmas - Comandancia</div>
+                    </div>
+                </div>
+
+                <div class="oficio-section-title">DATOS GENERALES</div>
+                <div class="oficio-grid grid-2">
+                    <div class="oficio-row"><span class="label">CORRELATIVO SERVICIO:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">CORRELATIVO CB:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">FECHA:</span><div class="oficio-input txt-bold" id="g-fecha"></div></div>
+                    <div class="oficio-row"><span class="label">HORA:</span><div class="oficio-input txt-bold" id="g-hora"></div></div>
+                </div>
+
+                <div class="oficio-section-title">DATOS DEL LUGAR</div>
+                <div class="oficio-grid grid-2">
+                    <div class="oficio-row"><span class="label">COMUNA:</span><input type="text" class="oficio-input" value="NUEVA IMPERIAL"></div>
+                    <div class="oficio-row"><span class="label">CLAVE:</span><div class="oficio-input txt-bold" id="g-clave"></div></div>
+                    <div class="oficio-row full-width"><span class="label">DIRECCIÓN:</span><div class="oficio-input txt-bold" id="g-direccion"></div></div>
+                    <div class="oficio-row"><span class="label">VILLA O POBLACIÓN:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">NÚMERO:</span><input type="text" class="oficio-input"></div>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox"> URBANO</label>
+                        <label class="ml-20"><input type="checkbox"> RURAL</label>
+                    </div>
+                    <div class="oficio-row"><span class="label">SECTOR:</span><input type="text" class="oficio-input"></div>
+                </div>
+
+                <div class="oficio-section-title">REGISTRO CRONOLÓGICO</div>
+                <table class="oficio-table">
+                    <thead><tr><th>UNIDAD</th><th>MAQUINISTA</th><th>6-0</th><th>6-3</th><th>6-7</th><th>6-9</th><th>6-10</th><th>KM LLEGADA</th></tr></thead>
+                    <tbody id="g-tbody-unidades"></tbody>
+                </table>
+
+                <div class="oficio-grid grid-2">
+                    <div>
+                        <div class="oficio-section-title">DESCRIPCIÓN DE LA ESTRUCTURA</div>
+                        <div class="oficio-grid grid-2 txt-10">
+                            <div><b>USO:</b><br><label><input type="checkbox"> Casa Habitación</label><br><label><input type="checkbox"> Departamento</label><br><label><input type="checkbox"> Bodega</label><br><label><input type="checkbox"> Local Comercial</label><br><label><input type="checkbox"> Vía Pública</label><br><label><input type="checkbox"> Recinto Educacional</label></div>
+                            <div><b>CONSTRUCCIÓN:</b><br><label><input type="checkbox"> Material Sólido</label><br><label><input type="checkbox"> Material Ligero</label><br><label><input type="checkbox"> Mixto</label><br><label><input type="checkbox"> Estructura Metálica</label><br><br><b>NIVELES:</b> <input type="text" class="input-tiny"><br><b>% DAÑO:</b> <input type="text" class="input-tiny"> %</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="oficio-section-title">DATOS DE FUEGO EN EL LUGAR</div>
+                        <div class="oficio-grid grid-2 txt-10">
+                            <div><b>TIPO INCENDIO:</b><br><label><input type="checkbox"> Ignición Compartimental</label><br><label><input type="checkbox"> Libre Combustión</label><br><label><input type="checkbox"> Estructural</label></div>
+                            <div><b>FASE:</b><br><label><input type="checkbox"> Incremento</label><br><label><input type="checkbox"> Decaimiento</label><br><label><input type="checkbox"> Latente</label></div>
+                        </div>
+                        <div class="oficio-row mt-5"><span class="label">OBSERVACIONES:</span><input type="text" class="oficio-input"></div>
+                    </div>
+                </div>
+
+                <div class="oficio-grid grid-2">
+                    <div>
+                        <div class="oficio-section-title">INCENDIOS FORESTALES</div>
+                        <div class="oficio-grid grid-2 txt-10">
+                            <div><b>TIPO:</b><br><label><input type="checkbox"> Agrícola</label><br><label><input type="checkbox"> Forestal</label><br><label><input type="checkbox"> Interfaz</label><br><br><b>FORMA:</b><br><label><input type="checkbox"> Circular</label><br><label><input type="checkbox"> Elíptica</label><br><label><input type="checkbox"> Irregular</label></div>
+                            <div><b>COMBUSTIBLE:</b><br><label><input type="checkbox"> Pasto</label><br><label><input type="checkbox"> Pasto / Arbusto</label><br><label><input type="checkbox"> Arbusto</label><br><label><input type="checkbox"> Bosque - Vegetación</label><br><label><input type="checkbox"> Residuos Bosque</label><br><label><input type="checkbox"> Desecho Agrícola</label></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="oficio-section-title">SEGUROS Y AUTORIZACIONES</div>
+                        <div class="oficio-row txt-10">¿Seguros Comprometidos? <label class="ml-10"><input type="checkbox"> Sí</label> <label class="ml-10"><input type="checkbox"> No</label></div>
+                        <div class="oficio-row"><span class="label">Cía Aseguradora:</span><input type="text" class="oficio-input"></div>
+                        <div class="oficio-row"><span class="label">Nº Póliza:</span><input type="text" class="oficio-input"></div>
+                        <div class="oficio-row mt-5 txt-10">¿Autorización Quema? <label class="ml-10"><input type="checkbox"> Sí</label> <label class="ml-10"><input type="checkbox"> No</label></div>
+                    </div>
+                </div>
+
+                <div class="oficio-section-title">RESCATE VEHICULAR</div>
+                <div class="checkbox-group-center txt-10 mb-5">
+                    <label><input type="checkbox"> Alta Energía</label> <label><input type="checkbox"> Mediana Energía</label> <label><input type="checkbox"> Baja Energía</label> <label><input type="checkbox"> Volcamiento</label> <label><input type="checkbox"> Colisión</label> <label><input type="checkbox"> Choque</label>
+                </div>
+                <table class="oficio-table">
+                    <tr><th>VEHÍCULO</th><th>TIPO</th><th>MARCA/MODELO</th><th>PATENTE</th><th>OCUPANTES</th></tr>
+                    <tr><td>Nº 1</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                    <tr><td>Nº 2</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                </table>
+                <div class="oficio-grid grid-4 text-center txt-10">
+                    <div>Cant. Atrapados: <input type="text" class="input-tiny"></div>
+                    <div>Cant. Encerrados: <input type="text" class="input-tiny"></div>
+                    <div>Cant. Eyectados: <input type="text" class="input-tiny"></div>
+                    <div>Total Lesionados: <input type="text" class="input-tiny"></div>
+                </div>
+
+                <div class="oficio-grid grid-3">
+                    <div>
+                        <div class="oficio-section-title">MATERIALES PELIGROSOS</div>
+                        <div class="txt-10"><label><input type="checkbox"> Sólido</label> <input type="text" class="input-small"> Kilos<br><label><input type="checkbox"> Líquido</label> <input type="text" class="input-small"> Litros<br><label><input type="checkbox"> Gaseoso</label></div>
+                    </div>
+                    <div>
+                        <div class="oficio-section-title">RESCATE ESPECIAL</div>
+                        <div class="txt-10"><label><input type="checkbox"> Sub Acuático</label><br><label><input type="checkbox"> En Altura</label><br><label><input type="checkbox"> Agreste/Rastreo</label><br><label><input type="checkbox"> Animal</label></div>
+                    </div>
+                    <div>
+                        <div class="oficio-section-title">D.E.T.</div>
+                        <div class="txt-10">¿Concurre D.E.T? <label><input type="checkbox"> Sí</label> <label><input type="checkbox"> No</label><br>Unidad / Inspector: <input type="text" class="input-med"><br>¿Fotografías? <label><input type="checkbox"> Sí</label> <label><input type="checkbox"> No</label></div>
+                    </div>
+                </div>
+
+                <div class="oficio-section-title">AFECTADOS Y/O VÍCTIMAS FATALES (L: Leve - M: Moderado - G: Grave - F: Fallecido)</div>
+                <table class="oficio-table">
+                    <tr><th>NOMBRE</th><th>RUT</th><th>ESTADO</th><th>TIPO DE OCUPANTE</th></tr>
+                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                </table>
+
+                <div class="oficio-section-title">APOYOS TE VEHICULAR E INSTITUCIONES</div>
+                <table class="oficio-table">
+                    <tr><th>INSTITUCIÓN O EMPRESA</th><th>PERSONA A CARGO</th><th>IDENTIFICACIÓN DEL MÓVIL</th></tr>
+                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                </table>
+
+                <div class="oficio-section-title">COMANDO DE INCIDENTE</div>
+                <div class="oficio-grid grid-2 txt-10">
+                    <div>Establece CIC: <label><input type="checkbox"> Sí</label> <label><input type="checkbox"> No</label><br>Unidad CIC: <input type="text" class="input-large"></div>
+                    <div>11-4: <input type="text" class="input-med"> / <input type="text" class="input-med"></div>
+                </div>
+
+                <div class="oficio-grid grid-2 text-center mt-30">
+                    <div>
+                        <div class="firma-line"></div>
+                        <span class="firma-text">FIRMA OBAC</span>
+                    </div>
+                    <div>
+                        <div class="firma-line"></div>
+                        <span class="firma-text">TOMA DATOS</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="gyras-modal-body">
+            <!-- ==========================================
+                 2. PLANTILLA: SERVICIO (6-X)
+                 ========================================== -->
+            <div class="gyras-oficio-paper" id="template-servicio">
+                <div class="oficio-header">
+                    <div class="logo-cb">
+                        <span class="star">★</span><div class="year">1909</div><div class="motto">14 de Junio<br>Unidos para Servir</div><div class="cb-name">CUERPO DE BOMBEROS<br>NUEVA IMPERIAL</div>
+                    </div>
+                    <div class="gyras-title"><div class="gyras-big">GYRAS</div><div class="gyras-sub">GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO</div><div class="gyras-sub2">Central de Alarmas - Comandancia</div></div>
+                </div>
+
+                <div class="oficio-section-title">SERVICIO</div>
+                <div class="oficio-grid grid-2 mb-15">
+                    <div class="oficio-row"><span class="label">CORRELATIVO SERVICIO:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">CORRELATIVO CB:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">FECHA:</span><div class="oficio-input txt-bold" id="s-fecha"></div></div>
+                    <div class="oficio-row"><span class="label">HORA:</span><div class="oficio-input txt-bold" id="s-hora"></div></div>
+                </div>
+
+                <table class="oficio-table text-left">
+                    <tr><td class="w-30"><input type="checkbox"></td><td class="txt-bold">6-13 TRÁMITE / TALLER</td><td class="w-30"><input type="checkbox"></td><td class="txt-bold">6-17 EJERCICIO</td></tr>
+                    <tr><td><input type="checkbox"></td><td class="txt-bold">6-14 SERVICENTRO</td><td><input type="checkbox"></td><td class="txt-bold">6-18 PRÁCTICA CONDUCTOR</td></tr>
+                    <tr><td><input type="checkbox"></td><td class="txt-bold">6-15 TRASLADO LESIONADO</td><td colspan="2"></td></tr>
+                </table>
+
+                <div class="oficio-row mb-15"><span class="label">AUTORIZADO POR:</span><input type="text" class="oficio-input"></div>
+                <div class="oficio-row mb-15"><span class="label">DIRECCIÓN / DESTINO:</span><div class="oficio-input txt-bold" id="s-direccion"></div></div>
+
+                <table class="oficio-table">
+                    <thead><tr><th>Unidad</th><th>Maquinista</th><th>Hora de Salida</th><th>KM. De Salida</th><th>Hora de Llegada</th><th>Km llegada</th><th>Combustible</th></tr></thead>
+                    <tbody id="s-tbody-unidades"></tbody>
+                </table>
+
+                <div class="oficio-section-title">RESUMEN</div>
+                <textarea class="textarea-resumen" rows="3"></textarea>
+
+                <div class="oficio-section-title">REGISTRO DE ASISTENCIA</div>
+                <div class="oficio-grid grid-3">
+                    <div><b>PRIMERA COMPAÑÍA</b><textarea class="textarea-asistencia"></textarea></div>
+                    <div><b>SEGUNDA COMPAÑÍA</b><textarea class="textarea-asistencia"></textarea></div>
+                    <div><b>TERCERA COMPAÑÍA</b><textarea class="textarea-asistencia"></textarea></div>
+                </div>
+
+                <div class="oficio-grid grid-2 text-center mt-30">
+                    <div><div class="firma-line"></div><span class="firma-text">FIRMA OBAC</span></div>
+                    <div><div class="firma-line"></div><span class="firma-text">TOMA DATOS</span></div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 3. PLANTILLA: ATENTADO
+                 ========================================== -->
+            <div class="gyras-oficio-paper" id="template-atentado">
+                <div class="oficio-section-title title-clear">REGISTRO LLAMADOS POR POSIBLE ATENTADO</div>
                 
-                <!-- ==========================================
-                     PLANTILLA 1: GENERAL (10-0 a 10-12, 10-14+) 
-                     ========================================== -->
-                <div class="gyras-oficio-paper" id="template-general">
-                    <div class="go-header">
-                        <div style="font-size: 35px; font-weight: bold;">🛡️ 1909</div>
-                        <div class="go-title-block">
-                            <span>GYRAS</span>
-                            GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO<br>
-                            Central de Alarmas - Comandancia
-                        </div>
-                    </div>
-
-                    <div class="go-section-title">DATOS GENERALES Y DEL LUGAR</div>
-                    <div class="go-grid-2">
-                        <div class="go-row"><span class="go-label">CORRELATIVO SERVICIO:</span><input type="text" class="go-input gyras-save" id="g-corr-serv"></div>
-                        <div class="go-row"><span class="go-label">CORRELATIVO CB:</span><input type="text" class="go-input gyras-save" id="g-corr-cb"></div>
-                        <div class="go-row"><span class="go-label">FECHA:</span><div class="go-input" id="g-fecha" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">HORA:</span><div class="go-input" id="g-hora" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">COMUNA:</span><input type="text" class="go-input gyras-save" id="g-comuna" value="NUEVA IMPERIAL"></div>
-                        <div class="go-row"><span class="go-label">CLAVE:</span><div class="go-input" id="g-clave" style="font-weight:bold; color:red;"></div></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">DIRECCIÓN:</span><div class="go-input" id="g-direccion" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">VILLA O POBLACIÓN:</span><input type="text" class="go-input gyras-save" id="g-villa"></div>
-                        <div class="go-row"><span class="go-label">NÚMERO:</span><input type="text" class="go-input gyras-save" id="g-numero"></div>
-                        <div class="go-row">
-                            <label><input type="checkbox" class="gyras-save-check" id="g-chk-urbano"> URBANO</label>
-                            <label style="margin-left:15px;"><input type="checkbox" class="gyras-save-check" id="g-chk-rural"> RURAL</label>
-                        </div>
-                        <div class="go-row"><span class="go-label">SECTOR:</span><input type="text" class="go-input gyras-save" id="g-sector"></div>
-                    </div>
-
-                    <div class="go-section-title">REGISTRO CRONOLÓGICO</div>
-                    <table class="go-table">
-                        <thead>
-                            <tr><th>UNIDAD</th><th>MAQUINISTA</th><th>6-0</th><th>6-3</th><th>6-7</th><th>6-9</th><th>6-10</th><th>KM LLEGADA</th></tr>
-                        </thead>
-                        <tbody id="g-tbody-unidades"></tbody>
-                    </table>
-
-                    <div class="go-grid-2">
-                        <!-- ESTRUCTURA -->
-                        <div>
-                            <div class="go-section-title">DESCRIPCIÓN DE LA ESTRUCTURA</div>
-                            <div class="go-row"><span class="go-label">USO:</span><input type="text" class="go-input gyras-save" id="g-uso"></div>
-                            <div class="go-row"><span class="go-label">CONSTRUCCIÓN:</span><input type="text" class="go-input gyras-save" id="g-const"></div>
-                            <div class="go-row"><span class="go-label">NIVELES:</span><input type="text" class="go-input gyras-save" id="g-niveles"></div>
-                            <div class="go-row"><span class="go-label">% DAÑO:</span><input type="text" class="go-input gyras-save" id="g-dano" style="max-width:40px;"> %</div>
-                        </div>
-                        <!-- FUEGO -->
-                        <div>
-                            <div class="go-section-title">DATOS DE FUEGO EN EL LUGAR</div>
-                            <div class="go-row"><span class="go-label">TIPO INCENDIO:</span><input type="text" class="go-input gyras-save" id="g-tipo-inc"></div>
-                            <div class="go-row"><span class="go-label">FASE:</span><input type="text" class="go-input gyras-save" id="g-fase"></div>
-                            <div class="go-row"><span class="go-label">NIVEL AFECTADO:</span><input type="text" class="go-input gyras-save" id="g-nivel-afectado"></div>
-                            <div class="go-row"><span class="go-label">OBS:</span><input type="text" class="go-input gyras-save" id="g-obs-fuego"></div>
-                        </div>
-                    </div>
-
-                    <div class="go-grid-2">
-                        <!-- FORESTAL -->
-                        <div>
-                            <div class="go-section-title">INCENDIOS FORESTALES</div>
-                            <div class="go-row"><span class="go-label">TIPO:</span><input type="text" class="go-input gyras-save" id="g-for-tipo"></div>
-                            <div class="go-row"><span class="go-label">FORMA:</span><input type="text" class="go-input gyras-save" id="g-for-forma"></div>
-                            <div class="go-row"><span class="go-label">COMBUSTIBLE:</span><input type="text" class="go-input gyras-save" id="g-for-comb"></div>
-                        </div>
-                        <!-- SEGUROS -->
-                        <div>
-                            <div class="go-section-title">SEGUROS Y AUTORIZACIONES</div>
-                            <div class="go-row"><span class="go-label">SEGUROS:</span><input type="text" class="go-input gyras-save" id="g-seguros"></div>
-                            <div class="go-row"><span class="go-label">CÍA ASEGURADORA:</span><input type="text" class="go-input gyras-save" id="g-cia"></div>
-                            <div class="go-row"><span class="go-label">AUTORIZA QUEMA:</span><input type="text" class="go-input gyras-save" id="g-quema"></div>
-                        </div>
-                    </div>
-
-                    <div class="go-section-title">RESCATE VEHICULAR</div>
-                    <table class="go-table">
-                        <tr><th>VEHÍCULO</th><th>TIPO</th><th>MARCA / MODELO</th><th>PATENTE</th><th>OCUPANTES</th></tr>
-                        <tr><td>Nº 1</td><td><input type="text" class="go-table-input gyras-save" id="g-v1-tipo"></td><td><input type="text" class="go-table-input gyras-save" id="g-v1-marca"></td><td><input type="text" class="go-table-input gyras-save" id="g-v1-pat"></td><td><input type="text" class="go-table-input gyras-save" id="g-v1-ocu"></td></tr>
-                        <tr><td>Nº 2</td><td><input type="text" class="go-table-input gyras-save" id="g-v2-tipo"></td><td><input type="text" class="go-table-input gyras-save" id="g-v2-marca"></td><td><input type="text" class="go-table-input gyras-save" id="g-v2-pat"></td><td><input type="text" class="go-table-input gyras-save" id="g-v2-ocu"></td></tr>
-                    </table>
-                    <div class="go-row" style="justify-content: space-between;">
-                        <span><span class="go-label">ENERGÍA:</span><input type="text" class="go-input gyras-save" id="g-energia" style="width:50px;"></span>
-                        <span><span class="go-label">ATRAPADOS:</span><input type="text" class="go-input gyras-save" id="g-atra" style="width:30px;"></span>
-                        <span><span class="go-label">ENCERRADOS:</span><input type="text" class="go-input gyras-save" id="g-ence" style="width:30px;"></span>
-                        <span><span class="go-label">EYECTADOS:</span><input type="text" class="go-input gyras-save" id="g-eyec" style="width:30px;"></span>
-                        <span><span class="go-label">LESIONADOS:</span><input type="text" class="go-input gyras-save" id="g-lesi" style="width:30px;"></span>
-                    </div>
-
-                    <div class="go-grid-3">
-                        <div>
-                            <div class="go-section-title">MATERIALES PELIGROSOS</div>
-                            <div class="go-row"><span class="go-label">TIPO:</span><input type="text" class="go-input gyras-save" id="g-mat-tipo"></div>
-                            <div class="go-row"><span class="go-label">CANTIDAD:</span><input type="text" class="go-input gyras-save" id="g-mat-cant"></div>
-                        </div>
-                        <div>
-                            <div class="go-section-title">RESCATE ESPECIAL</div>
-                            <div class="go-row"><span class="go-label">TIPO RESCATE:</span><input type="text" class="go-input gyras-save" id="g-res-tipo"></div>
-                            <div class="go-row"><span class="go-label">MATERIAL:</span><input type="text" class="go-input gyras-save" id="g-res-mat"></div>
-                        </div>
-                        <div>
-                            <div class="go-section-title">ESTUDIOS TÉCNICOS (D.E.T.)</div>
-                            <div class="go-row"><span class="go-label">CONCURRE:</span><input type="text" class="go-input gyras-save" id="g-det-conc"></div>
-                            <div class="go-row"><span class="go-label">INSPECTOR:</span><input type="text" class="go-input gyras-save" id="g-det-insp"></div>
-                        </div>
-                    </div>
-
-                    <div class="go-section-title">AFECTADOS Y/O VÍCTIMAS FATALES (L: Leve - M: Moderado - G: Grave - F: Fallecido)</div>
-                    <table class="go-table">
-                        <tr><th>NOMBRE</th><th>RUT</th><th>ESTADO (L/M/G/F)</th><th>TIPO DE OCUPANTE</th></tr>
-                        <tr><td><input type="text" class="go-table-input gyras-save" id="g-af1-nom"></td><td><input type="text" class="go-table-input gyras-save" id="g-af1-rut"></td><td><input type="text" class="go-table-input gyras-save" id="g-af1-est"></td><td><input type="text" class="go-table-input gyras-save" id="g-af1-ocu"></td></tr>
-                        <tr><td><input type="text" class="go-table-input gyras-save" id="g-af2-nom"></td><td><input type="text" class="go-table-input gyras-save" id="g-af2-rut"></td><td><input type="text" class="go-table-input gyras-save" id="g-af2-est"></td><td><input type="text" class="go-table-input gyras-save" id="g-af2-ocu"></td></tr>
-                    </table>
-
-                    <div class="go-section-title">APOYOS TE VEHICULAR E INSTITUCIONES</div>
-                    <table class="go-table">
-                        <tr><th>INSTITUCIÓN</th><th>PERSONA A CARGO</th><th>IDENTIFICACIÓN MÓVIL</th></tr>
-                        <tr><td><input type="text" class="go-table-input gyras-save" id="g-ap1-inst"></td><td><input type="text" class="go-table-input gyras-save" id="g-ap1-per"></td><td><input type="text" class="go-table-input gyras-save" id="g-ap1-mov"></td></tr>
-                        <tr><td><input type="text" class="go-table-input gyras-save" id="g-ap2-inst"></td><td><input type="text" class="go-table-input gyras-save" id="g-ap2-per"></td><td><input type="text" class="go-table-input gyras-save" id="g-ap2-mov"></td></tr>
-                    </table>
-
-                    <!-- NÓMINA DE VOLUNTARIOS COMPLETA -->
-                    <div class="go-grid-3" style="margin-top: 10px;">
-                        <div>
-                            <div class="go-section-title">PRIMERA COMPAÑÍA</div>
-                            <div class="voluntarios-list">
-                                <div>LUIS BASUALTO FLORES <input type="checkbox" class="gyras-save-check" id="gv-1-1"></div>
-                                <div>JUAN COLIPI HUILIPAN <input type="checkbox" class="gyras-save-check" id="gv-1-2"></div>
-                                <div>CARLOS MANOSALVA URIBE <input type="checkbox" class="gyras-save-check" id="gv-1-3"></div>
-                                <div>DANIEL FLORES LUNA <input type="checkbox" class="gyras-save-check" id="gv-1-4"></div>
-                                <div>EDUARDO OLAVARRIA FISHER <input type="checkbox" class="gyras-save-check" id="gv-1-5"></div>
-                                <div>SEBASTIAN CURIVIL V. <input type="checkbox" class="gyras-save-check" id="gv-1-6"></div>
-                                <div>HUGO ALARCÓN GOMEZ <input type="checkbox" class="gyras-save-check" id="gv-1-7"></div>
-                                <div>EDUARDO RAMOS ALVAREZ <input type="checkbox" class="gyras-save-check" id="gv-1-8"></div>
-                                <div>RUBEN ELGUETA MORAGA <input type="checkbox" class="gyras-save-check" id="gv-1-9"></div>
-                                <div>JULIO PEÑA MEDINA <input type="checkbox" class="gyras-save-check" id="gv-1-10"></div>
-                                <div>GERMAN FREI ARRIAGADA <input type="checkbox" class="gyras-save-check" id="gv-1-11"></div>
-                                <div>DANIEL BUSTOS VILLA <input type="checkbox" class="gyras-save-check" id="gv-1-12"></div>
-                                <div>RICARDO PEÑA BEROIZA <input type="checkbox" class="gyras-save-check" id="gv-1-13"></div>
-                                <div>JONATHAN SEPULVEDA H. <input type="checkbox" class="gyras-save-check" id="gv-1-14"></div>
-                                <div>MIGUEL MILLAQUEO E. <input type="checkbox" class="gyras-save-check" id="gv-1-15"></div>
-                                <div>FLAVIO ALVEAL NECULQUEO <input type="checkbox" class="gyras-save-check" id="gv-1-16"></div>
-                                <div>MARCOS DOMINGUEZ C. <input type="checkbox" class="gyras-save-check" id="gv-1-17"></div>
-                                <div>JORGE IBAÑEZ PAILLALEF <input type="checkbox" class="gyras-save-check" id="gv-1-18"></div>
-                                <div>ENRIQUE ARIAS MENDEZ <input type="checkbox" class="gyras-save-check" id="gv-1-19"></div>
-                                <div>ÁLVARO KRAUSE ALVIAL <input type="checkbox" class="gyras-save-check" id="gv-1-20"></div>
-                                <div>JORGE AGUAYO CURIN <input type="checkbox" class="gyras-save-check" id="gv-1-21"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="go-section-title">SEGUNDA COMPAÑÍA</div>
-                            <div class="voluntarios-list">
-                                <div>RICARDO PEÑA CURIFUTA <input type="checkbox" class="gyras-save-check" id="gv-2-1"></div>
-                                <div>MANUEL PEÑA BEROIZA <input type="checkbox" class="gyras-save-check" id="gv-2-2"></div>
-                                <div>SALVADOR PAILLAVIL P. <input type="checkbox" class="gyras-save-check" id="gv-2-3"></div>
-                                <div>BYRON TENORIO HAVERBECK <input type="checkbox" class="gyras-save-check" id="gv-2-4"></div>
-                                <div>EDGARDO ELGUETA M. <input type="checkbox" class="gyras-save-check" id="gv-2-5"></div>
-                                <div>ALAN RODRIGUEZ A. <input type="checkbox" class="gyras-save-check" id="gv-2-6"></div>
-                                <div>CAMILO SALAZAR SALAZAR <input type="checkbox" class="gyras-save-check" id="gv-2-7"></div>
-                                <div>JOCELYN OJEDA GARCIA <input type="checkbox" class="gyras-save-check" id="gv-2-8"></div>
-                                <div>IVÁN MOLINA BARRALES <input type="checkbox" class="gyras-save-check" id="gv-2-9"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="go-section-title">TERCERA COMPAÑÍA</div>
-                            <div class="voluntarios-list">
-                                <div>GABRIEL MILLAR BARRA <input type="checkbox" class="gyras-save-check" id="gv-3-1"></div>
-                                <div>FRANCISCO JARA SANCHEZ <input type="checkbox" class="gyras-save-check" id="gv-3-2"></div>
-                                <div>GABRIEL FUENTEALBA OLIVA <input type="checkbox" class="gyras-save-check" id="gv-3-3"></div>
-                                <div>FELIPE POVEA SAEZ <input type="checkbox" class="gyras-save-check" id="gv-3-4"></div>
-                                <div>ALEXIS SEPULVEDA PEÑA <input type="checkbox" class="gyras-save-check" id="gv-3-5"></div>
-                                <div>GUILLERMO OJEDA MELGAREJO <input type="checkbox" class="gyras-save-check" id="gv-3-6"></div>
-                                <div>MAXIMO HIDALGO ORELLANA <input type="checkbox" class="gyras-save-check" id="gv-3-7"></div>
-                                <div>JORGE ROSALES LANDEROS <input type="checkbox" class="gyras-save-check" id="gv-3-8"></div>
-                                <div>ALFREDO SN. MARTIN LIZAMA <input type="checkbox" class="gyras-save-check" id="gv-3-9"></div>
-                                <div>KARINA JARA RIQUELME <input type="checkbox" class="gyras-save-check" id="gv-3-10"></div>
-                                <div>EDUARDO LEPIQUEO LEVINAO <input type="checkbox" class="gyras-save-check" id="gv-3-11"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FIRMAS -->
-                    <div class="go-grid-2" style="margin-top: 20px; text-align: center;">
-                        <div>
-                            <div style="border-bottom: 1px solid #000; height: 30px; width: 60%; margin: 0 auto;"></div>
-                            <span style="font-weight: bold;">FIRMA OBAC</span>
-                        </div>
-                        <div>
-                            <div style="border-bottom: 1px solid #000; height: 30px; width: 60%; margin: 0 auto;"></div>
-                            <span style="font-weight: bold;">TOMA DATOS</span>
-                        </div>
-                    </div>
+                <div class="oficio-grid grid-2">
+                    <div class="oficio-row"><span class="label">Hora del llamado:</span><div class="oficio-input txt-bold" id="a-hora"></div></div>
+                    <div class="oficio-row"><span class="label">Fecha del llamado:</span><div class="oficio-input txt-bold" id="a-fecha"></div></div>
                 </div>
 
-                <!-- ==========================================
-                     PLANTILLA 2: SERVICIOS (6-13, 6-14, etc)
-                     ========================================== -->
-                <div class="gyras-oficio-paper" id="template-servicio">
-                    <div class="go-header">
-                        <div style="font-size: 35px; font-weight: bold;">🛡️ 1909</div>
-                        <div class="go-title-block">
-                            <span>GYRAS</span>
-                            GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO<br>
-                            Central de Alarmas - Comandancia
-                        </div>
-                    </div>
-                    <div class="go-section-title">DATOS GENERALES DE SERVICIO</div>
-                    <div class="go-grid-2">
-                        <div class="go-row"><span class="go-label">CORRELATIVO SERVICIO:</span><input type="text" class="go-input gyras-save" id="s-corr-serv"></div>
-                        <div class="go-row"><span class="go-label">CORRELATIVO CB:</span><input type="text" class="go-input gyras-save" id="s-corr-cb"></div>
-                        <div class="go-row"><span class="go-label">FECHA:</span><div class="go-input" id="s-fecha" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">HORA:</span><div class="go-input" id="s-hora" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">SERVICIO:</span><div class="go-input" id="s-clave" style="font-weight:bold; color:red;"></div></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">DIRECCIÓN / DESTINO:</span><div class="go-input" id="s-direccion"></div></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">AUTORIZADO POR:</span><input type="text" class="go-input gyras-save" id="s-autoriza"></div>
-                    </div>
-                    <div class="go-section-title">CONTROL LOGÍSTICO Y UNIDADES</div>
-                    <table class="go-table">
-                        <thead><tr><th>UNIDAD</th><th>MAQUINISTA</th><th>H. SALIDA</th><th>KM SALIDA</th><th>H. LLEGADA</th><th>KM LLEGADA</th><th>COMBUSTIBLE</th></tr></thead>
-                        <tbody id="s-tbody-unidades"></tbody>
-                    </table>
-                    <div class="go-section-title">RESUMEN DEL SERVICIO</div>
-                    <textarea class="gyras-save" id="s-resumen" style="width:100%; border:none; border-bottom:1px dotted #000; outline:none; resize:none; font-size:10px; font-family:inherit; line-height:2;" rows="3"></textarea>
-                    
-                    <div class="go-section-title">REGISTRO DE ASISTENCIA</div>
-                    <div class="go-grid-3">
-                        <div><div class="go-section-title">PRIMERA COMPAÑÍA</div><textarea class="gyras-save" id="s-asist-1" style="width:100%; border:1px solid #000; outline:none; resize:none; font-size:9px; height:150px; padding:5px;"></textarea></div>
-                        <div><div class="go-section-title">SEGUNDA COMPAÑÍA</div><textarea class="gyras-save" id="s-asist-2" style="width:100%; border:1px solid #000; outline:none; resize:none; font-size:9px; height:150px; padding:5px;"></textarea></div>
-                        <div><div class="go-section-title">TERCERA COMPAÑÍA</div><textarea class="gyras-save" id="s-asist-3" style="width:100%; border:1px solid #000; outline:none; resize:none; font-size:9px; height:150px; padding:5px;"></textarea></div>
-                    </div>
-
-                    <div class="go-grid-2" style="margin-top: 20px; text-align: center;">
-                        <div><div style="border-bottom: 1px solid #000; height: 30px; width: 60%; margin: 0 auto;"></div><span style="font-weight: bold;">FIRMA OBAC</span></div>
-                        <div><div style="border-bottom: 1px solid #000; height: 30px; width: 60%; margin: 0 auto;"></div><span style="font-weight: bold;">TOMA DATOS</span></div>
-                    </div>
+                <div class="oficio-grid grid-3 text-center txt-bold my-15">
+                    <div><input type="checkbox" id="a-chk-100"> 10-0</div>
+                    <div><input type="checkbox" id="a-chk-101"> 10-1</div>
+                    <div><input type="checkbox" id="a-chk-102"> 10-2</div>
                 </div>
 
-                <!-- ==========================================
-                     PLANTILLA 3: ATENTADO (Con Checkbox activo)
-                     ========================================== -->
-                <div class="gyras-oficio-paper" id="template-atentado">
-                    <div class="go-header">
-                        <div style="font-size: 35px; font-weight: bold;">🛡️ 1909</div>
-                        <div class="go-title-block"><span>GYRAS</span>REGISTRO LLAMADOS POR POSIBLE ATENTADO</div>
-                    </div>
-                    <div class="go-grid-3" style="text-align:center; font-weight:bold; margin-bottom:10px;">
-                        <div><input type="checkbox" id="a-chk-100" class="gyras-save-check"> 10-0</div>
-                        <div><input type="checkbox" id="a-chk-101" class="gyras-save-check"> 10-1</div>
-                        <div><input type="checkbox" id="a-chk-102" class="gyras-save-check"> 10-2</div>
-                    </div>
-                    <div class="go-grid-2">
-                        <div class="go-row"><span class="go-label">FECHA:</span><div class="go-input" id="a-fecha" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">HORA:</span><div class="go-input" id="a-hora" style="font-weight:bold;"></div></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">OPERADOR:</span><input type="text" class="go-input gyras-save" id="a-ope"></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">PRE-INFORME (0-4):</span><input type="text" class="go-input gyras-save" id="a-04"></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">DIRECCIÓN:</span><div class="go-input" id="a-direccion"></div></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">PUNTO DE REFERENCIA:</span><input type="text" class="go-input gyras-save" id="a-ref"></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">EMISOR DE LLAMADA:</span><input type="text" class="go-input gyras-save" id="a-emisor"></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">TELÉFONO EMISOR:</span><input type="text" class="go-input gyras-save" id="a-telef"></div>
-                    </div>
-                    <div class="go-section-title">REGISTRO DE AVISO A CARABINEROS (133)</div>
-                    <div class="go-row"><span class="go-label">FUNCIONARIO QUE RECIBE:</span><input type="text" class="go-input gyras-save" id="a-carab"></div>
-                    <div class="go-row"><span class="go-label">HORA AVISO:</span><input type="text" class="go-input gyras-save" id="a-hora-aviso" style="max-width:80px;"></div>
-                    <div class="go-grid-3" style="margin-top:5px; margin-bottom:10px;">
-                        <div><input type="checkbox" class="gyras-save-check" id="a-c-conc"> Concurre</div>
-                        <div><input type="checkbox" class="gyras-save-check" id="a-c-noconc"> No Concurre</div>
-                        <div><input type="checkbox" class="gyras-save-check" id="a-c-lugar"> Se encuentra en el lugar</div>
-                    </div>
-                    <div class="go-section-title">REGISTRO CRONOLÓGICO UNIDADES</div>
-                    <table class="go-table">
-                        <thead><tr><th>UNIDAD</th><th>MAQUINISTA</th><th>6-0</th><th>6-3</th><th>6-7</th><th>6-9</th><th>6-10</th></tr></thead>
-                        <tbody id="a-tbody-unidades"></tbody>
-                    </table>
-                    <div class="go-section-title">INFORME DEL ACTO (0-1) Y RESUMEN</div>
-                    <textarea class="gyras-save" id="a-informe" style="width:100%; border:none; border-bottom:1px dotted #000; outline:none; resize:none; font-size:10px; font-family:inherit; line-height:2;" rows="6"></textarea>
-                    <div class="go-section-title">APOYO EXTERNO AL LUGAR (1-0, 1-2, etc)</div>
-                    <table class="go-table">
-                        <thead><tr><th>INSTITUCIÓN</th><th>KM LLEGADA</th><th>COMBUSTIBLE</th></tr></thead>
-                        <tbody>
-                            <tr><td><input class="go-table-input gyras-save" id="a-ap1-i"></td><td><input class="go-table-input gyras-save" id="a-ap1-k"></td><td><input class="go-table-input gyras-save" id="a-ap1-c"></td></tr>
-                            <tr><td><input class="go-table-input gyras-save" id="a-ap2-i"></td><td><input class="go-table-input gyras-save" id="a-ap2-k"></td><td><input class="go-table-input gyras-save" id="a-ap2-c"></td></tr>
-                        </tbody>
-                    </table>
+                <div class="oficio-row"><span class="label">OPERADOR (A):</span><input type="text" class="oficio-input"> <span class="label ml-15">Clave:</span><input type="text" class="oficio-input max-w-50"></div>
+                <div class="oficio-row"><span class="label">0-4:</span><input type="text" class="oficio-input"></div>
+                <div class="oficio-row"><span class="label">Dirección exacta:</span><div class="oficio-input txt-bold" id="a-direccion"></div> <span class="label ml-15">Nº:</span><input type="text" class="oficio-input max-w-50"></div>
+                <div class="oficio-row"><span class="label">Punto de referencia:</span><input type="text" class="oficio-input"></div>
+                <div class="oficio-row"><span class="label">Nombre emisor de llamada:</span><input type="text" class="oficio-input"></div>
+                <div class="oficio-row"><span class="label">Teléfono emisor de llamada:</span><input type="text" class="oficio-input"></div>
+
+                <div class="oficio-section-title">REGISTRO DE AVISO A CARABINEROS (452 466188 – 133)</div>
+                <div class="oficio-row"><span class="label">Funcionario que recibe el llamado:</span><input type="text" class="oficio-input"></div>
+                <div class="oficio-row"><span class="label">Hora llamada:</span><input type="text" class="oficio-input max-w-80"></div>
+                
+                <div class="oficio-grid grid-3 txt-bold my-15">
+                    <div><input type="checkbox"> Concurre</div>
+                    <div><input type="checkbox"> No concurre</div>
+                    <div><input type="checkbox"> Se encuentra en el lugar</div>
                 </div>
 
-                <!-- ==========================================
-                     PLANTILLA 4: COMANDO INCIDENTE (C.I.C.)
-                     ========================================== -->
-                <div class="gyras-oficio-paper" id="template-cic">
-                    <div class="go-header">
-                        <div style="font-size: 35px; font-weight: bold;">🛡️ 1909</div>
-                        <div class="go-title-block"><span>GYRAS</span>DATOS GENERALES PUESTO DE MANDO</div>
-                    </div>
-                    <div class="go-grid-2">
-                        <div class="go-row"><span class="go-label">FECHA:</span><div class="go-input" id="c-fecha" style="font-weight:bold;"></div></div>
-                        <div class="go-row"><span class="go-label">HORA ESTABLECE C.I.C:</span><input type="text" class="go-input gyras-save" id="c-hora-cic"></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">COMANDANTE INCIDENTE:</span><input type="text" class="go-input gyras-save" id="c-cmdt"></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">CLAVE:</span><div class="go-input" id="c-clave" style="font-weight:bold; color:red;"></div></div>
-                        <div class="go-row" style="grid-column: 1 / -1;"><span class="go-label">DIRECCIÓN:</span><div class="go-input" id="c-direccion"></div></div>
-                    </div>
-                    <div class="go-section-title">APOYO DE OTROS CUERPOS DE BOMBEROS</div>
-                    <table class="go-table">
-                        <thead><tr><th>UNIDAD</th><th>CUERPO BOMBEROS</th><th>PATENTE</th><th>OBAC</th><th>Nº BOMBEROS</th><th>6-3</th><th>6-9</th></tr></thead>
-                        <tbody>
-                            <tr><td><input class="go-table-input gyras-save" id="c-u1"></td><td><input class="go-table-input gyras-save" id="c-cb1"></td><td><input class="go-table-input gyras-save" id="c-p1"></td><td><input class="go-table-input gyras-save" id="c-ob1"></td><td><input class="go-table-input gyras-save" id="c-n1"></td><td><input class="go-table-input gyras-save" id="c-31"></td><td><input class="go-table-input gyras-save" id="c-91"></td></tr>
-                            <tr><td><input class="go-table-input gyras-save" id="c-u2"></td><td><input class="go-table-input gyras-save" id="c-cb2"></td><td><input class="go-table-input gyras-save" id="c-p2"></td><td><input class="go-table-input gyras-save" id="c-ob2"></td><td><input class="go-table-input gyras-save" id="c-n2"></td><td><input class="go-table-input gyras-save" id="c-32"></td><td><input class="go-table-input gyras-save" id="c-92"></td></tr>
-                            <tr><td><input class="go-table-input gyras-save" id="c-u3"></td><td><input class="go-table-input gyras-save" id="c-cb3"></td><td><input class="go-table-input gyras-save" id="c-p3"></td><td><input class="go-table-input gyras-save" id="c-ob3"></td><td><input class="go-table-input gyras-save" id="c-n3"></td><td><input class="go-table-input gyras-save" id="c-33"></td><td><input class="go-table-input gyras-save" id="c-93"></td></tr>
-                        </tbody>
-                    </table>
-                    <div class="go-section-title">APOYOS TE VEHICULAR E INSTITUCIONES</div>
-                    <table class="go-table">
-                        <thead><tr><th>INSTITUCIÓN</th><th>PERSONA A CARGO</th><th>IDENTIFICACIÓN MÓVIL</th></tr></thead>
-                        <tbody>
-                            <tr><td><input class="go-table-input gyras-save" id="c-ap1-i"></td><td><input class="go-table-input gyras-save" id="c-ap1-p"></td><td><input class="go-table-input gyras-save" id="c-ap1-m"></td></tr>
-                            <tr><td><input class="go-table-input gyras-save" id="c-ap2-i"></td><td><input class="go-table-input gyras-save" id="c-ap2-p"></td><td><input class="go-table-input gyras-save" id="c-ap2-m"></td></tr>
-                        </tbody>
-                    </table>
-                    <div class="go-section-title">BOMBEROS LESIONADOS</div>
-                    <table class="go-table">
-                        <thead><tr><th>NOMBRE</th><th>TIPO LESIÓN</th><th>TRASLADO A CCAA (SÍ/NO)</th></tr></thead>
-                        <tbody>
-                            <tr><td><input class="go-table-input gyras-save" id="c-l1-n"></td><td><input class="go-table-input gyras-save" id="c-l1-t"></td><td><input class="go-table-input gyras-save" id="c-l1-c"></td></tr>
-                            <tr><td><input class="go-table-input gyras-save" id="c-l2-n"></td><td><input class="go-table-input gyras-save" id="c-l2-t"></td><td><input class="go-table-input gyras-save" id="c-l2-c"></td></tr>
-                        </tbody>
-                    </table>
-                    <div style="margin-top: 30px; text-align: center;">
-                        <div style="border-bottom: 1px solid #000; height: 30px; width: 40%; margin: 0 auto;"></div>
-                        <span style="font-weight: bold;">FIRMA COMANDANTE DE INCIDENTE</span>
-                    </div>
+                <div class="oficio-section-title">UNIDADES DESPACHADAS</div>
+                <table class="oficio-table">
+                    <thead><tr><th>HORA 6-0</th><th>UNIDAD</th><th>BOMBERO A CARGO</th><th>Nº BOMBEROS</th><th>MAQUINISTA</th><th>HORA 6-3</th><th>HORA 6-7</th><th>HORA 6-9</th><th>HORA 6-10</th></tr></thead>
+                    <tbody id="a-tbody-unidades"></tbody>
+                </table>
+
+                <div class="oficio-section-title">0-1 INFORME DEL ACTO; A CARGO:</div>
+                <textarea class="textarea-resumen" rows="4" placeholder="SE TRATA DE..."></textarea>
+
+                <div class="oficio-section-title">REGISTRO DE LLEGADA AL LUGAR DE APOYO EXTERNO</div>
+                <div class="oficio-grid grid-6 text-center txt-bold mb-10">
+                    <div>1-0<br><input type="text" class="input-underline-center"></div>
+                    <div>1-2<br><input type="text" class="input-underline-center"></div>
+                    <div>1-3<br><input type="text" class="input-underline-center"></div>
+                    <div>1-4<br><input type="text" class="input-underline-center"></div>
+                    <div>1-5<br><input type="text" class="input-underline-center"></div>
+                    <div>1-8<br><input type="text" class="input-underline-center"></div>
                 </div>
 
+                <table class="oficio-table">
+                    <tr><th>UNIDAD</th><th>KM. LLEGADA</th><th>COMBUSTIBLE</th><th>UNIDAD</th><th>KM. LLEGADA</th><th>COMBUSTIBLE</th></tr>
+                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                </table>
             </div>
+
+            <!-- ==========================================
+                 4. PLANTILLA: C.I.C.
+                 ========================================== -->
+            <div class="gyras-oficio-paper" id="template-cic">
+                <div class="oficio-header">
+                    <div class="logo-cb"><span class="star">★</span><div class="year">1909</div><div class="motto">14 de Junio<br>Unidos para Servir</div><div class="cb-name">CUERPO DE BOMBEROS<br>NUEVA IMPERIAL</div></div>
+                    <div class="gyras-title"><div class="gyras-big">GYRAS</div><div class="gyras-sub">GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO</div><div class="gyras-sub2">Central de Alarmas - Comandancia</div></div>
+                </div>
+
+                <div class="oficio-section-title">DATOS GENERALES PUESTO DE MANDO</div>
+                <div class="oficio-grid grid-2">
+                    <div class="oficio-row"><span class="label">FECHA:</span><div class="oficio-input txt-bold" id="c-fecha"></div></div>
+                    <div class="oficio-row"><span class="label">11-4:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">HORA ESTABLECE C.I.C.:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">COMANDANTE DE INCIDENTE:</span><input type="text" class="oficio-input"></div>
+                </div>
+
+                <div class="oficio-section-title">DATOS DEL LUGAR</div>
+                <div class="oficio-grid grid-2">
+                    <div class="oficio-row full-width"><span class="label">DIRECCIÓN:</span><div class="oficio-input txt-bold" id="c-direccion"></div></div>
+                    <div class="oficio-row"><span class="label">CLAVE:</span><div class="oficio-input txt-bold" id="c-clave"></div></div>
+                    <div class="oficio-row"><span class="label">VILLA O POBLACIÓN:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">COMUNA:</span><input type="text" class="oficio-input" value="NUEVA IMPERIAL"></div>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox"> URBANO</label>
+                        <label class="ml-20"><input type="checkbox"> RURAL</label>
+                    </div>
+                    <div class="oficio-row"><span class="label">NÚMERO:</span><input type="text" class="oficio-input"></div>
+                    <div class="oficio-row"><span class="label">SECTOR:</span><input type="text" class="oficio-input"></div>
+                </div>
+
+                <div class="oficio-section-title">REGISTRO CRONOLÓGICO</div>
+                <table class="oficio-table">
+                    <thead><tr><th>UNIDAD</th><th>MAQUINISTA</th><th>OBAC</th><th>N° BOMBEROS</th><th>6-3</th><th>6-9</th></tr></thead>
+                    <tbody id="c-tbody-unidades"></tbody>
+                </table>
+
+                <div class="oficio-section-title">APOYO DE OTROS CUERPOS DE BOMBEROS</div>
+                <table class="oficio-table">
+                    <thead><tr><th>UNIDAD</th><th>CUERPO DE BOMBEROS</th><th>PATENTE</th><th>OBAC</th><th>N° BOMBEROS</th><th>6-3</th><th>6-9</th></tr></thead>
+                    <tbody>
+                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="oficio-section-title">APOYOS TE VEHICULAR</div>
+                <table class="oficio-table">
+                    <thead><tr><th>INSTITUCIÓN O EMPRESA</th><th>PERSONA A CARGO</th><th>IDENTIFICACIÓN DEL MÓVIL</th></tr></thead>
+                    <tbody>
+                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="oficio-section-title">RESUMEN DEL SERVICIO</div>
+                <textarea class="textarea-resumen" rows="3" placeholder="Informe del acto a cargo de... se trata de..."></textarea>
+
+                <div class="oficio-section-title">BOMBEROS LESIONADOS TE VEHICULAR</div>
+                <table class="oficio-table">
+                    <thead><tr><th>NOMBRE</th><th>TIPO DE LESIÓN</th><th>TRASLADADO A CCAA</th></tr></thead>
+                    <tbody>
+                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><label><input type="checkbox"> SÍ</label> &nbsp; <label><input type="checkbox"> NO</label></td></tr>
+                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><label><input type="checkbox"> SÍ</label> &nbsp; <label><input type="checkbox"> NO</label></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="text-center mt-40">
+                    <div class="firma-line-center"></div>
+                    <span class="firma-text">FIRMA COMANDANTE DE INCIDENTE</span>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- SCRIPT -->
+    <!-- SCRIPT DE CONEXIÓN FIREBASE Y LLENADO DINÁMICO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -382,11 +381,10 @@
         const db = getFirestore(app);
 
         let rawDataList = [];
-        let currentEmId = null;
-        let isShowingCIC = false;
+        let currentEm = null;
 
-        // NOTA: Conectado a emergencias_activas para pruebas, luego lo cambias a historial_emergencias
-        onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
+        // Escuchar historial de emergencias
+        onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
             const tbody = document.getElementById('history-tbody');
             tbody.innerHTML = '';
             rawDataList = [];
@@ -397,88 +395,97 @@
                 
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${data.timestamp ? data.timestamp.toDate().toLocaleTimeString('es-CL',{hour12:false, hour:'2-digit', minute:'2-digit'}) : ''}</td>
-                    <td style="font-weight:bold;">${data.code}</td>
-                    <td>${data.address}</td>
-                    <td>${(data.units || []).join(', ')}</td>
-                    <td style="text-align:center;"><button class="btn-print" onclick="abrirLibro('${data.id}')">VER PARTE</button></td>
+                    <td style="padding:8px; border-bottom:1px solid #333;">${data.timestamp ? data.timestamp.toDate().toLocaleTimeString('es-CL',{hour12:false, hour:'2-digit', minute:'2-digit'}) : ''}</td>
+                    <td style="font-weight:bold; padding:8px; border-bottom:1px solid #333;">${data.code}</td>
+                    <td style="padding:8px; border-bottom:1px solid #333;">${data.address}</td>
+                    <td style="padding:8px; border-bottom:1px solid #333;">${(data.units || []).join(', ')}</td>
+                    <td style="text-align:center; padding:8px; border-bottom:1px solid #333;"><button onclick="abrirLibro('${data.id}')" style="background:var(--c-blue); color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">VER PARTE</button></td>
                 `;
                 tbody.appendChild(tr);
             });
         });
 
-        window.abrirLibro = function(id) {
-            const em = rawDataList.find(e => e.id === id);
-            if(!em) return;
-            currentEmId = id;
-            isShowingCIC = false;
-
+        // Selector de Plantillas
+        document.getElementById('selector-plantilla').addEventListener('change', (e) => {
             document.querySelectorAll('.gyras-oficio-paper').forEach(el => el.classList.remove('active'));
-            
-            let targetTemplate = 'template-general';
-            
-            if(em.isAtentado) {
-                targetTemplate = 'template-atentado';
-                if(em.code === '10-0') document.getElementById('a-chk-100').checked = true;
-                if(em.code === '10-1') document.getElementById('a-chk-101').checked = true;
-                if(em.code === '10-2') document.getElementById('a-chk-102').checked = true;
-            } 
-            else if(em.code && em.code.startsWith('6-')) {
-                targetTemplate = 'template-servicio';
-            }
+            document.getElementById(e.target.value).classList.add('active');
+            if(currentEm) llenarTablas(currentEm, e.target.value);
+        });
 
+        window.abrirLibro = function(id) {
+            currentEm = rawDataList.find(e => e.id === id);
+            if(!currentEm) return;
+
+            // Determinar qué plantilla abrir por defecto basado en la clave
+            let targetTemplate = 'template-general';
+            if(currentEm.isAtentado) { targetTemplate = 'template-atentado'; } 
+            else if(currentEm.code && currentEm.code.startsWith('6-')) { targetTemplate = 'template-servicio'; }
+            
+            document.getElementById('selector-plantilla').value = targetTemplate;
+            document.querySelectorAll('.gyras-oficio-paper').forEach(el => el.classList.remove('active'));
             document.getElementById(targetTemplate).classList.add('active');
 
-            let dStr = em.timestamp ? em.timestamp.toDate().toLocaleDateString('es-CL') : '';
-            let hStr = em.timestamp ? em.timestamp.toDate().toLocaleTimeString('es-CL',{hour12:false, hour:'2-digit', minute:'2-digit'}) : '';
+            // Formatear fechas universales
+            let dStr = currentEm.timestamp ? currentEm.timestamp.toDate().toLocaleDateString('es-CL') : '';
+            let hStr = currentEm.timestamp ? currentEm.timestamp.toDate().toLocaleTimeString('es-CL',{hour12:false, hour:'2-digit', minute:'2-digit'}) : '';
             
             ['g', 's', 'a', 'c'].forEach(prefix => {
                 if(document.getElementById(`${prefix}-fecha`)) document.getElementById(`${prefix}-fecha`).innerText = dStr;
                 if(document.getElementById(`${prefix}-hora`)) document.getElementById(`${prefix}-hora`).innerText = hStr;
-                if(document.getElementById(`${prefix}-clave`)) document.getElementById(`${prefix}-clave`).innerText = em.code;
-                if(document.getElementById(`${prefix}-direccion`)) document.getElementById(`${prefix}-direccion`).innerText = em.address;
+                if(document.getElementById(`${prefix}-clave`)) document.getElementById(`${prefix}-clave`).innerText = currentEm.code;
+                if(document.getElementById(`${prefix}-direccion`)) document.getElementById(`${prefix}-direccion`).innerText = currentEm.address;
             });
 
-            // Llenar tablas de unidades dinámicas
-            if(targetTemplate === 'template-general' || targetTemplate === 'template-servicio' || targetTemplate === 'template-atentado') {
-                let tbId = targetTemplate === 'template-general' ? 'g-tbody-unidades' : (targetTemplate === 'template-servicio' ? 's-tbody-unidades' : 'a-tbody-unidades');
-                const tb = document.getElementById(tbId);
-                tb.innerHTML = '';
-                let count = 0;
-                (em.units || []).forEach(u => {
-                    const l = (em.logs && em.logs[u]) ? em.logs[u] : {};
-                    let row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="go-table-input gyras-save" id="${targetTemplate.charAt(9)}-maq-${u}"></td>`;
-                    
-                    if(targetTemplate === 'template-servicio'){
-                        row += `<td>${l['6-0']||''}</td><td><input class="go-table-input gyras-save" id="kms-${u}"></td><td>${l['6-10']||''}</td><td><input class="go-table-input gyras-save" id="kml-${u}"></td><td><input class="go-table-input gyras-save" id="com-${u}"></td>`;
-                    } else {
-                        row += `<td>${l['6-0']||''}</td><td>${l['6-3']||''}</td><td>${l['6-7']||''}</td><td>${l['6-9']||''}</td><td>${l['6-10']||''}</td>`;
-                        if(targetTemplate === 'template-general') row += `<td><input class="go-table-input gyras-save" id="kml-${u}"></td>`;
-                    }
-                    tb.innerHTML += row + `</tr>`;
-                    count++;
-                });
-                while(count < 4 && targetTemplate !== 'template-atentado') {
-                    if(targetTemplate === 'template-general') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-                    else tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-                    count++;
-                }
+            if(targetTemplate === 'template-atentado') {
+                if(currentEm.code === '10-0') document.getElementById('a-chk-100').checked = true;
+                if(currentEm.code === '10-1') document.getElementById('a-chk-101').checked = true;
+                if(currentEm.code === '10-2') document.getElementById('a-chk-102').checked = true;
             }
 
-            document.getElementById('btn-toggle-cic').innerText = "VER FORMATO C.I.C.";
+            llenarTablas(currentEm, targetTemplate);
             document.getElementById('detail-modal').style.display = 'flex';
         }
 
-        document.getElementById('btn-toggle-cic').addEventListener('click', () => {
-            document.querySelectorAll('.gyras-oficio-paper').forEach(el => el.classList.remove('active'));
-            isShowingCIC = !isShowingCIC;
-            if(isShowingCIC) {
-                document.getElementById('template-cic').classList.add('active');
-                document.getElementById('btn-toggle-cic').innerText = "VOLVER AL PARTE NORMAL";
-            } else {
-                abrirLibro(currentEmId); 
+        // Función que distribuye la lógica de unidades dinámicas según la plantilla seleccionada
+        function llenarTablas(em, template) {
+            let tbId = '';
+            if(template === 'template-general') tbId = 'g-tbody-unidades';
+            if(template === 'template-servicio') tbId = 's-tbody-unidades';
+            if(template === 'template-atentado') tbId = 'a-tbody-unidades';
+            if(template === 'template-cic') tbId = 'c-tbody-unidades';
+
+            if(!tbId) return;
+            const tb = document.getElementById(tbId);
+            tb.innerHTML = '';
+            let count = 0;
+
+            (em.units || []).forEach(u => {
+                const l = (em.logs && em.logs[u]) ? em.logs[u] : {};
+                let row = '';
+                
+                if(template === 'template-servicio') {
+                    row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td>${l['6-0']||''}</td><td><input class="oficio-table-input"></td><td>${l['6-10']||''}</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>`;
+                } else if(template === 'template-general') {
+                    row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td>${l['6-0']||''}</td><td>${l['6-3']||''}</td><td>${l['6-7']||''}</td><td>${l['6-9']||''}</td><td>${l['6-10']||''}</td><td><input class="oficio-table-input"></td></tr>`;
+                } else if(template === 'template-atentado') {
+                    row = `<tr><td>${l['6-0']||''}</td><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td>${l['6-3']||''}</td><td>${l['6-7']||''}</td><td>${l['6-9']||''}</td><td>${l['6-10']||''}</td></tr>`;
+                } else if(template === 'template-cic') {
+                    row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td>${l['6-3']||''}</td><td>${l['6-9']||''}</td></tr>`;
+                }
+
+                tb.innerHTML += row;
+                count++;
+            });
+
+            // Rellenar filas vacías para mantener la estética del formulario impreso
+            while(count < 4) {
+                if(template === 'template-servicio') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+                if(template === 'template-general') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+                if(template === 'template-atentado') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+                if(template === 'template-cic') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+                count++;
             }
-        });
+        }
 
         document.getElementById('btn-close-modal').addEventListener('click', () => { document.getElementById('detail-modal').style.display = 'none'; });
     </script>
