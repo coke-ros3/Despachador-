@@ -1,157 +1,306 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CENTRAL DE ALARMAS Y TELECOMUNICACIONES</title>
-  <meta name="theme-color" content="#11131C">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despacho - Central de Alarmas</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
-<body>
-    <!-- topbar con el candado -->
-    <header class="topbar">
-        <h1>CENTRAL DE ALARMAS Y TELECOMUNICACIONES</h1>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <button id="btn-edit-layout" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer;" title="Desbloquear pantalla">🔒</button>
-            <div id="clock">00:00:00</div>
+<body class="central-body layout-editing">
+
+    <div class="topbar">
+        <h1>SISTEMA C.A.D. - CENTRAL DE ALARMAS</h1>
+        <div id="clock">00:00:00</div>
+    </div>
+
+    <div class="triptych">
+        
+        <!-- PANEL IZQUIERDO: CLAVES -->
+        <div class="panel panel-left" id="panel-claves">
+            <h2 style="font-size: 1rem; margin-bottom: 5px;">CLAVES 10-X</h2>
+            <div class="claves-list" id="claves-list" style="max-height: 35vh;">
+                <button class="clave-btn" data-code="10-0" onclick="selectClave(this)">10-0 ESTRUCTURAL</button>
+                <button class="clave-btn" data-code="10-1" onclick="selectClave(this)">10-1 VEHÍCULOS</button>
+                <button class="clave-btn" data-code="10-2" onclick="selectClave(this)">10-2 PASTIZAL / BOSQUE</button>
+                <button class="clave-btn" data-code="10-3" onclick="selectClave(this)">10-3 RESCATE SIMPLE</button>
+                <button class="clave-btn" data-code="10-4" onclick="selectClave(this)">10-4 ACCIDENTE VEHICULAR</button>
+                <button class="clave-btn" data-code="10-5" onclick="selectClave(this)">10-5 DERRAME QUÍMICO</button>
+                <button class="clave-btn" data-code="10-6" onclick="selectClave(this)">10-6 EMANACIÓN GAS</button>
+                <button class="clave-btn" data-code="10-7" onclick="selectClave(this)">10-7 ELÉCTRICO</button>
+                <button class="clave-btn" data-code="10-8" onclick="selectClave(this)">10-8 NO CLASIFICADO</button>
+                <button class="clave-btn" data-code="10-9" onclick="selectClave(this)">10-9 OTROS SERVICIOS</button>
+                <button class="clave-btn" data-code="10-10" onclick="selectClave(this)">10-10 ESCOMBROS</button>
+                <button class="clave-btn" data-code="10-12" onclick="selectClave(this)">10-12 APOYO OTRO CUERPO</button>
+                <button class="clave-btn" data-code="10-14" onclick="selectClave(this)">10-14 ACCIDENTE AÉREO</button>
+                <button class="clave-btn" data-code="10-15" onclick="selectClave(this)">10-15 SIMULACRO</button>
+                <button class="clave-btn" data-code="10-17" onclick="selectClave(this)">10-17 INUNDACIÓN</button>
+            </div>
+            
+            <h2 style="font-size: 1rem; margin-top: 10px; margin-bottom: 5px;">SERVICIOS 6-X</h2>
+            <div class="claves-list" style="max-height: 20vh;">
+                <button class="clave-btn" data-code="6-13" onclick="selectClave(this)">6-13 TRÁMITE / TALLER</button>
+                <button class="clave-btn" data-code="6-14" onclick="selectClave(this)">6-14 SERVICENTRO</button>
+                <button class="clave-btn" data-code="6-15" onclick="selectClave(this)">6-15 TRASLADO LESIONADO</button>
+                <button class="clave-btn" data-code="6-17" onclick="selectClave(this)">6-17 EJERCICIO</button>
+                <button class="clave-btn" data-code="6-18" onclick="selectClave(this)">6-18 PRÁCTICA CONDUCTOR</button>
+            </div>
+            
+            <div style="margin-top: 5px;">
+                <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">NIVEL DE ALARMA</label>
+                <select id="alarma-select" style="margin-top: 2px; padding: 8px;">
+                    <option value="0">Despacho Inicial</option>
+                    <option value="1">1ª Alarma</option>
+                    <option value="2">2ª Alarma</option>
+                    <option value="3">3ª Alarma</option>
+                </select>
+            </div>
         </div>
-    </header>
 
-<main class="dashboard triptych">
-        <!-- panel izquierdo -->
-        <section class="panel panel-left">
-            <h2>Claves de Emergencia</h2>
-            <div id="claves-container" class="claves-list"></div>
-            
-            <div class="units-section">
-                <h2>Unidades a Despachar</h2>
-                <div id="units-container" class="units-grid"></div>
-            </div>
+        <div class="resizer" id="resizer-left"></div>
 
-            <div class="maquinistas-section" style="margin-top: 15px;">
-                <button type="button" id="toggle-maquinistas" class="btn-secondary" style="text-align: left; padding-left: 15px;">VER MAQUINISTAS ▼</button>
-                <div id="maquinistas-container" class="units-grid" style="display: none; margin-top: 10px;"></div>
-            </div>
-        </section>
-
-        <!-- separador invisible 1 -->
-        <div class="resizer" id="resizer-L"></div>
-
-    <!-- panel central -->
-    <section class="panel panel-center">
-            <h2>Datos Operativos</h2>
-            
-            <form id="dispatch-form" class="dispatch-form-layout">
-                <div class="form-group address-group">
-                <input type="text" id="address-input" placeholder="Buscar dirección en la comuna..." autocomplete="off" required>
-                    <button type="button" id="btn-manual-mark" class="btn-primary">MARCAR UBICACIÓN (RURAL)</button>
-                    <ul id="address-suggestions" class="suggestions-list"></ul>
-                </div>
+        <!-- PANEL CENTRAL: MAPA Y FORMULARIO -->
+        <div class="panel panel-center" id="panel-form">
+            <div class="dispatch-form-layout">
                 
-        <div class="routing-info" id="pending-routing-info" style="display:none;">
-            <span id="route-distance">Distancia: -- km</span> | 
-            <span id="route-time">Tiempo estimado: -- min</span>
-                </div>
-
-                <div id="map-container" class="mini-map">
+                <div class="mini-map">
                     <div id="map"></div>
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <button type="button" id="btn-toggle-grifos" class="btn-secondary" style="flex: 1; margin-top:0;">[ MOSTRAR GRIFOS ]</button>
-                    <button type="button" id="btn-link-gps" class="btn-primary" style="flex: 1; margin-top:0; background-color: var(--c-blue);">[ COPIAR LINK GPS ]</button>
-                    <button type="button" id="btn-clear-gps" class="btn-secondary" style="flex: 1; margin-top:0;">[ LIMPIAR GPS ]</button>
-                    <button type="button" id="btn-master-reset" class="btn-destructive" style="flex: 1; margin-top:0;">[ RESET GENERAL ]</button>
+                <div class="gps-btn-group">
+                    <button class="btn-gps-wa">📱 GPS x WHATSAPP</button>
+                    <button class="btn-gps-sms">✉️ GPS x SMS</button>
                 </div>
 
-                <!-- div pegajoso pa que no se corte el despachar -->
-                <div class="form-footer-stick">
-                    <textarea id="observations" rows="2" placeholder="Descripción y detalles adicionales..."></textarea>
-                    <button type="submit" class="btn-dispatch">DESPACHAR EMERGENCIA</button>
+                <div class="form-group">
+                    <input type="text" id="direccion" placeholder="Dirección Exacta / Institución..." autocomplete="off">
                 </div>
-            </form>
-
-            <!-- panel oculto -->
-            <div id="apoyo-panel" style="display:none; flex-direction:column; height:100%;">
-                <div style="background:var(--c-blue); padding:10px; border-radius:5px; text-align:center; font-weight:bold; margin-bottom:15px; color:var(--text-light);">
-                    MODO GESTIÓN DE APOYO Y ALARMAS
-                </div>
-        <h3 id="apoyo-title" style="color:var(--text-light); margin-bottom:5px; font-size:1.3rem;">10-0</h3>
-        <p style="margin-bottom:15px; color:var(--text-muted);">Unidades trabajando: <strong id="apoyo-current-units" style="color:var(--text-light);"></strong></p>
                 
-                <div class="form-group" id="apoyo-alarm-group">
-                    <label style="color:var(--text-muted); font-weight:bold;">Escalar Nivel de Emergencia:</label>
-                    <select id="apoyo-alarm-select" style="margin-top:5px;">
-                        <option value="0">Mantener Nivel Actual (Solo enviar apoyo)</option>
-                        <option value="1">Declarar 1ª Alarma de Incendio</option>
-                        <option value="2">Declarar 2ª Alarma de Incendio</option>
-                        <option value="3">Declarar 3ª Alarma de Incendio</option>
-                    </select>
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <input type="text" id="esquina" placeholder="Intersección / Esquina..." style="flex: 1;">
+                    <input type="text" id="numero" placeholder="Nº" style="width: 100px;">
                 </div>
 
-                <div style="border:1px dashed var(--c-blue); padding:15px; border-radius:5px; margin-bottom:15px; text-align:center;">
-                    <p style="color:var(--text-muted); font-size:1rem;">SELECCIONE EN EL PANEL IZQUIERDO LAS <strong>NUEVAS UNIDADES</strong> QUE DESPACHARÁ AL LUGAR.</p>
+                <div class="form-group">
+                    <textarea id="observaciones" rows="2" placeholder="Observaciones / Pre-Informe..."></textarea>
+                    
+                    <label class="chk-atentado-container">
+                        <input type="checkbox" id="chk-atentado" style="width:18px; height:18px;">
+                        DESPACHAR COMO POSIBLE ATENTADO
+                    </label>
                 </div>
-
-                <button type="button" id="btn-confirm-apoyo" class="btn-primary" style="margin-top:auto; padding:15px; font-size:1.1rem;">TRANSMITIR APOYO / ALARMA</button>
-                <button type="button" id="btn-cancel-apoyo" class="btn-secondary" style="background:transparent; border:1px solid var(--border-color); color:var(--text-muted);">Cancelar y volver al mapa</button>
+                
+                <div class="form-footer-stick">
+                    <button class="btn-dispatch" onclick="despachar()">DESPACHAR EMERGENCIA</button>
+                </div>
             </div>
-    </section>
+        </div>
 
-        <!-- separador invisible 2 -->
-        <div class="resizer" id="resizer-R"></div>
+        <div class="resizer" id="resizer-right"></div>
 
-        <!-- panel derecho -->
-        <section class="panel panel-right">
-            <h2>Emergencias Activas</h2>
-            <div id="active-emergencies-container" class="active-emergencies-container"></div>
-        </section>
-</main>
+        <!-- PANEL DERECHO: UNIDADES, MAQUINISTAS Y ACTIVAS -->
+        <div class="panel panel-right" id="panel-units">
+            <div class="units-section">
+                <h2>UNIDADES</h2>
+                <div class="units-grid">
+                    <button class="unit-btn" onclick="toggleUnit(this)">B-1</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">Z-1</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">BT-1</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">B-2</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">R-2</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">BX-2</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">B-3</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">BX-3</button>
+                    <button class="unit-btn" onclick="toggleUnit(this)">G-3</button>
+                </div>
+            </div>
 
-    <!-- modal -->
-    <div id="modal-bitacora" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; text-align: center;">BITÁCORA Y TIEMPOS DE UNIDADES</h2>
-            <h3 id="bitacora-title" style="text-align: center; color: var(--text-light); margin-top: 10px;">--</h3>
-            
-            <table class="table-bitacora">
-                <thead>
-                    <tr>
-                        <th>UNIDAD</th>
-                        <th>6-0</th>
-                        <th>6-3</th>
-                        <th>6-7</th>
-                        <th>6-8</th>
-                        <th>6-9</th>
-                        <th>6-10</th>
-                        <th>KM</th>
-                        <th>COMBUST.</th>
-                    </tr>
-                </thead>
-                <tbody id="bitacora-tbody">
-                </tbody>
-            </table>
-            <button type="button" id="btn-close-bitacora" class="btn-secondary" style="margin-top: 20px;">CERRAR BITÁCORA</button>
+            <div class="maquinistas-section">
+                <h2>CONDUCTORES</h2>
+                <div class="units-grid">
+                    <button class="unit-btn">91</button>
+                    <button class="unit-btn">92</button>
+                    <button class="unit-btn">93</button>
+                    <button class="unit-btn">94</button>
+                </div>
+                <select class="maq-select">
+                    <option value="">+ VER OTROS CONDUCTORES</option>
+                    <option value="91-A">91-A</option>
+                    <option value="91-B">91-B</option>
+                    <option value="92-A">92-A</option>
+                    <option value="93-A">93-A</option>
+                    <option value="94-A">94-A</option>
+                </select>
+            </div>
+
+            <div class="active-emergencies-container" id="active-emergencies-list" style="margin-top: 15px;">
+                <!-- Aquí se inyectan las emergencias activas -->
+            </div>
         </div>
     </div>
 
-    <!-- scripts mapa -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     
-    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
-        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--c-blue); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
-            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
-            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL</option>
-            <option value="carro.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CARROS</option>
-            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[3] MAQUINISTAS</option>
-            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[4] GYRAS</option>
-        </select>
-    </div>
-    <script>document.getElementById('vista-selector').value = 'central.html';</script>
-    
-    <script type="module" src="app.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
+            authDomain: "despachador-58fb8.firebaseapp.com",
+            projectId: "despachador-58fb8",
+            storageBucket: "despachador-58fb8.firebasestorage.app",
+            messagingSenderId: "1024295745401",
+            appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // RELOJ 24 HRS
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('es-CL', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // CONFIGURACIÓN MAPA MAPBOX
+        let map = L.map('map', { zoomControl: false }).setView([-38.7423, -72.9538], 15);
+        const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21yazBmNngzMDBiNDJ5b2pkMjF3dHljbCJ9.cbcHOpTihe9Y-9l6HZHjAw';
+        
+        L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
+            maxZoom: 19,
+            attribution: '© Mapbox'
+        }).addTo(map);
+
+        let selectedClave = null;
+        let selectedUnits = [];
+
+        window.selectClave = function(btn) {
+            document.querySelectorAll('.clave-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedClave = btn.getAttribute('data-code');
+        };
+
+        window.toggleUnit = function(btn) {
+            btn.classList.toggle('selected');
+            const unitName = btn.innerText;
+            if (btn.classList.contains('selected')) {
+                selectedUnits.push(unitName);
+            } else {
+                selectedUnits = selectedUnits.filter(u => u !== unitName);
+            }
+        };
+
+        window.despachar = async function() {
+            const direccion = document.getElementById('direccion').value.toUpperCase();
+            const esquina = document.getElementById('esquina').value.toUpperCase();
+            const numero = document.getElementById('numero').value.toUpperCase();
+            const observaciones = document.getElementById('observaciones').value.toUpperCase();
+            const alarma = parseInt(document.getElementById('alarma-select').value);
+            const isAtentado = document.getElementById('chk-atentado').checked;
+            
+            if (!selectedClave) return alert("Debe seleccionar una Clave 10-X o 6-X");
+            if (!direccion) return alert("Debe ingresar una dirección");
+            if (selectedUnits.length === 0) return alert("Debe seleccionar al menos una Unidad");
+
+            let fullAddress = direccion;
+            if (numero) fullAddress += " " + numero;
+            if (esquina) fullAddress += " / " + esquina;
+
+            let initialLogs = {};
+            selectedUnits.forEach(u => {
+                initialLogs[u] = { "6-0": "", "6-3": "", "6-7": "", "6-8": "", "6-9": "", "6-10": "", "km": "", "combustible": "" };
+            });
+
+            try {
+                await addDoc(collection(db, "emergencias_activas"), {
+                    code: selectedClave,
+                    alarma: alarma,
+                    address: fullAddress,
+                    obs: observaciones,
+                    isAtentado: isAtentado,
+                    units: selectedUnits,
+                    logs: initialLogs,
+                    timestamp: serverTimestamp()
+                });
+
+                // Limpiar campos
+                document.getElementById('direccion').value = '';
+                document.getElementById('esquina').value = '';
+                document.getElementById('numero').value = '';
+                document.getElementById('observaciones').value = '';
+                document.getElementById('chk-atentado').checked = false;
+                document.getElementById('alarma-select').value = "0";
+                
+                selectedClave = null;
+                selectedUnits = [];
+                document.querySelectorAll('.clave-btn, .unit-btn').forEach(b => b.classList.remove('selected'));
+                
+                alert("¡Despacho realizado con éxito!");
+            } catch (e) {
+                console.error("Error despachando: ", e);
+                alert("Error de conexión al despachar.");
+            }
+        };
+
+        // ESCUCHAR EMERGENCIAS ACTIVAS EN TIEMPO REAL
+        onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
+            const container = document.getElementById('active-emergencies-list');
+            container.innerHTML = '';
+            
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const emId = docSnap.id;
+                
+                let card = document.createElement('div');
+                card.className = `emergency-card alarma-${data.alarma}`;
+                
+                let timeStr = "--:--";
+                if(data.timestamp) {
+                    timeStr = data.timestamp.toDate().toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute:'2-digit' });
+                }
+
+                let headerText = `${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}`;
+                
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>${headerText}</h3>
+                        <span style="color:var(--text-muted); font-size:0.85rem; font-weight:bold;">${timeStr} Hrs</span>
+                    </div>
+                    <p><strong>Lugar:</strong> ${data.address}</p>
+                    <p><strong>Unidades:</strong> ${data.units.join(', ')}</p>
+                    ${data.isAtentado ? '<p style="color:var(--c-red); font-weight:bold; font-size:0.9rem; margin-top:5px;">⚠️ POSIBLE ATENTADO</p>' : ''}
+                    <button class="btn-destructive" style="margin-top:10px; padding:8px;" onclick="cerrarEmergencia('${emId}')">CERRAR (6-10 FINAL)</button>
+                `;
+                container.appendChild(card);
+            });
+        });
+
+        // FUNCIÓN AUTOMATIZADA: MOVER A HISTORIAL GYRAS Y BORRAR DE ACTIVAS
+        window.cerrarEmergencia = async function(id) {
+            if(confirm('¿Está seguro de dar el 6-10 Final y cerrar esta emergencia? Pasará automáticamente al historial GYRAS.')) {
+                try {
+                    const docRef = doc(db, "emergencias_activas", id);
+                    const docSnap = await getDoc(docRef);
+                    
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        
+                        // 1. Copiar a la colección del GYRAS
+                        await addDoc(collection(db, "historial_emergencias"), data);
+                        
+                        // 2. Eliminar de las emergencias activas de la Central
+                        await deleteDoc(docRef);
+                        
+                    }
+                } catch(e) {
+                    console.error("Error al cerrar y archivar: ", e);
+                    alert("Ocurrió un error al intentar archivar la emergencia.");
+                }
+            }
+        };
+    </script>
 </body>
 </html>

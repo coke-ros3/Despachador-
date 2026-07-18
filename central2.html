@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central 2 - Tiempos Operativos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="central-body">
+
+    <div class="topbar">
+        <h1>SISTEMA C.A.D. - CENTRAL 2 (TIEMPOS OPERATIVOS)</h1>
+        <div id="clock">00:00:00</div>
+    </div>
+
+    <div class="c2-grid" id="c2-container">
+        <!-- Las tarjetas se inyectan aquí con JS -->
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
+            authDomain: "despachador-58fb8.firebaseapp.com",
+            projectId: "despachador-58fb8",
+            storageBucket: "despachador-58fb8.firebasestorage.app",
+            messagingSenderId: "1024295745401",
+            appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // RELOJ 24 HRS
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('es-CL', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        const container = document.getElementById('c2-container');
+
+        onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
+            container.innerHTML = '';
+            
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="c2-empty">NO HAY EMERGENCIAS ACTIVAS</div>';
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const emId = docSnap.id;
+                
+                let card = document.createElement('div');
+                card.className = 'c2-card';
+                
+                card.innerHTML = `
+                    <div class="c2-card-header">
+                        <h2>${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}</h2>
+                        <p>${data.address}</p>
+                    </div>
+                    <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                `;
+                container.appendChild(card);
+
+                const unitsContainer = document.getElementById(`units-container-${emId}`);
+                
+                // Asegurarnos de que los logs existan
+                const currentLogs = data.logs || {};
+
+                data.units.forEach(unit => {
+                    const unitLogs = currentLogs[unit] || {};
+                    let unitRow = document.createElement('div');
+                    unitRow.className = 'c2-unit-row';
+                    
+                    // Función auxiliar para renderizar los botones y mostrar la hora si ya fue marcada
+                    const renderBtn = (claveLabel) => {
+                        const timeVal = unitLogs[claveLabel];
+                        const isMarked = timeVal && timeVal !== "";
+                        return `<button class="btn-c2-time ${isMarked ? 'marcado' : ''}" data-clave="${claveLabel}" onclick="marcarTiempo('${emId}', '${unit}', '${claveLabel}')">
+                                    ${claveLabel} <span>${isMarked ? timeVal : '--:--'}</span>
+                                </button>`;
+                    };
+
+                    unitRow.innerHTML = `
+                        <span class="c2-unit-name">UNIDAD ${unit}</span>
+                        <div class="c2-times-grid">
+                            ${renderBtn('6-0')}
+                            ${renderBtn('6-3')}
+                            ${renderBtn('6-7')}
+                            ${renderBtn('6-8')}
+                            ${renderBtn('6-9')}
+                            ${renderBtn('6-10')}
+                        </div>
+                    `;
+                    unitsContainer.appendChild(unitRow);
+                });
+            });
+        });
+
+        window.marcarTiempo = async function(emId, unit, clave) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute:'2-digit' });
+            
+            const docRef = doc(db, "emergencias_activas", emId);
+            
+            try {
+                // Actualiza directamente el campo específico dentro del objeto anidado en Firebase
+                await updateDoc(docRef, {
+                    [`logs.${unit}.${clave}`]: timeString
+                });
+            } catch(e) {
+                console.error("Error actualizando tiempo: ", e);
+                alert("Error al marcar el tiempo. Revise conexión.");
+            }
+        };
+    </script>
+</body>
+</html>

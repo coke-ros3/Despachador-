@@ -3,217 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alertas - Voluntarios</title>
-    <!-- CSS Externos -->
+    <title>App Voluntarios - CB Nueva Imperial</title>
+    
+    <!-- Hoja de estilos centralizada -->
     <link rel="stylesheet" href="style.css">
+    <!-- CSS Leaflet para el Mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="voluntarios-body">
 
-    <!-- PANTALLA 1: LISTA -->
-    <div id="view-list" class="vol-view view-active">
-        <div class="ios-header">
-            <button class="header-btn" onclick="window.location.href='index.html'">
-                <span>❮</span> Canales
-            </button>
-            <span class="header-title">Bomberos Nueva Imperial</span>
-            <span style="color: #3498DB; font-size: 1.2rem;">🔊</span>
+    <!-- =========================================
+         VISTA 1: LISTA DE EMERGENCIAS (FEED)
+         ========================================= -->
+    <div id="v-main-view">
+        <div class="v-nav-bar">
+            <button class="v-nav-btn"><span>&#10094;</span> Canales</button>
+            <div class="v-nav-title">CB Nueva Imperial</div>
+            <button class="v-nav-btn" style="font-size: 20px;">🔊</button>
         </div>
-        <div class="feed-container" id="feed-list">
-            <div style="padding: 20px; text-align: center; color: #8E8E93;">Cargando canales...</div>
+        <div id="v-emergencies-list">
+            <!-- Se inyecta con Firebase -->
+            <div class="v-empty-state">Cargando emergencias...</div>
         </div>
     </div>
 
-    <!-- PANTALLA 2: DETALLE -->
-    <div id="view-detail" class="vol-view view-hidden-right">
-        <div class="ios-header">
-            <button class="header-btn" onclick="volverALista()">
-                <span>❮</span> Atrás
-            </button>
-            <span class="header-title">Notificación</span>
-            <span style="width: 50px;"></span> 
+    <!-- =========================================
+         VISTA 2: DETALLE DE LA EMERGENCIA
+         ========================================= -->
+    <div id="v-detail-view">
+        <div class="v-nav-bar">
+            <button class="v-nav-btn" onclick="cerrarDetalle()"><span>&#10094;</span> Atrás</button>
+            <div class="v-nav-title">Notificación</div>
+            <div style="width: 50px;"></div> <!-- Espaciador para centrar título -->
         </div>
 
-        <div class="detail-header">
-            <img src="https://cdn-icons-png.flaticon.com/512/784/784115.png" alt="Escudo">
+        <div class="v-inst-header">
+            <div style="font-size: 40px;">🛡️</div>
             <h2>Bomberos Nueva Imperial</h2>
         </div>
 
-        <div class="blue-banner" id="det-banner">
-            10-0 DIRECCIÓN DE PRUEBA / INTERSECCIÓN B1
+        <div class="v-blue-banner" id="v-det-banner">
+            <!-- Ej: 10-9 AVENIDA DEPARTAMENTAL / EXEQUIEL FERNANDEZ B11 -->
         </div>
 
-        <div class="detail-info">
-            <div style="color: #8E8E93; font-size: 0.8rem; margin-bottom: 5px;">OBSERVACIONES</div>
-            <strong id="det-obs">Sin observaciones</strong><br>
-            <div class="unit-box" id="det-units">B1</div>
+        <div class="v-info-block" id="v-det-info">
+            <span class="v-info-line" style="color:red; font-weight:bold;" id="v-det-atentado"></span>
+            <span class="v-info-line"><strong>Observaciones:</strong> <span id="v-det-obs"></span></span>
         </div>
 
-        <div class="action-buttons">
-            <a href="#" id="btn-waze" class="btn-nav-map">📍 Waze</a>
-            <a href="#" id="btn-gmaps" class="btn-nav-map">🗺️ Google Maps</a>
+        <div class="v-units-container" id="v-det-units">
+            <!-- Ej: <div class="v-unit-badge">B-1</div> -->
         </div>
 
-        <div class="map-container">
-            <div id="map-voluntarios"></div>
+        <div class="v-action-bar">
+            <button class="v-action-btn" id="v-btn-waze">📍 Waze</button>
+            <button class="v-action-btn" id="v-btn-maps">🗺️ Google Maps</button>
         </div>
+
+        <!-- Mapa -->
+        <div id="v-map-container"></div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
-            authDomain: "despachador-58fb8.firebaseapp.com",
-            projectId: "despachador-58fb8",
-            storageBucket: "despachador-58fb8.firebasestorage.app",
-            messagingSenderId: "1024295745401",
-            appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
-        };
-
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp({ 
+            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI", 
+            authDomain: "despachador-58fb8.firebaseapp.com", 
+            projectId: "despachador-58fb8" 
+        });
         const db = getFirestore(app);
 
-        let listaEmergencias = [];
-        let emergenciaActiva = null;
-        let map = null;
-        let mapMarker = null;
+        // Variables del mapa
+        let map;
+        const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21yazBmNngzMDBiNDJ5b2pkMjF3dHljbCJ9.cbcHOpTihe9Y-9l6HZHjAw';
 
-        const feedContainer = document.getElementById('feed-list');
-
-        onSnapshot(doc(db, "operaciones", "despacho_actual"), (docSnap) => {
-            if (docSnap.exists()) {
-                emergenciaActiva = docSnap.data();
-                emergenciaActiva.isLive = true;
-            } else {
-                emergenciaActiva = null;
-            }
-            renderizarFeed();
-        });
-
-        onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
-            listaEmergencias = [];
-            snapshot.forEach((doc) => {
-                let data = doc.data();
-                data.isLive = false;
-                listaEmergencias.push(data);
-            });
-            listaEmergencias.sort((a, b) => b.id - a.id);
-            renderizarFeed();
-        });
-
-        function renderizarFeed() {
-            feedContainer.innerHTML = '';
-            let listaCompleta = [];
+        // Escuchar emergencias activas (ordenadas por fecha descendente)
+        const q = query(collection(db, "emergencias_activas"), orderBy("timestamp", "desc"));
+        
+        onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('v-emergencies-list');
+            list.innerHTML = '';
             
-            if (emergenciaActiva) listaCompleta.push(emergenciaActiva);
-            listaCompleta = listaCompleta.concat(listaEmergencias);
-
-            if(listaCompleta.length === 0) {
-                feedContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #8E8E93;">No hay registros.</div>';
+            if (snapshot.empty) {
+                list.innerHTML = '<div class="v-empty-state">No hay emergencias activas en este momento.</div>';
                 return;
             }
 
-            listaCompleta.forEach(em => {
-                let fecha = em.id ? new Date(em.id) : new Date();
-                let fechaStr = fecha.getFullYear() + "-" + 
-                               String(fecha.getMonth() + 1).padStart(2, '0') + "-" + 
-                               String(fecha.getDate()).padStart(2, '0') + " " + 
-                               String(fecha.getHours()).padStart(2, '0') + ":" + 
-                               String(fecha.getMinutes()).padStart(2, '0');
-
-                let title = `${em.code} ${em.address} ${(em.units || []).join(', ')}`;
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                const timeStr = d.timestamp ? d.timestamp.toDate().toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'medium' }) : '';
+                const unitsStr = (d.units || []).join(', ');
                 
                 let item = document.createElement('div');
-                item.className = 'feed-item';
-                
-                // Si la emergencia está viva, le inyectamos la clase que hace el parpadeo rojo
-                if (em.isLive) {
-                    item.classList.add('feed-item-activa');
-                }
+                item.className = 'v-feed-item';
+                item.onclick = () => abrirDetalle(d);
                 
                 item.innerHTML = `
-                    <div class="feed-content">
-                        <div class="feed-time">${fechaStr}</div>
-                        <div class="feed-title">${title.toUpperCase()}</div>
+                    <div class="v-feed-content">
+                        <span class="v-feed-date">${timeStr}</span>
+                        <div class="v-feed-title">${d.code} ${d.address} ${unitsStr}</div>
+                        ${d.isAtentado ? '<div style="color:red; font-size:11px; font-weight:bold; margin-top:3px;">⚠️ POSIBLE ATENTADO</div>' : ''}
                     </div>
-                    <div class="feed-arrow">›</div>
+                    <span class="v-chevron">&#10095;</span>
                 `;
-                
-                item.onclick = () => abrirDetalle(em);
-                feedContainer.appendChild(item);
+                list.appendChild(item);
             });
-        }
+        });
 
-        window.abrirDetalle = function(em) {
-            document.getElementById('view-list').classList.remove('view-active');
-            document.getElementById('view-list').classList.add('view-hidden-left');
+        window.abrirDetalle = (d) => {
+            document.getElementById('v-main-view').style.display = 'none';
+            document.getElementById('v-detail-view').style.display = 'block';
+
+            // Llenar datos textuales
+            const unitsStr = (d.units || []).join(', ');
+            document.getElementById('v-det-banner').innerText = `${d.code} ${d.address} ${unitsStr}`;
             
-            document.getElementById('view-detail').classList.remove('view-hidden-right');
-            document.getElementById('view-detail').classList.add('view-active');
+            document.getElementById('v-det-atentado').innerText = d.isAtentado ? "⚠️ DESPACHADO COMO POSIBLE ATENTADO" : "";
+            document.getElementById('v-det-obs').innerText = d.obs || "Sin observaciones previas.";
 
-            let tituloBanner = `${em.code} ${em.address} ${(em.units || []).join(' ')}`;
-            if(em.alarma > 0) tituloBanner = `${em.alarma}ª ALARMA - ${em.address} ${(em.units || []).join(' ')}`;
-            
-            document.getElementById('det-banner').innerText = tituloBanner.toUpperCase();
-            document.getElementById('det-obs').innerText = em.obs || "Sin observaciones registradas.";
-            document.getElementById('det-units').innerText = (em.units || []).join(' | ');
+            // Generar insignias de las máquinas despachadas
+            const unitsContainer = document.getElementById('v-det-units');
+            unitsContainer.innerHTML = '';
+            (d.units || []).forEach(u => {
+                let badge = document.createElement('div');
+                badge.className = 'v-unit-badge';
+                badge.innerText = u;
+                unitsContainer.appendChild(badge);
+            });
 
-            let lat = -38.7446590; 
-            let lng = -72.9521597;
-            if(em.markerLatLng) {
-                lat = em.markerLatLng.lat;
-                lng = em.markerLatLng.lng;
-            }
+            // Configurar botones de navegación GPS
+            const encodedAddress = encodeURIComponent(d.address + ", Nueva Imperial, Chile");
+            document.getElementById('v-btn-waze').onclick = () => {
+                window.location.href = `https://waze.com/ul?q=${encodedAddress}`;
+            };
+            document.getElementById('v-btn-maps').onclick = () => {
+                window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+            };
 
-            document.getElementById('btn-waze').href = `waze://?ll=${lat},${lng}&navigate=yes`;
-            document.getElementById('btn-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-
-            setTimeout(() => { cargarMapa(lat, lng); }, 350);
+            // Iniciar o actualizar el Mapa (con pequeño retraso para que el contenedor exista visualmente)
+            setTimeout(() => {
+                if (!map) {
+                    map = L.map('v-map-container', { zoomControl: false }).setView([-38.7423, -72.9538], 15);
+                    L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
+                        maxZoom: 19
+                    }).addTo(map);
+                    L.control.zoom({ position: 'bottomright' }).addTo(map);
+                }
+                map.invalidateSize(); 
+            }, 300);
         };
 
-        window.volverALista = function() {
-            document.getElementById('view-detail').classList.remove('view-active');
-            document.getElementById('view-detail').classList.add('view-hidden-right');
-            
-            document.getElementById('view-list').classList.remove('view-hidden-left');
-            document.getElementById('view-list').classList.add('view-active');
+        window.cerrarDetalle = () => {
+            document.getElementById('v-detail-view').style.display = 'none';
+            document.getElementById('v-main-view').style.display = 'block';
         };
-
-        function cargarMapa(lat, lng) {
-            if (!map) {
-                map = L.map('map-voluntarios', { zoomControl: false }).setView([lat, lng], 16);
-                
-                const mapboxToken = 'pk.eyJ1Ijoiam9yZ2VsYW5kZXIiLCJhIjoiY21ycDZrNjc5Mjh0dTVzcTFsNThnZDVybiJ9.YeBk7kJuK-Hq5_kKuBY8fw';
-                L.tileLayer(`https://api.mapbox.com/styles/v1/jorgelander/cmrp6ml2r009y01s1drm39dhw/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`, {
-                    attribution: '© Mapbox', maxZoom: 19
-                }).addTo(map);
-
-                const grifosData = {
-                    "type": "FeatureCollection", "features": [
-                        { "type": "Feature", "properties": { "id": "001", "caudal": "Alto", "diametro": "100mm" }, "geometry": { "type": "Point", "coordinates": [-72.9521597, -38.7446590] } },
-                        { "type": "Feature", "properties": { "id": "002", "caudal": "Medio", "diametro": "75mm" }, "geometry": { "type": "Point", "coordinates": [-72.9535000, -38.7450000] } }
-                    ]
-                };
-                L.geoJSON(grifosData, {
-                    pointToLayer: function (feature, latlng) {
-                        return L.circleMarker(latlng, { radius: 7, fillColor: "#F1C40F", color: "#000", weight: 2, opacity: 1, fillOpacity: 1 }).bindPopup(`<b>GRIFO #${feature.properties.id}</b><br>Diámetro: ${feature.properties.diametro}`);
-                    }
-                }).addTo(map);
-            }
-
-            map.setView([lat, lng], 16);
-            if (mapMarker) map.removeLayer(mapMarker);
-            
-            mapMarker = L.marker([lat, lng], {
-                icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
-            }).addTo(map).bindPopup("<b>Lugar de la Emergencia</b>").openPopup();
-
-            map.invalidateSize();
-        }
     </script>
 </body>
 </html>
