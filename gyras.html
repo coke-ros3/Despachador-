@@ -3,491 +3,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYRAS - Archivo Legal y Bitácora</title>
+    <title>GYRAS - Bitácora Histórica Digital</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="gyras-body">
 
-    <!-- CABECERA WEB (Oculta en impresión) -->
+    <!-- CABECERA Y ESTADÍSTICAS (INTERFAZ WEB) -->
     <div class="gyras-header">
         <h1>GYRAS: <span>SISTEMA DE ARCHIVO OPERATIVO</span></h1>
         <div class="gyras-station-tag">CUARTEL CENTRAL - NUEVA IMPERIAL</div>
     </div>
 
-    <!-- TABLA GENERAL DE EMERGENCIAS (Oculta en impresión) -->
+    <div class="gyras-stats-grid">
+        <div class="gyras-stat-card total">
+            <h3>Total Emergencias</h3><div class="num" id="stat-total">0</div>
+        </div>
+        <div class="gyras-stat-card">
+            <h3>Estructurales (10-0)</h3><div class="num" id="stat-100">0</div>
+        </div>
+        <div class="gyras-stat-card">
+            <h3>Pastizales (10-2)</h3><div class="num" id="stat-102">0</div>
+        </div>
+        <div class="gyras-stat-card">
+            <h3>Accidentes (10-4)</h3><div class="num" id="stat-104">0</div>
+        </div>
+    </div>
+
+    <!-- FILTROS (INTERFAZ WEB) -->
+    <div class="gyras-filter-bar">
+        <div class="gyras-filter-group" style="flex: 2;">
+            <label>Buscar por dirección u observación</label>
+            <input type="text" id="search-input" placeholder="Escriba calle, sector, observaciones...">
+        </div>
+        <div class="gyras-filter-group">
+            <label>Clave Radial</label>
+            <select id="filter-code">
+                <option value="todos">TODAS LAS CLAVES</option>
+                <option value="10-0">10-0 ESTRUCTURAL</option>
+                <option value="10-1">10-1 VEHÍCULO</option>
+                <option value="10-2">10-2 PASTIZAL</option>
+                <option value="10-3">10-3 RESCATE SIMPLE</option>
+                <option value="10-4">10-4 ACCIDENTE</option>
+                <option value="10-7">10-7 ELÉCTRICO</option>
+            </select>
+        </div>
+        <div class="gyras-filter-group">
+            <label>Unidad Mayor</label>
+            <select id="filter-unit">
+                <option value="todos">TODOS LOS CARROS</option>
+                <option value="B-1">B-1</option>
+                <option value="Z-1">Z-1</option>
+                <option value="BT-1">BT-1</option>
+                <option value="B-2">B-2</option>
+                <option value="R-2">R-2</option>
+                <option value="BX-2">BX-2</option>
+                <option value="B-3">B-3</option>
+                <option value="BX-3">BX-3</option>
+                <option value="G-3">G-3</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- TABLA GENERAL (INTERFAZ WEB) -->
     <div class="gyras-table-container">
         <table id="table-history">
             <thead>
                 <tr>
-                    <th>Hora</th><th>Clave</th><th>Dirección</th><th>Unidades</th><th>Acciones</th>
+                    <th>ID / Cierre</th>
+                    <th>Clave</th>
+                    <th>Dirección / Ubicación</th>
+                    <th>Unidades Concurrentes</th>
+                    <th>Observaciones</th>
+                    <th style="text-align: center;">Acciones</th>
                 </tr>
             </thead>
             <tbody id="history-tbody"></tbody>
         </table>
+        <div id="empty-state" class="gyras-empty-state" style="display: none;">No se encontraron registros.</div>
     </div>
 
-    <!-- VISOR DE DOCUMENTO (MODAL) -->
+    <!-- MODAL: LA HOJA DE PARTE RÉPLICA FÍSICA -->
     <div class="gyras-modal" id="detail-modal">
-        <div class="gyras-doc-header-dark">
-            <h2>VISOR DE PARTE (FORMATO OFICIO)</h2>
-            <div>
-                <select id="selector-plantilla">
-                    <option value="template-general">DATOS GENERALES (10-X)</option>
-                    <option value="template-servicio">SERVICIO (6-X)</option>
-                    <option value="template-atentado">ATENTADO</option>
-                    <option value="template-cic">C.I.C. (Comando de Incidente)</option>
-                </select>
-                <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR OFICIO</button>
-                <button id="btn-close-modal">&times;</button>
-            </div>
-        </div>
-
-        <div class="gyras-modal-body">
+        <div class="gyras-modal-content-doc">
             
-            <!-- ==========================================
-                 1. PLANTILLA: DATOS GENERALES (10-X)
-                 ========================================== -->
-            <div class="gyras-oficio-paper active" id="template-general">
-                <div class="oficio-header">
-                    <div class="logo-cb">
-                        <span class="star">★</span><div class="year">1909</div>
-                        <div class="motto">14 de Junio<br>Unidos para Servir</div>
-                        <div class="cb-name">CUERPO DE BOMBEROS<br>NUEVA IMPERIAL</div>
-                    </div>
-                    <div class="gyras-title">
-                        <div class="gyras-big">GYRAS</div>
-                        <div class="gyras-sub">GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO</div>
-                        <div class="gyras-sub2">Central de Alarmas - Comandancia</div>
-                    </div>
-                </div>
-
-                <div class="oficio-section-title">DATOS GENERALES</div>
-                <div class="oficio-grid grid-2">
-                    <div class="oficio-row"><span class="label">CORRELATIVO SERVICIO:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">CORRELATIVO CB:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">FECHA:</span><div class="oficio-input txt-bold" id="g-fecha"></div></div>
-                    <div class="oficio-row"><span class="label">HORA:</span><div class="oficio-input txt-bold" id="g-hora"></div></div>
-                </div>
-
-                <div class="oficio-section-title">DATOS DEL LUGAR</div>
-                <div class="oficio-grid grid-2">
-                    <div class="oficio-row"><span class="label">COMUNA:</span><input type="text" class="oficio-input" value="NUEVA IMPERIAL"></div>
-                    <div class="oficio-row"><span class="label">CLAVE:</span><div class="oficio-input txt-bold" id="g-clave"></div></div>
-                    <div class="oficio-row full-width"><span class="label">DIRECCIÓN:</span><div class="oficio-input txt-bold" id="g-direccion"></div></div>
-                    <div class="oficio-row"><span class="label">VILLA O POBLACIÓN:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">NÚMERO:</span><input type="text" class="oficio-input"></div>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox"> URBANO</label>
-                        <label class="ml-20"><input type="checkbox"> RURAL</label>
-                    </div>
-                    <div class="oficio-row"><span class="label">SECTOR:</span><input type="text" class="oficio-input"></div>
-                </div>
-
-                <div class="oficio-section-title">REGISTRO CRONOLÓGICO</div>
-                <table class="oficio-table">
-                    <thead><tr><th>UNIDAD</th><th>MAQUINISTA</th><th>6-0</th><th>6-3</th><th>6-7</th><th>6-9</th><th>6-10</th><th>KM LLEGADA</th></tr></thead>
-                    <tbody id="g-tbody-unidades"></tbody>
-                </table>
-
-                <div class="oficio-grid grid-2">
-                    <div>
-                        <div class="oficio-section-title">DESCRIPCIÓN DE LA ESTRUCTURA</div>
-                        <div class="oficio-grid grid-2 txt-10">
-                            <div><b>USO:</b><br><label><input type="checkbox"> Casa Habitación</label><br><label><input type="checkbox"> Departamento</label><br><label><input type="checkbox"> Bodega</label><br><label><input type="checkbox"> Local Comercial</label><br><label><input type="checkbox"> Vía Pública</label><br><label><input type="checkbox"> Recinto Educacional</label></div>
-                            <div><b>CONSTRUCCIÓN:</b><br><label><input type="checkbox"> Material Sólido</label><br><label><input type="checkbox"> Material Ligero</label><br><label><input type="checkbox"> Mixto</label><br><label><input type="checkbox"> Estructura Metálica</label><br><br><b>NIVELES:</b> <input type="text" class="input-tiny"><br><b>% DAÑO:</b> <input type="text" class="input-tiny"> %</div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="oficio-section-title">DATOS DE FUEGO EN EL LUGAR</div>
-                        <div class="oficio-grid grid-2 txt-10">
-                            <div><b>TIPO INCENDIO:</b><br><label><input type="checkbox"> Ignición Compartimental</label><br><label><input type="checkbox"> Libre Combustión</label><br><label><input type="checkbox"> Estructural</label></div>
-                            <div><b>FASE:</b><br><label><input type="checkbox"> Incremento</label><br><label><input type="checkbox"> Decaimiento</label><br><label><input type="checkbox"> Latente</label></div>
-                        </div>
-                        <div class="oficio-row mt-5"><span class="label">OBSERVACIONES:</span><input type="text" class="oficio-input"></div>
-                    </div>
-                </div>
-
-                <div class="oficio-grid grid-2">
-                    <div>
-                        <div class="oficio-section-title">INCENDIOS FORESTALES</div>
-                        <div class="oficio-grid grid-2 txt-10">
-                            <div><b>TIPO:</b><br><label><input type="checkbox"> Agrícola</label><br><label><input type="checkbox"> Forestal</label><br><label><input type="checkbox"> Interfaz</label><br><br><b>FORMA:</b><br><label><input type="checkbox"> Circular</label><br><label><input type="checkbox"> Elíptica</label><br><label><input type="checkbox"> Irregular</label></div>
-                            <div><b>COMBUSTIBLE:</b><br><label><input type="checkbox"> Pasto</label><br><label><input type="checkbox"> Pasto / Arbusto</label><br><label><input type="checkbox"> Arbusto</label><br><label><input type="checkbox"> Bosque - Vegetación</label><br><label><input type="checkbox"> Residuos Bosque</label><br><label><input type="checkbox"> Desecho Agrícola</label></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="oficio-section-title">SEGUROS Y AUTORIZACIONES</div>
-                        <div class="oficio-row txt-10">¿Seguros Comprometidos? <label class="ml-10"><input type="checkbox"> Sí</label> <label class="ml-10"><input type="checkbox"> No</label></div>
-                        <div class="oficio-row"><span class="label">Cía Aseguradora:</span><input type="text" class="oficio-input"></div>
-                        <div class="oficio-row"><span class="label">Nº Póliza:</span><input type="text" class="oficio-input"></div>
-                        <div class="oficio-row mt-5 txt-10">¿Autorización Quema? <label class="ml-10"><input type="checkbox"> Sí</label> <label class="ml-10"><input type="checkbox"> No</label></div>
-                    </div>
-                </div>
-
-                <div class="oficio-section-title">RESCATE VEHICULAR</div>
-                <div class="checkbox-group-center txt-10 mb-5">
-                    <label><input type="checkbox"> Alta Energía</label> <label><input type="checkbox"> Mediana Energía</label> <label><input type="checkbox"> Baja Energía</label> <label><input type="checkbox"> Volcamiento</label> <label><input type="checkbox"> Colisión</label> <label><input type="checkbox"> Choque</label>
-                </div>
-                <table class="oficio-table">
-                    <tr><th>VEHÍCULO</th><th>TIPO</th><th>MARCA/MODELO</th><th>PATENTE</th><th>OCUPANTES</th></tr>
-                    <tr><td>Nº 1</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                    <tr><td>Nº 2</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                </table>
-                <div class="oficio-grid grid-4 text-center txt-10">
-                    <div>Cant. Atrapados: <input type="text" class="input-tiny"></div>
-                    <div>Cant. Encerrados: <input type="text" class="input-tiny"></div>
-                    <div>Cant. Eyectados: <input type="text" class="input-tiny"></div>
-                    <div>Total Lesionados: <input type="text" class="input-tiny"></div>
-                </div>
-
-                <div class="oficio-grid grid-3">
-                    <div>
-                        <div class="oficio-section-title">MATERIALES PELIGROSOS</div>
-                        <div class="txt-10"><label><input type="checkbox"> Sólido</label> <input type="text" class="input-small"> Kilos<br><label><input type="checkbox"> Líquido</label> <input type="text" class="input-small"> Litros<br><label><input type="checkbox"> Gaseoso</label></div>
-                    </div>
-                    <div>
-                        <div class="oficio-section-title">RESCATE ESPECIAL</div>
-                        <div class="txt-10"><label><input type="checkbox"> Sub Acuático</label><br><label><input type="checkbox"> En Altura</label><br><label><input type="checkbox"> Agreste/Rastreo</label><br><label><input type="checkbox"> Animal</label></div>
-                    </div>
-                    <div>
-                        <div class="oficio-section-title">D.E.T.</div>
-                        <div class="txt-10">¿Concurre D.E.T? <label><input type="checkbox"> Sí</label> <label><input type="checkbox"> No</label><br>Unidad / Inspector: <input type="text" class="input-med"><br>¿Fotografías? <label><input type="checkbox"> Sí</label> <label><input type="checkbox"> No</label></div>
-                    </div>
-                </div>
-
-                <div class="oficio-section-title">AFECTADOS Y/O VÍCTIMAS FATALES (L: Leve - M: Moderado - G: Grave - F: Fallecido)</div>
-                <table class="oficio-table">
-                    <tr><th>NOMBRE</th><th>RUT</th><th>ESTADO</th><th>TIPO DE OCUPANTE</th></tr>
-                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                </table>
-
-                <div class="oficio-section-title">APOYOS TE VEHICULAR E INSTITUCIONES</div>
-                <table class="oficio-table">
-                    <tr><th>INSTITUCIÓN O EMPRESA</th><th>PERSONA A CARGO</th><th>IDENTIFICACIÓN DEL MÓVIL</th></tr>
-                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                </table>
-
-                <div class="oficio-section-title">COMANDO DE INCIDENTE</div>
-                <div class="oficio-grid grid-2 txt-10">
-                    <div>Establece CIC: <label><input type="checkbox"> Sí</label> <label><input type="checkbox"> No</label><br>Unidad CIC: <input type="text" class="input-large"></div>
-                    <div>11-4: <input type="text" class="input-med"> / <input type="text" class="input-med"></div>
-                </div>
-
-                <div class="oficio-grid grid-2 text-center mt-30">
-                    <div>
-                        <div class="firma-line"></div>
-                        <span class="firma-text">FIRMA OBAC</span>
-                    </div>
-                    <div>
-                        <div class="firma-line"></div>
-                        <span class="firma-text">TOMA DATOS</span>
-                    </div>
+            <div class="gyras-doc-header-dark">
+                <h2 style="color: white; font-size: 1.1rem; margin:0;">VISOR DE PARTE DE DESPACHO</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR / PDF</button>
+                    <button class="gyras-modal-close" id="btn-close-modal" style="color: white;">&times;</button>
                 </div>
             </div>
 
-            <!-- ==========================================
-                 2. PLANTILLA: SERVICIO (6-X)
-                 ========================================== -->
-            <div class="gyras-oficio-paper" id="template-servicio">
-                <div class="oficio-header">
-                    <div class="logo-cb">
-                        <span class="star">★</span><div class="year">1909</div><div class="motto">14 de Junio<br>Unidos para Servir</div><div class="cb-name">CUERPO DE BOMBEROS<br>NUEVA IMPERIAL</div>
-                    </div>
-                    <div class="gyras-title"><div class="gyras-big">GYRAS</div><div class="gyras-sub">GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO</div><div class="gyras-sub2">Central de Alarmas - Comandancia</div></div>
-                </div>
-
-                <div class="oficio-section-title">SERVICIO</div>
-                <div class="oficio-grid grid-2 mb-15">
-                    <div class="oficio-row"><span class="label">CORRELATIVO SERVICIO:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">CORRELATIVO CB:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">FECHA:</span><div class="oficio-input txt-bold" id="s-fecha"></div></div>
-                    <div class="oficio-row"><span class="label">HORA:</span><div class="oficio-input txt-bold" id="s-hora"></div></div>
-                </div>
-
-                <table class="oficio-table text-left">
-                    <tr><td class="w-30"><input type="checkbox"></td><td class="txt-bold">6-13 TRÁMITE / TALLER</td><td class="w-30"><input type="checkbox"></td><td class="txt-bold">6-17 EJERCICIO</td></tr>
-                    <tr><td><input type="checkbox"></td><td class="txt-bold">6-14 SERVICENTRO</td><td><input type="checkbox"></td><td class="txt-bold">6-18 PRÁCTICA CONDUCTOR</td></tr>
-                    <tr><td><input type="checkbox"></td><td class="txt-bold">6-15 TRASLADO LESIONADO</td><td colspan="2"></td></tr>
-                </table>
-
-                <div class="oficio-row mb-15"><span class="label">AUTORIZADO POR:</span><input type="text" class="oficio-input"></div>
-                <div class="oficio-row mb-15"><span class="label">DIRECCIÓN / DESTINO:</span><div class="oficio-input txt-bold" id="s-direccion"></div></div>
-
-                <table class="oficio-table">
-                    <thead><tr><th>Unidad</th><th>Maquinista</th><th>Hora de Salida</th><th>KM. De Salida</th><th>Hora de Llegada</th><th>Km llegada</th><th>Combustible</th></tr></thead>
-                    <tbody id="s-tbody-unidades"></tbody>
-                </table>
-
-                <div class="oficio-section-title">RESUMEN</div>
-                <textarea class="textarea-resumen" rows="3"></textarea>
-
-                <div class="oficio-section-title">REGISTRO DE ASISTENCIA</div>
-                <div class="oficio-grid grid-3">
-                    <div><b>PRIMERA COMPAÑÍA</b><textarea class="textarea-asistencia"></textarea></div>
-                    <div><b>SEGUNDA COMPAÑÍA</b><textarea class="textarea-asistencia"></textarea></div>
-                    <div><b>TERCERA COMPAÑÍA</b><textarea class="textarea-asistencia"></textarea></div>
-                </div>
-
-                <div class="oficio-grid grid-2 text-center mt-30">
-                    <div><div class="firma-line"></div><span class="firma-text">FIRMA OBAC</span></div>
-                    <div><div class="firma-line"></div><span class="firma-text">TOMA DATOS</span></div>
-                </div>
-            </div>
-
-            <!-- ==========================================
-                 3. PLANTILLA: ATENTADO
-                 ========================================== -->
-            <div class="gyras-oficio-paper" id="template-atentado">
-                <div class="oficio-section-title title-clear">REGISTRO LLAMADOS POR POSIBLE ATENTADO</div>
+            <div class="gyras-modal-body" style="background: #E5E5EA; padding: 20px; overflow-y: auto;">
                 
-                <div class="oficio-grid grid-2">
-                    <div class="oficio-row"><span class="label">Hora del llamado:</span><div class="oficio-input txt-bold" id="a-hora"></div></div>
-                    <div class="oficio-row"><span class="label">Fecha del llamado:</span><div class="oficio-input txt-bold" id="a-fecha"></div></div>
-                </div>
-
-                <div class="oficio-grid grid-3 text-center txt-bold my-15">
-                    <div><input type="checkbox" id="a-chk-100"> 10-0</div>
-                    <div><input type="checkbox" id="a-chk-101"> 10-1</div>
-                    <div><input type="checkbox" id="a-chk-102"> 10-2</div>
-                </div>
-
-                <div class="oficio-row"><span class="label">OPERADOR (A):</span><input type="text" class="oficio-input"> <span class="label ml-15">Clave:</span><input type="text" class="oficio-input max-w-50"></div>
-                <div class="oficio-row"><span class="label">0-4:</span><input type="text" class="oficio-input"></div>
-                <div class="oficio-row"><span class="label">Dirección exacta:</span><div class="oficio-input txt-bold" id="a-direccion"></div> <span class="label ml-15">Nº:</span><input type="text" class="oficio-input max-w-50"></div>
-                <div class="oficio-row"><span class="label">Punto de referencia:</span><input type="text" class="oficio-input"></div>
-                <div class="oficio-row"><span class="label">Nombre emisor de llamada:</span><input type="text" class="oficio-input"></div>
-                <div class="oficio-row"><span class="label">Teléfono emisor de llamada:</span><input type="text" class="oficio-input"></div>
-
-                <div class="oficio-section-title">REGISTRO DE AVISO A CARABINEROS (452 466188 – 133)</div>
-                <div class="oficio-row"><span class="label">Funcionario que recibe el llamado:</span><input type="text" class="oficio-input"></div>
-                <div class="oficio-row"><span class="label">Hora llamada:</span><input type="text" class="oficio-input max-w-80"></div>
-                
-                <div class="oficio-grid grid-3 txt-bold my-15">
-                    <div><input type="checkbox"> Concurre</div>
-                    <div><input type="checkbox"> No concurre</div>
-                    <div><input type="checkbox"> Se encuentra en el lugar</div>
-                </div>
-
-                <div class="oficio-section-title">UNIDADES DESPACHADAS</div>
-                <table class="oficio-table">
-                    <thead><tr><th>HORA 6-0</th><th>UNIDAD</th><th>BOMBERO A CARGO</th><th>Nº BOMBEROS</th><th>MAQUINISTA</th><th>HORA 6-3</th><th>HORA 6-7</th><th>HORA 6-9</th><th>HORA 6-10</th></tr></thead>
-                    <tbody id="a-tbody-unidades"></tbody>
-                </table>
-
-                <div class="oficio-section-title">0-1 INFORME DEL ACTO; A CARGO:</div>
-                <textarea class="textarea-resumen" rows="4" placeholder="SE TRATA DE..."></textarea>
-
-                <div class="oficio-section-title">REGISTRO DE LLEGADA AL LUGAR DE APOYO EXTERNO</div>
-                <div class="oficio-grid grid-6 text-center txt-bold mb-10">
-                    <div>1-0<br><input type="text" class="input-underline-center"></div>
-                    <div>1-2<br><input type="text" class="input-underline-center"></div>
-                    <div>1-3<br><input type="text" class="input-underline-center"></div>
-                    <div>1-4<br><input type="text" class="input-underline-center"></div>
-                    <div>1-5<br><input type="text" class="input-underline-center"></div>
-                    <div>1-8<br><input type="text" class="input-underline-center"></div>
-                </div>
-
-                <table class="oficio-table">
-                    <tr><th>UNIDAD</th><th>KM. LLEGADA</th><th>COMBUSTIBLE</th><th>UNIDAD</th><th>KM. LLEGADA</th><th>COMBUSTIBLE</th></tr>
-                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                    <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                </table>
-            </div>
-
-            <!-- ==========================================
-                 4. PLANTILLA: C.I.C.
-                 ========================================== -->
-            <div class="gyras-oficio-paper" id="template-cic">
-                <div class="oficio-header">
-                    <div class="logo-cb"><span class="star">★</span><div class="year">1909</div><div class="motto">14 de Junio<br>Unidos para Servir</div><div class="cb-name">CUERPO DE BOMBEROS<br>NUEVA IMPERIAL</div></div>
-                    <div class="gyras-title"><div class="gyras-big">GYRAS</div><div class="gyras-sub">GESTIÓN Y REGISTRO DE ACTOS DE SERVICIO</div><div class="gyras-sub2">Central de Alarmas - Comandancia</div></div>
-                </div>
-
-                <div class="oficio-section-title">DATOS GENERALES PUESTO DE MANDO</div>
-                <div class="oficio-grid grid-2">
-                    <div class="oficio-row"><span class="label">FECHA:</span><div class="oficio-input txt-bold" id="c-fecha"></div></div>
-                    <div class="oficio-row"><span class="label">11-4:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">HORA ESTABLECE C.I.C.:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">COMANDANTE DE INCIDENTE:</span><input type="text" class="oficio-input"></div>
-                </div>
-
-                <div class="oficio-section-title">DATOS DEL LUGAR</div>
-                <div class="oficio-grid grid-2">
-                    <div class="oficio-row full-width"><span class="label">DIRECCIÓN:</span><div class="oficio-input txt-bold" id="c-direccion"></div></div>
-                    <div class="oficio-row"><span class="label">CLAVE:</span><div class="oficio-input txt-bold" id="c-clave"></div></div>
-                    <div class="oficio-row"><span class="label">VILLA O POBLACIÓN:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">COMUNA:</span><input type="text" class="oficio-input" value="NUEVA IMPERIAL"></div>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox"> URBANO</label>
-                        <label class="ml-20"><input type="checkbox"> RURAL</label>
+                <!-- LA HOJA BLANCA -->
+                <div class="gyras-paper" id="hoja-parte-doc">
+                    
+                    <div class="gp-header">
+                        <div style="font-size: 26px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 30px;">🛡️</span> 1909 GYRAS
+                        </div>
+                        <div class="gp-title">REGISTRO DE DATOS DE SERVICIOS DE EMERGENCIAS.</div>
                     </div>
-                    <div class="oficio-row"><span class="label">NÚMERO:</span><input type="text" class="oficio-input"></div>
-                    <div class="oficio-row"><span class="label">SECTOR:</span><input type="text" class="oficio-input"></div>
-                </div>
 
-                <div class="oficio-section-title">REGISTRO CRONOLÓGICO</div>
-                <table class="oficio-table">
-                    <thead><tr><th>UNIDAD</th><th>MAQUINISTA</th><th>OBAC</th><th>N° BOMBEROS</th><th>6-3</th><th>6-9</th></tr></thead>
-                    <tbody id="c-tbody-unidades"></tbody>
-                </table>
+                    <div class="gp-top-row">
+                        <div>
+                            <span class="gp-label">Hora del llamado</span>
+                            <span class="gp-box" id="doc-hora-llamado"></span>
+                        </div>
+                        <div>
+                            <span class="gp-label">Fecha del llamado</span>
+                            <span class="gp-box" id="doc-fecha-llamado"></span>
+                        </div>
+                    </div>
 
-                <div class="oficio-section-title">APOYO DE OTROS CUERPOS DE BOMBEROS</div>
-                <table class="oficio-table">
-                    <thead><tr><th>UNIDAD</th><th>CUERPO DE BOMBEROS</th><th>PATENTE</th><th>OBAC</th><th>N° BOMBEROS</th><th>6-3</th><th>6-9</th></tr></thead>
-                    <tbody>
-                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                    </tbody>
-                </table>
+                    <div class="gp-row">
+                        <span class="gp-label">OPERADOR (A)</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-operador">
+                    </div>
 
-                <div class="oficio-section-title">APOYOS TE VEHICULAR</div>
-                <table class="oficio-table">
-                    <thead><tr><th>INSTITUCIÓN O EMPRESA</th><th>PERSONA A CARGO</th><th>IDENTIFICACIÓN DEL MÓVIL</th></tr></thead>
-                    <tbody>
-                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>
-                    </tbody>
-                </table>
+                    <div class="gp-row">
+                        <span class="gp-label">Clave</span>
+                        <div class="gp-input-line" id="doc-clave" style="font-weight:bold; letter-spacing: 1px;"></div>
+                    </div>
 
-                <div class="oficio-section-title">RESUMEN DEL SERVICIO</div>
-                <textarea class="textarea-resumen" rows="3" placeholder="Informe del acto a cargo de... se trata de..."></textarea>
+                    <div class="gp-row">
+                        <span class="gp-label">0-4</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-0-4">
+                    </div>
+                    
+                    <div class="gp-row">
+                        <span class="gp-label">Dirección exacta:</span>
+                        <div class="gp-input-line" id="doc-direccion" style="font-weight:bold;"></div>
+                    </div>
 
-                <div class="oficio-section-title">BOMBEROS LESIONADOS TE VEHICULAR</div>
-                <table class="oficio-table">
-                    <thead><tr><th>NOMBRE</th><th>TIPO DE LESIÓN</th><th>TRASLADADO A CCAA</th></tr></thead>
-                    <tbody>
-                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><label><input type="checkbox"> SÍ</label> &nbsp; <label><input type="checkbox"> NO</label></td></tr>
-                        <tr><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><label><input type="checkbox"> SÍ</label> &nbsp; <label><input type="checkbox"> NO</label></td></tr>
-                    </tbody>
-                </table>
+                    <div class="gp-row">
+                        <span class="gp-label">Punto de referencia:</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-referencia">
+                    </div>
 
-                <div class="text-center mt-40">
-                    <div class="firma-line-center"></div>
-                    <span class="firma-text">FIRMA COMANDANTE DE INCIDENTE</span>
+                    <div class="gp-row">
+                        <span class="gp-label">Nombre emisor de llamada:</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-emisor-nombre">
+                    </div>
+
+                    <div class="gp-row">
+                        <span class="gp-label">Teléfono emisor de llamada:</span>
+                        <input type="text" class="gp-input-line gyras-save" id="doc-emisor-tel">
+                    </div>
+
+                    <div class="gp-row" style="margin-top: 15px; margin-bottom: 10px;">
+                        <span class="gp-label">Unidades Despachadas:</span>
+                        <div class="gp-input-line" id="doc-unidades-despachadas" style="font-weight: bold; border: none;"></div>
+                    </div>
+
+                    <!-- TABLA 1: UNIDADES Y PERSONAL -->
+                    <table class="gp-table">
+                        <thead>
+                            <tr>
+                                <th>HORA<br>6-0</th>
+                                <th>UNIDAD</th>
+                                <th>BOMBERO A<br>CARGO</th>
+                                <th>Nº DE<br>BOMBEROS</th>
+                                <th>MAQUINISTA</th>
+                                <th>HORA<br>6-3</th>
+                                <th>HORA<br>6-7</th>
+                                <th>HORA<br>6-9</th>
+                                <th>HORA<br>6-10</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc-tbody-unidades"></tbody>
+                    </table>
+
+                    <div style="font-size: 12px; font-weight: bold; margin-top: 15px;">
+                        0-1 INFORME DEL ACTO; A CARGO......................................................................................................... SE TRATA DE:
+                    </div>
+                    <textarea class="gp-textarea-container gyras-save" id="doc-informe" rows="2"></textarea>
+
+                    <div style="font-size: 12px; font-weight: bold;">
+                        0-1 Ampliación............................................................................................................................................................................
+                    </div>
+                    <textarea class="gp-textarea-container gyras-save" id="doc-ampliacion" rows="2"></textarea>
+
+                    <div style="font-size: 12px; font-weight: bold;">
+                        Observaciones............................................................................................................................................................................
+                    </div>
+                    <!-- Se carga la observación de la central por defecto si está vacía -->
+                    <textarea class="gp-textarea-container gyras-save" id="doc-observaciones" rows="2"></textarea>
+
+                    <!-- TABLA 2: APOYO EXTERNO -->
+                    <div class="gp-apoyo-header">REGISTRO DE LLEGADA AL LUGAR DE APOYO EXTERNO</div>
+                    <table class="gp-apoyo-table">
+                        <thead>
+                            <tr>
+                                <th>1-0</th>
+                                <th>1-2</th>
+                                <th>1-3</th>
+                                <th>1-4</th>
+                                <th>1-5</th>
+                                <th>1-8</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-0"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-2"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-3"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-4"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-5"></td>
+                                <td><input type="text" class="gp-table-input gyras-save" id="doc-1-8"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- TABLA 3: LOGÍSTICA -->
+                    <table class="gp-table" style="margin-top: -1px;">
+                        <thead>
+                            <tr>
+                                <th>UNIDAD</th>
+                                <th>KM. LLEGADA</th>
+                                <th>COMBUSTIBLE</th>
+                                <th>UNIDAD</th>
+                                <th>KM. LLEGADA</th>
+                                <th>COMBUSTIBLE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc-tbody-logistica"></tbody>
+                    </table>
+
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- SCRIPT DE CONEXIÓN FIREBASE Y LLENADO DINÁMICO -->
+    <!-- SCRIPT FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const app = initializeApp({ apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI", authDomain: "despachador-58fb8.firebaseapp.com", projectId: "despachador-58fb8" });
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
+            authDomain: "despachador-58fb8.firebaseapp.com",
+            projectId: "despachador-58fb8",
+            storageBucket: "despachador-58fb8.firebasestorage.app",
+            messagingSenderId: "1024295745401",
+            appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
+        };
+
+        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let rawDataList = [];
-        let currentEm = null;
+        const descripciones = {
+            '10-0': 'Estructural', '10-1': 'Vehículo', '10-2': 'Pastizal', '10-3': 'Rescate',
+            '10-4': 'Accidente', '10-5': 'Hazmat', '10-6': 'Gas', '10-7': 'Eléctrico',
+            '10-8': 'No Clasificado', '10-9': 'Servicios', '10-10': 'Escombros', '10-12': 'Apoyo'
+        };
 
-        // Escuchar historial de emergencias
+        let rawDataList = [];
+        let currentEmId = null;
+
+        const tbody = document.getElementById('history-tbody');
+        const searchInput = document.getElementById('search-input');
+        const filterCode = document.getElementById('filter-code');
+        const filterUnit = document.getElementById('filter-unit');
+        const emptyState = document.getElementById('empty-state');
+
         onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
-            const tbody = document.getElementById('history-tbody');
-            tbody.innerHTML = '';
             rawDataList = [];
-            
-            snapshot.forEach((doc) => { 
-                let data = { id: doc.id, ...doc.data() };
-                rawDataList.push(data);
-                
+            snapshot.forEach((doc) => { rawDataList.push(doc.data()); });
+            rawDataList.sort((a, b) => b.id - a.id);
+            calcularEstadisticas(rawDataList);
+            aplicarFiltros();
+        });
+
+        function calcularEstadisticas(data) {
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-100').innerText = data.filter(e => e.code === '10-0').length;
+            document.getElementById('stat-102').innerText = data.filter(e => e.code === '10-2').length;
+            document.getElementById('stat-104').innerText = data.filter(e => e.code === '10-4').length;
+        }
+
+        function aplicarFiltros() {
+            const queryText = searchInput.value.toLowerCase();
+            const codeVal = filterCode.value;
+            const unitVal = filterUnit.value;
+
+            const filtered = rawDataList.filter(em => {
+                const matchText = em.address.toLowerCase().includes(queryText) || (em.obs && em.obs.toLowerCase().includes(queryText));
+                const matchCode = (codeVal === 'todos') || (em.code === codeVal);
+                const matchUnit = (unitVal === 'todos') || (em.units && em.units.includes(unitVal));
+                return matchText && matchCode && matchUnit;
+            });
+
+            renderTabla(filtered);
+        }
+
+        function renderTabla(list) {
+            tbody.innerHTML = '';
+            if (list.length === 0) { emptyState.style.display = 'block'; return; }
+            emptyState.style.display = 'none';
+
+            list.forEach(em => {
                 let tr = document.createElement('tr');
+                let dateStr = em.fecha_termino ? new Date(em.fecha_termino).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'}) : '--:--';
+                let shortId = em.id.toString().slice(-5);
+                
+                let classClave = 'badge-code';
+                if(em.code === '10-0') classClave += ' estructural';
+                if(em.code === '10-2') classClave += ' pastizal';
+                if(em.code === '10-4') classClave += ' rescate';
+
+                let labelDesc = descripciones[em.code] || 'Servicio';
+                let alarmText = em.alarma > 0 ? ` <span class="badge-alarma">${em.alarma}ª ALARMA</span>` : '';
+                let unitsBadges = (em.units || []).map(u => `<span class="badge-unit">${u}</span>`).join('');
+
                 tr.innerHTML = `
-                    <td style="padding:8px; border-bottom:1px solid #333;">${data.timestamp ? data.timestamp.toDate().toLocaleTimeString('es-CL',{hour12:false, hour:'2-digit', minute:'2-digit'}) : ''}</td>
-                    <td style="font-weight:bold; padding:8px; border-bottom:1px solid #333;">${data.code}</td>
-                    <td style="padding:8px; border-bottom:1px solid #333;">${data.address}</td>
-                    <td style="padding:8px; border-bottom:1px solid #333;">${(data.units || []).join(', ')}</td>
-                    <td style="text-align:center; padding:8px; border-bottom:1px solid #333;"><button onclick="abrirLibro('${data.id}')" style="background:var(--c-blue); color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">VER PARTE</button></td>
+                    <td><span style="font-weight:bold; color:var(--c-blue);">#${shortId}</span><br><span style="font-size:0.75rem; color:var(--text-muted);">${dateStr} Hrs</span></td>
+                    <td><span class="${classClave}">${em.code}</span><br><span style="font-size:0.75rem; color:var(--text-muted);">${labelDesc}</span>${alarmText}</td>
+                    <td style="font-weight:bold; text-transform:uppercase;">${em.address}</td>
+                    <td>${unitsBadges}</td>
+                    <td style="color:var(--text-muted); font-size:0.85rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${em.obs || 'Sin observaciones'}</td>
+                    <td style="text-align:center;"><button class="btn-view" data-id="${em.id}">VER LIBRO</button></td>
                 `;
+
+                tr.querySelector('.btn-view').addEventListener('click', () => abrirDetalles(em));
                 tbody.appendChild(tr);
             });
-        });
+        }
 
-        // Selector de Plantillas
-        document.getElementById('selector-plantilla').addEventListener('change', (e) => {
-            document.querySelectorAll('.gyras-oficio-paper').forEach(el => el.classList.remove('active'));
-            document.getElementById(e.target.value).classList.add('active');
-            if(currentEm) llenarTablas(currentEm, e.target.value);
-        });
+        // LÓGICA DE LA HOJA DE PARTE Y AUTO-GUARDADO
+        window.abrirDetalles = function(em) {
+            currentEmId = em.id;
 
-        window.abrirLibro = function(id) {
-            currentEm = rawDataList.find(e => e.id === id);
-            if(!currentEm) return;
-
-            // Determinar qué plantilla abrir por defecto basado en la clave
-            let targetTemplate = 'template-general';
-            if(currentEm.isAtentado) { targetTemplate = 'template-atentado'; } 
-            else if(currentEm.code && currentEm.code.startsWith('6-')) { targetTemplate = 'template-servicio'; }
+            // Datos Fijos Generales
+            document.getElementById('doc-clave').innerText = em.code + (em.alarma > 0 ? ` (${em.alarma}ª ALARMA)` : '');
+            document.getElementById('doc-direccion').innerText = em.address.toUpperCase();
+            document.getElementById('doc-unidades-despachadas').innerText = (em.units || []).join(', ');
             
-            document.getElementById('selector-plantilla').value = targetTemplate;
-            document.querySelectorAll('.gyras-oficio-paper').forEach(el => el.classList.remove('active'));
-            document.getElementById(targetTemplate).classList.add('active');
+            let dateObj = em.fecha_termino ? new Date(em.fecha_termino) : new Date(em.id);
+            document.getElementById('doc-fecha-llamado').innerText = dateObj.toLocaleDateString('es-CL');
+            document.getElementById('doc-hora-llamado').innerText = dateObj.toLocaleTimeString('es-CL', {hour: '2-digit', minute:'2-digit'});
 
-            // Formatear fechas universales
-            let dStr = currentEm.timestamp ? currentEm.timestamp.toDate().toLocaleDateString('es-CL') : '';
-            let hStr = currentEm.timestamp ? currentEm.timestamp.toDate().toLocaleTimeString('es-CL',{hour12:false, hour:'2-digit', minute:'2-digit'}) : '';
-            
-            ['g', 's', 'a', 'c'].forEach(prefix => {
-                if(document.getElementById(`${prefix}-fecha`)) document.getElementById(`${prefix}-fecha`).innerText = dStr;
-                if(document.getElementById(`${prefix}-hora`)) document.getElementById(`${prefix}-hora`).innerText = hStr;
-                if(document.getElementById(`${prefix}-clave`)) document.getElementById(`${prefix}-clave`).innerText = currentEm.code;
-                if(document.getElementById(`${prefix}-direccion`)) document.getElementById(`${prefix}-direccion`).innerText = currentEm.address;
+            // Tablas de Máquinas
+            const tbodyUnidades = document.getElementById('doc-tbody-unidades');
+            const tbodyLogistica = document.getElementById('doc-tbody-logistica');
+            tbodyUnidades.innerHTML = '';
+            tbodyLogistica.innerHTML = '';
+
+            let logisticaRows = '';
+
+            em.units.forEach((u, index) => {
+                const logsCarro = (em.logs && em.logs[u]) ? em.logs[u] : {};
+                
+                // Tabla Principal (1 fila por carro)
+                let trU = document.createElement('tr');
+                trU.innerHTML = `
+                    <td>${logsCarro['6-0'] || ''}</td>
+                    <td style="font-weight:bold;">${u}</td>
+                    <td><input type="text" class="gp-table-input gyras-save" id="doc-cargo-${u}"></td>
+                    <td><input type="text" class="gp-table-input gyras-save" id="doc-vol-${u}"></td>
+                    <td><input type="text" class="gp-table-input gyras-save" id="doc-maq-${u}"></td>
+                    <td>${logsCarro['6-3'] || ''}</td>
+                    <td>${logsCarro['6-7'] || ''}</td>
+                    <td>${logsCarro['6-9'] || ''}</td>
+                    <td>${logsCarro['6-10'] || ''}</td>
+                `;
+                tbodyUnidades.appendChild(trU);
+
+                // Tabla Logística (2 carros por fila para replicar el espacio del papel original)
+                let logHTML = `
+                    <td style="font-weight:bold;">${u}</td>
+                    <td>${logsCarro.km || ''}</td>
+                    <td>${logsCarro.combustible || ''}</td>
+                `;
+                
+                if (index % 2 === 0) {
+                    logisticaRows += `<tr>${logHTML}`;
+                    if (index === em.units.length - 1) {
+                        logisticaRows += `<td></td><td></td><td></td></tr>`; // Rellena si es impar
+                    }
+                } else {
+                    logisticaRows += `${logHTML}</tr>`;
+                }
             });
+            tbodyLogistica.innerHTML = logisticaRows;
 
-            if(targetTemplate === 'template-atentado') {
-                if(currentEm.code === '10-0') document.getElementById('a-chk-100').checked = true;
-                if(currentEm.code === '10-1') document.getElementById('a-chk-101').checked = true;
-                if(currentEm.code === '10-2') document.getElementById('a-chk-102').checked = true;
+            // Limpiar todo antes de cargar
+            limpiarInputsManuales();
+
+            // Cargar datos escritos a mano desde la memoria local
+            cargarBorradorLocal(em);
+
+            // Poblar las Observaciones de la central si el campo está vacío
+            let obsInput = document.getElementById('doc-observaciones');
+            if (obsInput.value.trim() === '' && em.obs) {
+                obsInput.value = em.obs;
             }
 
-            llenarTablas(currentEm, targetTemplate);
+            // Inyectar datos de apoyo externo desde Firebase (si se transmitieron con la Central)
+            ['1-0', '1-2', '1-3', '1-4', '1-5', '1-8'].forEach(clave => {
+                em.units.forEach(u => {
+                    let logs = (em.logs && em.logs[u]) ? em.logs[u] : {};
+                    if(logs[clave]) {
+                        let inputApoyo = document.getElementById(`doc-${clave}`);
+                        if(inputApoyo.value.trim() === '') inputApoyo.value = logs[clave];
+                    }
+                });
+            });
+
+            // Conectar el guardado automático
+            document.querySelectorAll('.gyras-save').forEach(input => {
+                input.addEventListener('input', guardarBorradorLocal);
+            });
+
             document.getElementById('detail-modal').style.display = 'flex';
         }
 
-        // Función que distribuye la lógica de unidades dinámicas según la plantilla seleccionada
-        function llenarTablas(em, template) {
-            let tbId = '';
-            if(template === 'template-general') tbId = 'g-tbody-unidades';
-            if(template === 'template-servicio') tbId = 's-tbody-unidades';
-            if(template === 'template-atentado') tbId = 'a-tbody-unidades';
-            if(template === 'template-cic') tbId = 'c-tbody-unidades';
-
-            if(!tbId) return;
-            const tb = document.getElementById(tbId);
-            tb.innerHTML = '';
-            let count = 0;
-
-            (em.units || []).forEach(u => {
-                const l = (em.logs && em.logs[u]) ? em.logs[u] : {};
-                let row = '';
-                
-                if(template === 'template-servicio') {
-                    row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td>${l['6-0']||''}</td><td><input class="oficio-table-input"></td><td>${l['6-10']||''}</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td></tr>`;
-                } else if(template === 'template-general') {
-                    row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td>${l['6-0']||''}</td><td>${l['6-3']||''}</td><td>${l['6-7']||''}</td><td>${l['6-9']||''}</td><td>${l['6-10']||''}</td><td><input class="oficio-table-input"></td></tr>`;
-                } else if(template === 'template-atentado') {
-                    row = `<tr><td>${l['6-0']||''}</td><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td>${l['6-3']||''}</td><td>${l['6-7']||''}</td><td>${l['6-9']||''}</td><td>${l['6-10']||''}</td></tr>`;
-                } else if(template === 'template-cic') {
-                    row = `<tr><td style="font-weight:bold;">${u}</td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td><input class="oficio-table-input"></td><td>${l['6-3']||''}</td><td>${l['6-9']||''}</td></tr>`;
-                }
-
-                tb.innerHTML += row;
-                count++;
+        // AUTO-GUARDADO (Memoria Local de la Tablet/PC)
+        function guardarBorradorLocal() {
+            if(!currentEmId) return;
+            let draft = {};
+            document.querySelectorAll('.gyras-save').forEach(input => {
+                if(input.value) draft[input.id] = input.value;
             });
+            localStorage.setItem(`gyras_draft_hist_${currentEmId}`, JSON.stringify(draft));
+        }
 
-            // Rellenar filas vacías para mantener la estética del formulario impreso
-            while(count < 4) {
-                if(template === 'template-servicio') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-                if(template === 'template-general') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-                if(template === 'template-atentado') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-                if(template === 'template-cic') tb.innerHTML += `<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-                count++;
+        function cargarBorradorLocal(em) {
+            let draftStr = localStorage.getItem(`gyras_draft_hist_${em.id}`);
+            if(draftStr) {
+                let draft = JSON.parse(draftStr);
+                for(let key in draft) {
+                    let input = document.getElementById(key);
+                    if(input) input.value = draft[key];
+                }
             }
         }
 
-        document.getElementById('btn-close-modal').addEventListener('click', () => { document.getElementById('detail-modal').style.display = 'none'; });
+        function limpiarInputsManuales() {
+            document.querySelectorAll('.gyras-save').forEach(input => input.value = '');
+        }
+
+        // Filtros y Cierre
+        searchInput.addEventListener('input', aplicarFiltros);
+        filterCode.addEventListener('change', aplicarFiltros);
+        filterUnit.addEventListener('change', aplicarFiltros);
+
+        document.getElementById('btn-close-modal').addEventListener('click', () => { document.getElementById('detail-modal').style.display = 'none'; currentEmId = null; });
+        window.addEventListener('click', (e) => { if (e.target === document.getElementById('detail-modal')) { document.getElementById('detail-modal').style.display = 'none'; currentEmId = null; } });
     </script>
+
+    <!-- MENÚ FLOTANTE ACTUALIZADO -->
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--c-blue); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHOS)</option>
+            <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
+            <option value="voluntarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] APP VOLUNTARIOS</option>
+        </select>
+    </div>
+    <script>document.getElementById('vista-selector').value = 'gyras.html';</script>
+
 </body>
 </html>
