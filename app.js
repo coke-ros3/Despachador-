@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function guardarEstadoLocal() {
         const safeEmergencies = appState.activeEmergencies.map(em => ({
-            id: em.id, code: em.code, address: em.address, obs: em.obs, units: em.units, alarma: em.alarma, eta: em.eta, dist: em.dist, markerLatLng: em.markerLatLng, logs: em.logs || {}
+            id: em.id, code: em.code, address: em.address, obs: em.obs, units: em.units, alarma: em.alarma, isAtentado: em.isAtentado, eta: em.eta, dist: em.dist, markerLatLng: em.markerLatLng, logs: em.logs || {}
         }));
         localStorage.setItem('cad_active_emergencies', JSON.stringify(safeEmergencies));
         localStorage.setItem('cad_units_state', JSON.stringify(appState.units));
@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleMaqBtn.style.backgroundColor = 'var(--c-blue)';
         } else {
             maqContainer.style.display = 'none';
-            toggleMaqBtn.innerText = 'VER MAQUINISTAS ▼';
-            toggleMaqBtn.style.backgroundColor = 'var(--c-gray)';
+            toggleMaqBtn.innerText = '+ VER OTROS CONDUCTORES';
+            toggleMaqBtn.style.backgroundColor = 'var(--bg-dark)';
         }
     });
 
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // marcador gps carro
+    // marcador gps externo (cuando responden al link)
     let gpsMarker = null;
     onSnapshot(doc(db, "ubicaciones", "mdt_principal"), (docSnap) => {
         if (docSnap.exists()) {
@@ -394,8 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
             handleLocationSelection([e.latlng.lat, e.latlng.lng]);
             appState.isMarkingMode = false;
             map.getContainer().style.cursor = '';
-            btnManualMark.style.backgroundColor = 'var(--c-blue)';
-            btnManualMark.innerText = 'MARCAR UBICACIÓN (RURAL)';
+            btnManualMark.style.backgroundColor = 'var(--bg-panel)';
+            btnManualMark.innerText = '[ MARCAR RURAL ]';
         }
     });
 
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).addTo(map);
     }
 
-    // envia despacho
+    // ENVÍA DESPACHO Y RECOPILA TODOS LOS INPUTS CLÁSICOS
     document.getElementById('dispatch-form').addEventListener('submit', (e) => {
         e.preventDefault();
         if (!appState.selectedCode) { alert("Debe seleccionar una Clave Radial."); return; }
@@ -434,13 +434,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!appState.pendingLocation) { alert("Seleccione una dirección en el mapa."); return; }
 
         let obs = document.getElementById('observations').value;
-        let address = document.getElementById('address-input').value;
+        
+        // Recolectar partes de la dirección
+        let baseAddress = document.getElementById('address-input').value;
+        let intersection = document.getElementById('address-intersection') ? document.getElementById('address-intersection').value : '';
+        let num = document.getElementById('address-number') ? document.getElementById('address-number').value : '';
+        
+        let fullAddress = baseAddress;
+        if (num) fullAddress += " " + num;
+        if (intersection) fullAddress += " / " + intersection;
+        fullAddress = fullAddress.toUpperCase();
+
+        // Recolectar Checkbox de Atentado
+        let isAtentado = document.getElementById('chk-atentado') ? document.getElementById('chk-atentado').checked : false;
+
+        // Recolectar Nivel de Alarma del panel izquierdo (Es el primer select con ese ID)
+        let alarmSelects = document.querySelectorAll('#apoyo-alarm-select');
+        let initialAlarm = alarmSelects.length > 0 ? parseInt(alarmSelects[0].value) : 0;
+
         let unitsArray = Array.from(appState.selectedUnits);
 
         appState.units.forEach(u => { if (appState.selectedUnits.has(u.id)) u.state = 'despachada'; });
 
         const newEmergency = {
-            id: Date.now(), code: appState.selectedCode, address: address, obs: obs, units: unitsArray, alarma: 0, 
+            id: Date.now(), code: appState.selectedCode, address: fullAddress, obs: obs, units: unitsArray, alarma: initialAlarm, isAtentado: isAtentado,
             marker: appState.pendingMarker, routing: appState.pendingRouting, eta: appState.pendingEta || '--', dist: appState.pendingDist || '--',
             markerLatLng: appState.pendingLocation ? { lat: appState.pendingLocation[0], lng: appState.pendingLocation[1] } : null, logs: {} 
         };
@@ -450,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const safePayload = {
             id: newEmergency.id, code: newEmergency.code, address: newEmergency.address, obs: newEmergency.obs, units: newEmergency.units,
-            alarma: newEmergency.alarma, eta: newEmergency.eta, dist: newEmergency.dist, markerLatLng: newEmergency.markerLatLng, logs: {}
+            alarma: newEmergency.alarma, isAtentado: newEmergency.isAtentado, eta: newEmergency.eta, dist: newEmergency.dist, markerLatLng: newEmergency.markerLatLng, logs: {}
         };
 
         setDoc(doc(db, "operaciones", "despacho_actual"), safePayload).catch((error) => console.error(error));
@@ -460,6 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('dispatch-form').reset();
         document.querySelectorAll('.clave-btn').forEach(b => b.classList.remove('selected'));
+        if (alarmSelects.length > 0) alarmSelects[0].value = "0"; // Reinicia el select
         appState.selectedCode = null; appState.selectedUnits.clear();
         map.setView(appState.stationLocation, 17);
         renderActiveEmergencies(); renderUnits();
@@ -475,11 +493,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('apoyo-title').innerText = `${em.code} - ${em.address}`;
         document.getElementById('apoyo-current-units').innerText = em.units.join(', ');
         
+        let alarmSelects = document.querySelectorAll('#apoyo-alarm-select');
+        let apoyoSelect = alarmSelects.length > 1 ? alarmSelects[1] : alarmSelects[0];
+        
         const alarmGroup = document.getElementById('apoyo-alarm-group');
-        if (em.code === '10-0' || em.code === '10-2') {
-            alarmGroup.style.display = 'block'; document.getElementById('apoyo-alarm-select').value = em.alarma;
-        } else { 
-            alarmGroup.style.display = 'none'; document.getElementById('apoyo-alarm-select').value = "0"; 
+        if (alarmGroup) {
+            if (em.code === '10-0' || em.code === '10-2') {
+                alarmGroup.style.display = 'block'; 
+                apoyoSelect.value = em.alarma;
+            } else { 
+                alarmGroup.style.display = 'none'; 
+                apoyoSelect.value = "0"; 
+            }
         }
         appState.selectedUnits.clear(); renderUnits();
     };
@@ -495,7 +520,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let em = appState.activeEmergencies.find(e => e.id === appState.apoyoModeId);
         if (!em) return;
         const newUnits = Array.from(appState.selectedUnits);
-        const newAlarmLevel = parseInt(document.getElementById('apoyo-alarm-select').value);
+        
+        let alarmSelects = document.querySelectorAll('#apoyo-alarm-select');
+        let apoyoSelect = alarmSelects.length > 1 ? alarmSelects[1] : alarmSelects[0];
+        const newAlarmLevel = parseInt(apoyoSelect.value);
+
         if (newUnits.length === 0 && newAlarmLevel === em.alarma) { alert("Seleccione nuevas unidades o cambie el nivel de alarma."); return; }
         
         appState.units.forEach(u => { if (appState.selectedUnits.has(u.id)) u.state = 'despachada'; });
@@ -503,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         guardarEstadoLocal();
         
         const safeUpdatePayload = { 
-            id: em.id, code: em.code, address: em.address, obs: em.obs, units: em.units, alarma: em.alarma, eta: em.eta, dist: em.dist,
+            id: em.id, code: em.code, address: em.address, obs: em.obs, units: em.units, alarma: em.alarma, isAtentado: em.isAtentado, eta: em.eta, dist: em.dist,
             isUpdate: true, addedUnits: newUnits, markerLatLng: em.markerLatLng, logs: em.logs || {}
         };
 
@@ -563,13 +592,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-close-bitacora').addEventListener('click', () => { modalBitacora.style.display = 'none'; currentBitacoraId = null; });
 
-    // cierra emergencia y la respalda en el archivo histórico eterno
+    // CIERRA EMERGENCIA Y RESPALDA EN EL GYRAS HISTÓRICO
     window.concludeEmergency = async function(id) {
         let index = appState.activeEmergencies.findIndex(e => e.id === id);
         if(index > -1) {
             let em = appState.activeEmergencies[index];
 
-            // 1. Preparar datos completos para el Gyras histórico
+            // 1. Preparar datos completos para el Gyras histórico (Incluye si fue atentado)
             const historialPayload = {
                 id: em.id, 
                 code: em.code, 
@@ -577,6 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 obs: em.obs, 
                 units: em.units, 
                 alarma: em.alarma,
+                isAtentado: em.isAtentado || false,
                 logs: em.logs || {},
                 fecha_termino: new Date().toISOString()
             };
@@ -613,37 +643,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // links whatsapp gps
-    let externalGpsMarker = null;
+    // LINKS WHATSAPP Y SMS GPS
     let currentLinkId = null;
 
-    document.getElementById('btn-link-gps').addEventListener('click', () => {
+    function generarLinkGPS(metodo) {
         currentLinkId = Math.floor(Math.random() * 10000).toString();
-        
         let urlBase = window.location.origin + window.location.pathname.replace('central.html', '');
         let linkFinal = `${urlBase}loc.html?id=${currentLinkId}`;
         
-        navigator.clipboard.writeText(linkFinal).then(() => {
-            alert(`Link copiado al portapapeles:\n${linkFinal}\n\nPéguelo en WhatsApp. El mapa se marcará solo cuando el usuario lo abra.`);
-            
-            onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    appState.isMarkingMode = false;
-                    map.getContainer().style.cursor = '';
-                    document.getElementById('btn-manual-mark').style.backgroundColor = 'var(--c-blue)';
-                    document.getElementById('btn-manual-mark').innerText = 'MARCAR UBICACIÓN (RURAL)';
-                    
-                    document.getElementById('address-input').value = "UBICACIÓN OBTENIDA VÍA LINK GPS";
-                    handleLocationSelection([data.lat, data.lng]);
-                    
-                    alert("¡El usuario ha compartido su ubicación con éxito!");
+        let mensaje = `🚨 *Bomberos Nueva Imperial* 🚨\nPara enviar la unidad de emergencia al lugar exacto, necesitamos su ubicación.\n\nHaga clic en el siguiente enlace y presione "ENVIAR MI UBICACIÓN":\n${linkFinal}`;
+        
+        // Copia el enlace al portapapeles por seguridad
+        navigator.clipboard.writeText(linkFinal).catch(err => console.error('Falla copiado: ', err));
+
+        // Ejecuta WhatsApp o SMS según el botón presionado
+        if (metodo === 'wa') {
+            window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+        } else if (metodo === 'sms') {
+            window.open(`sms:?body=${encodeURIComponent(mensaje)}`, '_self');
+        }
+
+        // Escucha en tiempo real cuando el usuario envíe su GPS
+        onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                appState.isMarkingMode = false;
+                map.getContainer().style.cursor = '';
+                
+                let btnManual = document.getElementById('btn-manual-mark');
+                if (btnManual) {
+                    btnManual.style.backgroundColor = 'var(--bg-panel)';
+                    btnManual.innerText = '[ MARCAR RURAL ]';
                 }
-            });
-        }).catch(err => {
-            console.error('falla copiado: ', err);
-            alert("No se pudo copiar. Hágalo a mano: " + linkFinal);
+                
+                document.getElementById('address-input').value = "UBICACIÓN OBTENIDA VÍA LINK GPS";
+                handleLocationSelection([data.lat, data.lng]);
+                
+                alert("¡El usuario ha compartido su ubicación con éxito!");
+            }
         });
-    });
+    }
+
+    // Escuchadores de los botones actualizados
+    document.getElementById('btn-link-gps-wa')?.addEventListener('click', () => generarLinkGPS('wa'));
+    document.getElementById('btn-link-gps-sms')?.addEventListener('click', () => generarLinkGPS('sms'));
 });

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central 1 - Despachos</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Central 1 - Despachos</title>
+  <meta name="theme-color" content="#11131C">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="central-body">
 
@@ -271,6 +273,7 @@
             });
 
             try {
+                // Guarda directo en emergencias_activas para que lo lea Central 2 y Voluntarios
                 await addDoc(collection(db, "emergencias_activas"), {
                     code: selectedClave,
                     alarma: alarma,
@@ -327,7 +330,7 @@
                         <span style="color:var(--text-muted); font-size:0.85rem; font-weight:bold;">${timeStr} Hrs</span>
                     </div>
                     <p><strong>Lugar:</strong> ${data.address}</p>
-                    <p><strong>Unidades:</strong> ${data.units.join(', ')}</p>
+                    <p><strong>Unidades:</strong> ${(data.units || []).join(', ')}</p>
                     ${data.isAtentado ? '<p style="color:var(--c-red); font-weight:bold; font-size:0.9rem; margin-top:5px;">⚠️ POSIBLE ATENTADO</p>' : ''}
                     <button class="btn-destructive" style="margin-top:10px; padding:8px;" onclick="cerrarEmergencia('${emId}')">CERRAR (6-10 FINAL)</button>
                 `;
@@ -359,25 +362,31 @@
             const currentLinkId = Math.floor(Math.random() * 10000).toString();
             const urlBase = window.location.origin + window.location.pathname.replace('central.html', '');
             const linkFinal = `${urlBase}loc.html?id=${currentLinkId}`;
+            const mensaje = `🚨 *Bomberos Nueva Imperial* 🚨\nPara enviar la unidad de emergencia al lugar exacto, necesitamos su ubicación.\n\nHaga clic en el siguiente enlace y presione "ENVIAR MI UBICACIÓN":\n${linkFinal}`;
             
-            navigator.clipboard.writeText(linkFinal).then(() => {
-                alert(`Link de Localización copiado al portapapeles:\n\n${linkFinal}\n\nPéguelo en ${metodo === 'wa' ? 'WhatsApp' : 'SMS'}. El mapa se actualizará solo cuando el usuario acepte compartir.`);
-                
-                onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        document.getElementById('direccion').value = "UBICACIÓN OBTENIDA VÍA LINK GPS";
-                        selectedCoords = [data.lat, data.lng]; 
-                        map.setView(selectedCoords, 17);
-                        if (dispatchMarker) map.removeLayer(dispatchMarker);
-                        dispatchMarker = L.marker(selectedCoords, {
-                            icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
-                        }).addTo(map).bindPopup("<b>ALERTA</b><br>Ubicación reportada").openPopup();
-                        alert("¡El usuario ha compartido su ubicación con éxito!");
-                    }
-                });
-            }).catch(err => {
-                alert("No se pudo copiar el link automáticamente. Cópielo a mano: " + linkFinal);
+            // Copiar enlace al portapapeles
+            navigator.clipboard.writeText(linkFinal).catch(err => console.error(err));
+            
+            // Abrir App correspondiente
+            if (metodo === 'wa') {
+                window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+            } else if (metodo === 'sms') {
+                window.open(`sms:?body=${encodeURIComponent(mensaje)}`, '_self');
+            }
+            
+            // Escuchar respuesta GPS
+            onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('direccion').value = "UBICACIÓN OBTENIDA VÍA LINK GPS";
+                    selectedCoords = [data.lat, data.lng]; 
+                    map.setView(selectedCoords, 17);
+                    if (dispatchMarker) map.removeLayer(dispatchMarker);
+                    dispatchMarker = L.marker(selectedCoords, {
+                        icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
+                    }).addTo(map).bindPopup("<b>ALERTA</b><br>Ubicación reportada").openPopup();
+                    alert("¡El usuario ha compartido su ubicación con éxito!");
+                }
             });
         }
     </script>
