@@ -1,0 +1,17 @@
+{
+  "name": "Alertas Bomberos",
+  "short_name": "Alertas",
+  "description": "App de notificaciones para voluntarios.",
+  "start_url": "./voluntarios.html",
+  "display": "standalone",
+  "background_color": "#F9F9F9",
+  "theme_color": "#F9F9F9",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/784/784115.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
