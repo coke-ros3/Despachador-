@@ -77,7 +77,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // Añadido setDoc en las importaciones
+        import { getFirestore, collection, onSnapshot, serverTimestamp, doc, updateDoc, getDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // Configuración Firebase
         const firebaseConfig = {
@@ -112,7 +113,7 @@
             document.getElementById('s-destino').value = '';
         };
 
-        // INICIAR UN NUEVO TRÁMITE (6-X)
+        // INICIAR UN NUEVO TRÁMITE (6-X) CORREGIDO PARA EL GYRAS
         window.iniciarServicio = async function() {
             const clave = document.getElementById('s-clave').value;
             const unidad = document.getElementById('s-unidad').value;
@@ -128,7 +129,12 @@
             initialLogs[unidad] = { "6-0": "", "6-10": "", "km": "", "combustible": "" };
 
             try {
-                await addDoc(collection(db, "emergencias_activas"), {
+                // Generamos el ID numérico
+                const emIdNum = Date.now();
+
+                // Forzamos el ID usando setDoc
+                await setDoc(doc(db, "emergencias_activas", emIdNum.toString()), {
+                    id: emIdNum, // Guardamos el ID dentro
                     code: clave,
                     alarma: 0,
                     address: destino,
@@ -151,7 +157,7 @@
             container.innerHTML = '';
             
             if (snapshot.empty) {
-                container.innerHTML = '<div class="c2-empty">SISTEMA DESPEJADO. NO HAY UNIDADES DESPACHADAS.</div>';
+                container.innerHTML = '<div class="c2-empty" style="color: var(--text-muted); padding: 20px; font-weight: bold;">SISTEMA DESPEJADO. NO HAY UNIDADES DESPACHADAS.</div>';
                 return;
             }
 
@@ -177,7 +183,7 @@
 
                 // Botón exclusivo para cerrar Servicios Rápidos
                 if (isServicio) {
-                    cardHtml += `<button style="background: ${themeColor}; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase;" onclick="cerrarServicio('${emId}')">CERRAR Y ENVIAR AL GYRAS (6-10 FINAL)</button>`;
+                    cardHtml += `<button style="background: ${themeColor}; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%;" onclick="cerrarServicio('${emId}')">CERRAR Y ENVIAR AL GYRAS (6-10 FINAL)</button>`;
                 }
 
                 card.innerHTML = cardHtml;
@@ -186,7 +192,7 @@
                 const unitsContainer = document.getElementById(`units-container-${emId}`);
                 const currentLogs = data.logs || {};
 
-                data.units.forEach(unit => {
+                (data.units || []).forEach(unit => {
                     const unitLogs = currentLogs[unit] || {};
                     let unitRow = document.createElement('div');
                     unitRow.className = 'c2-unit-row';
@@ -195,7 +201,7 @@
                         const timeVal = unitLogs[claveLabel];
                         const isMarked = timeVal && timeVal !== "";
                         return `<button class="btn-c2-time ${isMarked ? 'marcado' : ''}" data-clave="${claveLabel}" onclick="marcarTiempo('${emId}', '${unit}', '${claveLabel}')">
-                                    ${claveLabel} <span>${isMarked ? timeVal : '--:--'}</span>
+                                    ${claveLabel} <span style="font-size: 1.1rem; margin-top: 5px;">${isMarked ? timeVal : '--:--'}</span>
                                 </button>`;
                     };
 
@@ -222,7 +228,7 @@
                     }
 
                     unitRow.innerHTML = `
-                        <span class="c2-unit-name" style="color: ${themeColor};">UNIDAD ${unit}</span>
+                        <span class="c2-unit-name" style="color: ${themeColor}; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px;">UNIDAD ${unit}</span>
                         ${botonesHtml}
                     `;
                     unitsContainer.appendChild(unitRow);
@@ -244,7 +250,7 @@
             }
         };
 
-        // CERRAR UN SERVICIO (Mueve el doc de activas al historial GYRAS)
+        // CERRAR UN SERVICIO CORREGIDO PARA EL GYRAS
         window.cerrarServicio = async function(id) {
             if(confirm('¿Confirmar el 6-10 final y archivar este trámite en el GYRAS?')) {
                 try {
@@ -252,7 +258,14 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        await addDoc(collection(db, "historial_emergencias"), data);
+                        
+                        // Añadimos la fecha de término para el GYRAS
+                        data.fecha_termino = new Date().toISOString();
+                        
+                        // Archiva usando setDoc para mantener el ID numérico
+                        await setDoc(doc(db, "historial_emergencias", id.toString()), data);
+                        
+                        // Borramos de activas
                         await deleteDoc(docRef);
                     }
                 } catch(e) {

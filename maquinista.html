@@ -72,7 +72,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -142,51 +142,51 @@
                 btn.classList.add('selected');
             };
 
-            onSnapshot(doc(db, "operaciones", "despacho_actual"), (docSnap) => {
+            const q = query(collection(db, "emergencias_activas"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
                 alertasContainer.innerHTML = '';
                 
-                if (docSnap.exists()) {
-                    const em = docSnap.data();
-                    let dateObj = new Date(em.id);
-                    let fecha = dateObj.toISOString().split('T')[0];
-                    let hora = dateObj.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute: '2-digit' });
-                    
-                    let desc = descripciones[em.code] || 'EMERGENCIA';
-                    let titulo = `${em.code} ${desc}`;
-                    if(em.alarma > 0) titulo = `${em.alarma}A ALARMA DE INCENDIO`;
-                    
-                    let htmlCard = `
-                        <div class="alert-card">
-                            <div class="alert-head">
-                                <span class="icon-bell">🔔</span>
-                                <h2>${titulo}</h2>
-                                <span class="icon-phone">📱</span>
-                            </div>
-                            <div class="alert-body">
-                                <div class="alert-inst">Bomberos Nueva Imperial</div>
-                                
-                                <div class="action-row">
-                                    <button class="btn-asiste" onclick="toggleAsistencia(this, 'si')">
-                                        <span class="big-icon">✔</span>ASISTE
-                                    </button>
-                                    <div class="time-block">
-                                        <span class="time-date">${fecha}</span>
-                                        <span class="time-clock">${hora}</span>
+                if (!snapshot.empty) {
+                    snapshot.forEach(docSnap => {
+                        const em = docSnap.data();
+                        let dateObj = new Date(em.id);
+                        let fecha = dateObj.toISOString().split('T')[0];
+                        let hora = dateObj.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                        
+                        let desc = descripciones[em.code] || 'EMERGENCIA';
+                        let titulo = `${em.code} ${desc}`;
+                        if(em.alarma > 0) titulo = `${em.alarma}A ALARMA DE INCENDIO`;
+                        
+                        let htmlCard = `
+                            <div class="alert-card">
+                                <div class="alert-head">
+                                    <span class="icon-bell">🔔</span>
+                                    <h2>${titulo}</h2>
+                                    <span class="icon-phone">📱</span>
+                                </div>
+                                <div class="alert-body">
+                                    <div class="alert-inst">Bomberos Nueva Imperial</div>
+                                    <div class="action-row">
+                                        <button class="btn-asiste" onclick="toggleAsistencia(this, 'si')">
+                                            <span class="big-icon">✔</span>ASISTE
+                                        </button>
+                                        <div class="time-block">
+                                            <span class="time-date">${fecha}</span>
+                                            <span class="time-clock">${hora}</span>
+                                        </div>
+                                        <button class="btn-no-asiste" onclick="toggleAsistencia(this, 'no')">
+                                            <span class="big-icon">✖</span>NO ASISTE
+                                        </button>
                                     </div>
-                                    <button class="btn-no-asiste" onclick="toggleAsistencia(this, 'no')">
-                                        <span class="big-icon">✖</span>NO ASISTE
-                                    </button>
-                                </div>
-
-                                <div class="alert-details">
-                                    <div class="alert-obs">${em.obs || 'Sin observaciones'}</div>
-                                    <div class="alert-address">${em.address} (Unidades: ${em.units.join(', ')})</div>
+                                    <div class="alert-details">
+                                        <div class="alert-obs">${em.obs || 'Sin observaciones'}</div>
+                                        <div class="alert-address">${em.address} (Unidades: ${(em.units || []).join(', ')})</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                    alertasContainer.innerHTML = htmlCard;
-                    
+                        `;
+                        alertasContainer.innerHTML += htmlCard;
+                    });
                     document.querySelector('.nav-item').click(); 
                 } else {
                     alertasContainer.innerHTML = '<div class="empty-state-maq">No hay emergencias activas en este momento.</div>';

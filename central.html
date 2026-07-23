@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Central 1 - Despachos</title>
-  <meta name="theme-color" content="#11131C">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central 1 - Despachos</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="central-body">
 
@@ -125,7 +123,7 @@
             </div>
 
             <div class="active-emergencies-container" id="active-emergencies-list" style="margin-top: 15px;">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -144,7 +142,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // CORRECCIÓN 1: Se agrega setDoc a las importaciones
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -236,8 +235,12 @@
         document.addEventListener('click', (e) => { if (e.target !== addressInput) suggestionsList.style.display = 'none'; });
 
         window.selectClave = function(btn) {
-            document.querySelectorAll('.clave-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.clave-btn').forEach(b => {
+                b.classList.remove('selected');
+                b.style.backgroundColor = 'var(--bg-panel)';
+            });
             btn.classList.add('selected');
+            btn.style.backgroundColor = 'var(--c-blue)';
             selectedClave = btn.getAttribute('data-code');
         };
 
@@ -246,8 +249,10 @@
             const unitName = btn.innerText;
             if (btn.classList.contains('selected')) {
                 selectedUnits.push(unitName);
+                btn.style.backgroundColor = 'var(--c-orange)';
             } else {
                 selectedUnits = selectedUnits.filter(u => u !== unitName);
+                btn.style.backgroundColor = 'var(--bg-dark)';
             }
         };
 
@@ -273,8 +278,12 @@
             });
 
             try {
-                // Guarda directo en emergencias_activas para que lo lea Central 2 y Voluntarios
-                await addDoc(collection(db, "emergencias_activas"), {
+                // CORRECCIÓN 2: Generamos el ID numérico obligatorio para el GYRAS
+                const emIdNum = Date.now(); 
+
+                // Usamos setDoc para forzar que el documento tenga ese ID numérico
+                await setDoc(doc(db, "emergencias_activas", emIdNum.toString()), {
+                    id: emIdNum, // Guardamos el ID dentro del documento también para cruzar datos
                     code: selectedClave,
                     alarma: alarma,
                     address: fullAddress,
@@ -286,6 +295,7 @@
                     timestamp: serverTimestamp()
                 });
 
+                // Limpiar formulario
                 document.getElementById('direccion').value = '';
                 document.getElementById('esquina').value = '';
                 document.getElementById('numero').value = '';
@@ -297,7 +307,15 @@
                 selectedUnits = [];
                 selectedCoords = null;
                 if (dispatchMarker) { map.removeLayer(dispatchMarker); dispatchMarker = null; }
-                document.querySelectorAll('.clave-btn, .unit-btn').forEach(b => b.classList.remove('selected'));
+                
+                document.querySelectorAll('.clave-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.style.backgroundColor = 'var(--bg-panel)';
+                });
+                document.querySelectorAll('.unit-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.style.backgroundColor = 'var(--bg-dark)';
+                });
                 
                 alert("¡Despacho realizado con éxito!");
             } catch (e) {
@@ -306,16 +324,23 @@
             }
         };
 
+        // Escuchar emergencias activas
         onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
             const container = document.getElementById('active-emergencies-list');
-            container.innerHTML = '';
+            // Mantener el título original
+            container.innerHTML = '<h2 style="font-size: 1rem; margin-bottom: 10px; color: var(--text-light);">Emergencias Activas</h2>';
             
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 const emId = docSnap.id;
                 
                 let card = document.createElement('div');
-                card.className = `emergency-card alarma-${data.alarma}`;
+                card.style.backgroundColor = 'var(--bg-panel)';
+                card.style.border = '1px solid var(--border-color)';
+                card.style.borderLeft = `4px solid ${data.alarma > 0 ? 'var(--c-orange)' : 'var(--c-red)'}`;
+                card.style.borderRadius = '6px';
+                card.style.padding = '15px';
+                card.style.marginBottom = '10px';
                 
                 let timeStr = "--:--";
                 if(data.timestamp) {
@@ -325,14 +350,14 @@
                 let headerText = `${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}`;
                 
                 card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3>${headerText}</h3>
-                        <span style="color:var(--text-muted); font-size:0.85rem; font-weight:bold;">${timeStr} Hrs</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-light);">${headerText}</h3>
+                        <span style="color:var(--text-muted); font-size:0.85rem; font-weight:bold;">${timeStr}</span>
                     </div>
-                    <p><strong>Lugar:</strong> ${data.address}</p>
-                    <p><strong>Unidades:</strong> ${(data.units || []).join(', ')}</p>
-                    ${data.isAtentado ? '<p style="color:var(--c-red); font-weight:bold; font-size:0.9rem; margin-top:5px;">⚠️ POSIBLE ATENTADO</p>' : ''}
-                    <button class="btn-destructive" style="margin-top:10px; padding:8px;" onclick="cerrarEmergencia('${emId}')">CERRAR (6-10 FINAL)</button>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Lugar:</strong> ${data.address}</p>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Unidades:</strong> ${(data.units || []).join(', ')}</p>
+                    ${data.isAtentado ? '<p style="color:var(--c-red); font-weight:bold; font-size:0.9rem; margin-top:5px; margin-bottom:0;">⚠️ POSIBLE ATENTADO</p>' : ''}
+                    <button style="margin-top:10px; width: 100%; padding:8px; background: transparent; border: 1px solid var(--c-red); color: var(--c-red); border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="cerrarEmergencia('${emId}')">CERRAR (6-10 FINAL)</button>
                 `;
                 container.appendChild(card);
             });
@@ -345,7 +370,14 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        await addDoc(collection(db, "historial_emergencias"), data);
+                        
+                        // CORRECCIÓN 3: Le agregamos la fecha de término exacta
+                        data.fecha_termino = new Date().toISOString();
+                        
+                        // Guardamos en el historial GYRAS respetando su ID numérico original
+                        await setDoc(doc(db, "historial_emergencias", id.toString()), data);
+                        
+                        // Borramos de activas
                         await deleteDoc(docRef);
                     }
                 } catch(e) {
@@ -355,6 +387,7 @@
             }
         };
 
+        // Lógica de WhatsApp y SMS
         document.getElementById('btn-link-gps-wa').addEventListener('click', () => generarLinkGPS('wa'));
         document.getElementById('btn-link-gps-sms').addEventListener('click', () => generarLinkGPS('sms'));
 
