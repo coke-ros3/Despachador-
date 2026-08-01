@@ -77,7 +77,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // Añadido setDoc en las importaciones
         import { getFirestore, collection, onSnapshot, serverTimestamp, doc, updateDoc, getDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // Configuración Firebase
@@ -113,7 +112,7 @@
             document.getElementById('s-destino').value = '';
         };
 
-        // INICIAR UN NUEVO TRÁMITE (6-X) CORREGIDO PARA EL GYRAS
+        // INICIAR UN NUEVO TRÁMITE (6-X)
         window.iniciarServicio = async function() {
             const clave = document.getElementById('s-clave').value;
             const unidad = document.getElementById('s-unidad').value;
@@ -124,17 +123,14 @@
                 return;
             }
 
-            // Inicializamos los logs en blanco.
+            // Inicializamos los logs en blanco
             let initialLogs = {};
             initialLogs[unidad] = { "6-0": "", "6-10": "", "km": "", "combustible": "" };
 
             try {
-                // Generamos el ID numérico
                 const emIdNum = Date.now();
-
-                // Forzamos el ID usando setDoc
                 await setDoc(doc(db, "emergencias_activas", emIdNum.toString()), {
-                    id: emIdNum, // Guardamos el ID dentro
+                    id: emIdNum,
                     code: clave,
                     alarma: 0,
                     address: destino,
@@ -165,7 +161,6 @@
                 const data = docSnap.data();
                 const emId = docSnap.id;
                 
-                // Diferenciar visualmente: Emergencias (Rojo) y Servicios (Naranja)
                 const isServicio = data.code.startsWith('6-');
                 const themeColor = isServicio ? 'var(--c-orange)' : 'var(--c-red)';
                 
@@ -181,7 +176,6 @@
                     <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;"></div>
                 `;
 
-                // Botón exclusivo para cerrar Servicios Rápidos
                 if (isServicio) {
                     cardHtml += `<button style="background: ${themeColor}; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%;" onclick="cerrarServicio('${emId}')">CERRAR Y ENVIAR AL GYRAS (6-10 FINAL)</button>`;
                 }
@@ -205,7 +199,6 @@
                                 </button>`;
                     };
 
-                    // Si es emergencia muestra todos los botones. Si es servicio, muestra solo 6-0 y 6-10.
                     let botonesHtml = '';
                     if (isServicio) {
                         botonesHtml = `
@@ -236,21 +229,38 @@
             });
         });
 
-        // MARCADOR DE TIEMPOS
+        // MARCADOR DE TIEMPOS (ACTUALIZADO CON PROMPT PARA KILOMETRAJE)
         window.marcarTiempo = async function(emId, unit, clave) {
+            let kmLlegada = null;
+
+            // Si es un 6-10, pedimos el kilometraje antes de continuar
+            if (clave === '6-10') {
+                kmLlegada = prompt(`Ingrese el KM de llegada al cuartel para la unidad ${unit}:`);
+                // Si el usuario cancela el recuadro, abortamos la función
+                if (kmLlegada === null) return; 
+            }
+
             const now = new Date();
             const timeString = now.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute:'2-digit' });
             
             const docRef = doc(db, "emergencias_activas", emId);
             try {
-                await updateDoc(docRef, { [`logs.${unit}.${clave}`]: timeString });
+                // Preparamos los datos a enviar
+                let updates = { [`logs.${unit}.${clave}`]: timeString };
+                
+                // Si hay un kilometraje ingresado, lo sumamos a la actualización
+                if (kmLlegada !== null) {
+                    updates[`logs.${unit}.km`] = kmLlegada;
+                }
+
+                await updateDoc(docRef, updates);
             } catch(e) {
                 console.error("Error actualizando tiempo: ", e);
                 alert("Error de conexión al guardar la hora.");
             }
         };
 
-        // CERRAR UN SERVICIO CORREGIDO PARA EL GYRAS
+        // CERRAR UN SERVICIO Y ENVIAR AL GYRAS
         window.cerrarServicio = async function(id) {
             if(confirm('¿Confirmar el 6-10 final y archivar este trámite en el GYRAS?')) {
                 try {
@@ -259,13 +269,9 @@
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         
-                        // Añadimos la fecha de término para el GYRAS
                         data.fecha_termino = new Date().toISOString();
                         
-                        // Archiva usando setDoc para mantener el ID numérico
                         await setDoc(doc(db, "historial_emergencias", id.toString()), data);
-                        
-                        // Borramos de activas
                         await deleteDoc(docRef);
                     }
                 } catch(e) {
