@@ -142,7 +142,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // Añadida la importación de updateDoc para actualizar el nivel de alarma
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -351,11 +352,33 @@
                     <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Lugar:</strong> ${data.address}</p>
                     <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Unidades:</strong> ${(data.units || []).join(', ')}</p>
                     ${data.isAtentado ? '<p style="color:var(--c-red); font-weight:bold; font-size:0.9rem; margin-top:5px; margin-bottom:0;">⚠️ POSIBLE ATENTADO</p>' : ''}
+                    
+                    <div style="background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem;">NIVEL DE ALARMA:</label>
+                        <select onchange="actualizarAlarma('${emId}', this.value)" style="background: var(--bg-panel); color: white; border: 1px solid var(--border-color); padding: 5px; border-radius: 4px; font-weight: bold; outline: none; cursor: pointer;">
+                            <option value="0" ${data.alarma === 0 ? 'selected' : ''}>Despacho Inicial</option>
+                            <option value="1" ${data.alarma === 1 ? 'selected' : ''}>1ª Alarma</option>
+                            <option value="2" ${data.alarma === 2 ? 'selected' : ''}>2ª Alarma</option>
+                            <option value="3" ${data.alarma === 3 ? 'selected' : ''}>3ª Alarma</option>
+                        </select>
+                    </div>
+
                     <button style="margin-top:10px; width: 100%; padding:8px; background: transparent; border: 1px solid var(--c-red); color: var(--c-red); border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="cerrarEmergencia('${emId}')">FINALIZAR EMERGENCIA Y ARCHIVAR</button>
                 `;
                 container.appendChild(card);
             });
         });
+
+        // FUNCION PARA ACTUALIZAR LA ALARMA EN LA BASE DE DATOS
+        window.actualizarAlarma = async function(id, nuevaAlarma) {
+            try {
+                const docRef = doc(db, "emergencias_activas", id);
+                await updateDoc(docRef, { alarma: parseInt(nuevaAlarma) });
+            } catch(e) {
+                console.error("Error actualizando alarma:", e);
+                alert("Error de conexión al actualizar el nivel de alarma.");
+            }
+        };
 
         window.cerrarEmergencia = async function(id) {
             if(confirm('¿Está seguro de finalizar esta emergencia? Pasará automáticamente al historial GYRAS.')) {
