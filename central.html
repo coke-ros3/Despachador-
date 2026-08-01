@@ -35,16 +35,6 @@
                 <button class="clave-btn" data-code="10-15" onclick="selectClave(this)">10-15 SIMULACRO</button>
                 <button class="clave-btn" data-code="10-17" onclick="selectClave(this)">10-17 INUNDACIÓN</button>
             </div>
-            
-            <div style="margin-top: 10px;">
-                <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">NIVEL DE ALARMA</label>
-                <select id="alarma-select" style="margin-top: 5px; padding: 8px;">
-                    <option value="0">Despacho Inicial</option>
-                    <option value="1">1ª Alarma</option>
-                    <option value="2">2ª Alarma</option>
-                    <option value="3">3ª Alarma</option>
-                </select>
-            </div>
         </div>
 
         <div class="resizer" id="resizer-left"></div>
@@ -142,8 +132,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // CORRECCIÓN 1: Se agrega setDoc a las importaciones
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, serverTimestamp, doc, deleteDoc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -261,7 +250,6 @@
             const esquina = document.getElementById('esquina').value.toUpperCase();
             const numero = document.getElementById('numero').value.toUpperCase();
             const observaciones = document.getElementById('observaciones').value.toUpperCase();
-            const alarma = parseInt(document.getElementById('alarma-select').value);
             const isAtentado = document.getElementById('chk-atentado').checked;
             
             if (!selectedClave) return alert("Debe seleccionar una Clave 10-X");
@@ -278,14 +266,12 @@
             });
 
             try {
-                // CORRECCIÓN 2: Generamos el ID numérico obligatorio para el GYRAS
                 const emIdNum = Date.now(); 
 
-                // Usamos setDoc para forzar que el documento tenga ese ID numérico
                 await setDoc(doc(db, "emergencias_activas", emIdNum.toString()), {
-                    id: emIdNum, // Guardamos el ID dentro del documento también para cruzar datos
+                    id: emIdNum, 
                     code: selectedClave,
-                    alarma: alarma,
+                    alarma: 0, // Inicia siempre limpio como despacho inicial
                     address: fullAddress,
                     obs: observaciones,
                     isAtentado: isAtentado,
@@ -301,7 +287,6 @@
                 document.getElementById('numero').value = '';
                 document.getElementById('observaciones').value = '';
                 document.getElementById('chk-atentado').checked = false;
-                document.getElementById('alarma-select').value = "0";
                 
                 selectedClave = null;
                 selectedUnits = [];
@@ -324,10 +309,21 @@
             }
         };
 
+        // Cambiar nivel de alarma en una emergencia activa directamente
+        window.cambiarAlarma = async function(emId, nuevoNivel) {
+            try {
+                await updateDoc(doc(db, "emergencias_activas", emId), {
+                    alarma: parseInt(nuevoNivel)
+                });
+            } catch(e) {
+                console.error("Error al actualizar alarma: ", e);
+                alert("No se pudo actualizar el nivel de alarma.");
+            }
+        };
+
         // Escuchar emergencias activas
         onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
             const container = document.getElementById('active-emergencies-list');
-            // Mantener el título original
             container.innerHTML = '<h2 style="font-size: 1rem; margin-bottom: 10px; color: var(--text-light);">Emergencias Activas</h2>';
             
             snapshot.forEach((docSnap) => {
@@ -354,8 +350,20 @@
                         <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-light);">${headerText}</h3>
                         <span style="color:var(--text-muted); font-size:0.85rem; font-weight:bold;">${timeStr}</span>
                     </div>
-                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Lugar:</strong> ${data.address}</p>
-                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Unidades:</strong> ${(data.units || []).join(', ')}</p>
+                    <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Lugar:</strong> ${data.address}</p>
+                    <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: var(--text-muted);"><strong>Unidades:</strong> ${(data.units || []).join(', ')}</p>
+                    
+                    <!-- SELECTOR DE ALARMA ACTIVA (NUEVO) -->
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; background: var(--bg-dark); padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);">
+                        <label style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">ALARMA:</label>
+                        <select onchange="cambiarAlarma('${emId}', this.value)" style="flex: 1; padding: 4px; background: var(--bg-panel); color: white; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; font-weight: bold; outline: none; cursor: pointer;">
+                            <option value="0" ${data.alarma === 0 ? 'selected' : ''}>Despacho Inicial</option>
+                            <option value="1" ${data.alarma === 1 ? 'selected' : ''}>1ª Alarma</option>
+                            <option value="2" ${data.alarma === 2 ? 'selected' : ''}>2ª Alarma</option>
+                            <option value="3" ${data.alarma === 3 ? 'selected' : ''}>3ª Alarma</option>
+                        </select>
+                    </div>
+
                     ${data.isAtentado ? '<p style="color:var(--c-red); font-weight:bold; font-size:0.9rem; margin-top:5px; margin-bottom:0;">⚠️ POSIBLE ATENTADO</p>' : ''}
                     <button style="margin-top:10px; width: 100%; padding:8px; background: transparent; border: 1px solid var(--c-red); color: var(--c-red); border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="cerrarEmergencia('${emId}')">CERRAR (6-10 FINAL)</button>
                 `;
@@ -370,14 +378,8 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        
-                        // CORRECCIÓN 3: Le agregamos la fecha de término exacta
                         data.fecha_termino = new Date().toISOString();
-                        
-                        // Guardamos en el historial GYRAS respetando su ID numérico original
                         await setDoc(doc(db, "historial_emergencias", id.toString()), data);
-                        
-                        // Borramos de activas
                         await deleteDoc(docRef);
                     }
                 } catch(e) {
@@ -397,17 +399,14 @@
             const linkFinal = `${urlBase}loc.html?id=${currentLinkId}`;
             const mensaje = `🚨 *Bomberos Nueva Imperial* 🚨\nPara enviar la unidad de emergencia al lugar exacto, necesitamos su ubicación.\n\nHaga clic en el siguiente enlace y presione "ENVIAR MI UBICACIÓN":\n${linkFinal}`;
             
-            // Copiar enlace al portapapeles
             navigator.clipboard.writeText(linkFinal).catch(err => console.error(err));
             
-            // Abrir App correspondiente
             if (metodo === 'wa') {
                 window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
             } else if (metodo === 'sms') {
                 window.open(`sms:?body=${encodeURIComponent(mensaje)}`, '_self');
             }
             
-            // Escuchar respuesta GPS
             onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
