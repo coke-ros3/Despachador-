@@ -136,33 +136,126 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 .alert-obs { color: var(--c-orange); margin-bottom: 5px; font-weight: bold; }
 
 /* =========================================================
-   5. APP VOLUNTARIOS (DISEÑO NATIVO iOS BLANCO)
+   5. APP VOLUNTARIOS (NUEVO DISEÑO MODERNO iOS)
    ========================================================= */
-body.voluntarios-body { background-color: #FFFFFF; color: #000000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-.vol-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #FFFFFF; transition: transform 0.3s cubic-bezier(0.36, 0.66, 0.04, 1); display: flex; flex-direction: column; }
-.ios-nav { background: #F9F9F9; padding: 45px 15px 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #B2B2B2; position: sticky; top: 0; z-index: 100; }
-.ios-nav-btn { color: #007AFF; font-size: 1.05rem; background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 400; }
-.ios-nav-title { font-weight: 600; font-size: 1.1rem; color: #000; }
-.ios-list { flex: 1; overflow-y: auto; background: #FFFFFF; }
-.ios-list-item { padding: 12px 15px; border-bottom: 1px solid #E5E5EA; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.ios-list-item:active { background-color: #E5E5EA; }
-.ios-list-content { flex: 1; padding-right: 15px; }
-.ios-list-date { color: #8E8E93; font-size: 0.75rem; margin-bottom: 4px; display: block; }
-.ios-list-title { font-size: 0.95rem; font-weight: 400; color: #000; text-transform: uppercase; line-height: 1.3; }
-.ios-list-arrow { color: #C7C7CC; font-size: 1.2rem; }
-.detail-header { text-align: center; padding: 15px; background: #FFFFFF; }
-.detail-header span.shield { font-size: 40px; display: block; margin-bottom: 5px; }
-.detail-header h2 { font-size: 1.3rem; font-weight: 300; color: #333; margin: 0; }
-.blue-banner { background-color: #34A0D8; color: white; padding: 12px 15px; text-align: center; font-weight: 600; font-size: 0.95rem; text-transform: uppercase; }
-.detail-info { padding: 15px; font-size: 0.9rem; color: #000; line-height: 1.6; text-align: center; border-bottom: 1px solid #E5E5EA; }
-.unit-badge-container { padding: 10px 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.unit-badge-dark { background-color: #3b4252; color: white; padding: 6px 15px; border-radius: 4px; font-weight: 500; font-size: 0.9rem; }
-.map-buttons-row { display: flex; gap: 10px; padding: 10px 15px; background: #FFFFFF; border-bottom: 1px solid #E5E5EA; }
-.btn-map-grey { flex: 1; background: #EFEFF4; border: none; padding: 10px; border-radius: 6px; font-weight: 500; color: #555; font-size: 0.85rem; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; text-decoration: none; }
-.btn-map-grey:active { background: #D1D1D6; }
-.map-box { flex: 1; min-height: 300px; position: relative; background: #E5E5EA; }
+body.voluntarios-body { 
+    background-color: #0A1931; /* Fondo oscuro cabecera */
+    color: #000000; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    margin: 0; padding: 0; overflow-x: hidden; 
+}
+
+.vol-view { 
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+    background: #0A1931; 
+    transition: transform 0.3s cubic-bezier(0.36, 0.66, 0.04, 1); 
+    display: flex; flex-direction: column; 
+}
+
+/* Navegación Superior Oscura */
+.ios-nav-dark { 
+    padding: 50px 15px 15px 15px; 
+    display: flex; justify-content: space-between; align-items: center; 
+    position: sticky; top: 0; z-index: 100; 
+}
+.ios-nav-btn-dark { 
+    color: #FFFFFF; font-size: 1.05rem; background: none; border: none; 
+    padding: 0; cursor: pointer; display: flex; align-items: center; gap: 5px; 
+}
+.ios-nav-title-dark { font-weight: 600; font-size: 1.1rem; color: #FFFFFF; }
+
+/* Contenedor Blanco Redondeado (El "Papel") */
+.vol-view-content { 
+    background: #F2F2F7; /* Gris muy claro típico de iOS */
+    border-radius: 20px 20px 0 0; 
+    flex: 1; overflow-y: auto; 
+    padding-top: 20px;
+}
+
+/* Filtros (Feed) */
+.feed-filters {
+    display: flex; gap: 10px; padding: 0 20px 15px 20px; align-items: center; justify-content: space-between;
+}
+.filter-pill {
+    background: #FFFFFF; border: none; padding: 6px 14px; border-radius: 20px;
+    font-size: 0.85rem; color: #8E8E93; font-weight: 600; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.filter-pill.active { background: #0A84FF; color: #FFFFFF; }
+.filter-icon-btn {
+    background: #FFFFFF; border: none; width: 32px; height: 32px; border-radius: 50%;
+    color: #8E8E93; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Tarjetas Feed */
+.ios-card-feed {
+    background: #FFFFFF; margin: 0 20px 12px 20px; border-radius: 12px;
+    padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    cursor: pointer; position: relative;
+}
+.ios-card-feed:active { background-color: #F9F9F9; }
+.card-feed-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.card-feed-dot { width: 8px; height: 8px; border-radius: 50%; }
+.card-feed-date { color: #8E8E93; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.card-feed-body { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.card-feed-title { font-size: 0.95rem; font-weight: 600; color: #1C1C1E; line-height: 1.4; padding-right: 15px; }
+.card-feed-arrow { color: #C7C7CC; font-size: 1.5rem; line-height: 1; }
+.card-feed-units { display: inline-block; background: #F2F2F7; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; color: #1C1C1E; }
+
+/* Vista Detalle: Elementos */
+.det-header-modern { text-align: center; margin-bottom: 20px; }
+.det-header-modern h2 { font-size: 1.2rem; font-weight: 600; color: #1C1C1E; margin: 10px 0 2px 0; }
+.det-header-modern p { font-size: 0.85rem; color: #8E8E93; margin: 0; }
+
+.det-blue-banner {
+    background: #0A58CA; /* Azul corporativo fuerte */
+    border-radius: 12px; padding: 15px; color: white;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px; box-shadow: 0 4px 12px rgba(10, 88, 202, 0.3);
+}
+.banner-left { display: flex; flex-direction: column; gap: 4px; flex: 1; padding-right: 15px; }
+.banner-clave { font-size: 1.3rem; font-weight: 800; }
+.banner-dir { font-size: 0.85rem; font-weight: 500; line-height: 1.3; }
+.banner-right { font-size: 1.1rem; font-weight: 700; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 6px; text-align: center; }
+
+.det-card-block {
+    background: #FFFFFF; border-radius: 12px; padding: 15px;
+    margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.det-card-title { font-size: 0.9rem; color: #8E8E93; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+.det-card-content { font-size: 0.95rem; color: #1C1C1E; line-height: 1.5; }
+
+/* Grilla unidades simplificada */
+.det-units-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.unit-pill-simple { 
+    background: #F2F2F7; border: 1px solid #E5E5EA; border-radius: 8px; 
+    padding: 8px 15px; display: flex; align-items: center; color: #1C1C1E; font-size: 0.9rem; 
+}
+
+/* Botones Navegación Mapa */
+.map-buttons-row-modern { display: flex; gap: 10px; margin-bottom: 15px; }
+.btn-map-modern { 
+    flex: 1; background: #FFFFFF; border: none; border-radius: 12px; padding: 12px 5px;
+    font-size: 0.75rem; color: #1C1C1E; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03); text-align: center; line-height: 1.4;
+}
+.btn-map-modern:active { background: #E5E5EA; }
+
+.map-box-modern { 
+    height: 250px; border-radius: 12px; overflow: hidden; position: relative; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 80px; 
+}
 #map-voluntarios { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-.blue-footer { background-color: #34A0D8; color: white; padding: 10px; text-align: center; font-size: 0.85rem; }
+
+/* Footer Oscuro Flotante */
+.det-footer-pill {
+    position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+    background: #0A1931; color: #FFFFFF; padding: 10px 20px; border-radius: 30px;
+    font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 100;
+}
+
 
 /* =========================================================
    6. COMPARTIR UBICACIÓN (LOC.HTML)
