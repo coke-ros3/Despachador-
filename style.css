@@ -27,442 +27,116 @@
 /* =========================================================
    ESTILOS BASE
    ========================================================= */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    font-family: var(--font-main);
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background-color: var(--bg-dark); color: var(--text-light); font-family: var(--font-main); }
 
 /* =========================================================
    1. PORTAL DE INICIO (INDEX.HTML)
    ========================================================= */
-.index-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px;
-}
-
-.index-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.index-header h1 {
-    font-size: 2rem;
-    color: var(--text-light);
-    margin-bottom: 10px;
-}
-
-.index-header p {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-}
-
-.index-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    width: 100%;
-    max-width: 1000px;
-}
-
-.index-card {
-    background-color: var(--bg-panel);
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    padding: 25px;
-    text-decoration: none;
-    color: var(--text-light);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.index-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-}
-
-.index-card h2 {
-    font-size: 1.3rem;
-    margin-bottom: 10px;
-}
-
-.index-card p {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-}
-
+.index-body { display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+.index-header { text-align: center; margin-bottom: 40px; }
+.index-header h1 { font-size: 2rem; color: var(--text-light); margin-bottom: 10px; }
+.index-header p { color: var(--text-muted); font-size: 1.1rem; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+.index-card { background-color: var(--bg-panel); border: 2px solid var(--border-color); border-radius: 8px; padding: 25px; text-decoration: none; color: var(--text-light); transition: transform 0.2s, box-shadow 0.2s; }
+.index-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
+.index-card h2 { font-size: 1.3rem; margin-bottom: 10px; }
+.index-card p { color: var(--text-muted); font-size: 0.95rem; }
 .card-cad { border-color: var(--c-red); }
 .card-gyras { border-color: var(--c-blue); }
 .card-maq { border-color: var(--c-green); }
 .card-mdt { border-color: var(--c-yellow); }
 
 /* =========================================================
-   2. CENTRAL DE ALARMAS 1 (CENTRAL.HTML) - DISEÑO CLÁSICO
+   2. CENTRAL DE ALARMAS 1 (CENTRAL.HTML)
    ========================================================= */
-.central-body {
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.topbar {
-    background-color: var(--bg-panel);
-    border-bottom: 1px solid var(--border-color);
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.topbar h1 {
-    font-size: 1.2rem;
-    color: var(--text-light);
-}
-
-#clock {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--c-orange);
-}
-
-.triptych {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-.panel {
-    background-color: var(--bg-dark);
-    overflow-y: auto;
-    padding: 15px;
-}
-
+.central-body { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+.topbar { background-color: var(--bg-panel); border-bottom: 1px solid var(--border-color); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+.topbar h1 { font-size: 1.2rem; color: var(--text-light); }
+#clock { font-size: 1.2rem; font-weight: bold; color: var(--c-orange); }
+.triptych { display: flex; flex: 1; overflow: hidden; }
+.panel { background-color: var(--bg-dark); overflow-y: auto; padding: 15px; }
 .panel-left { width: var(--left-w); min-width: 220px; }
 .panel-center { flex: 1; min-width: 300px; position: relative; }
 .panel-right { width: var(--right-w); min-width: 250px; background-color: var(--bg-panel); border-left: 1px solid var(--border-color); }
-
-.resizer {
-    width: 5px;
-    background-color: var(--border-color);
-    cursor: col-resize;
-}
-
-.claves-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.clave-btn {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    color: var(--text-light);
-    padding: 10px;
-    text-align: left;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-
+.resizer { width: 5px; background-color: var(--border-color); cursor: col-resize; }
+.claves-list { display: flex; flex-direction: column; gap: 8px; }
+.clave-btn { background-color: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-light); padding: 10px; text-align: left; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
 .clave-btn:hover { background-color: #2a2a3a; }
 .clave-btn.selected { background-color: var(--c-red); border-color: var(--c-red); }
-
-.dispatch-form-layout {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    gap: 15px;
-}
-
-.mini-map {
-    flex: 1;
-    min-height: 200px;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
+.dispatch-form-layout { display: flex; flex-direction: column; height: 100%; gap: 15px; }
+.mini-map { flex: 1; min-height: 200px; border: 2px solid var(--border-color); border-radius: 8px; overflow: hidden; }
 #map { width: 100%; height: 100%; }
-
-.gps-btn-group {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-gps-wa, .btn-gps-sms {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    color: white;
-}
+.gps-btn-group { display: flex; gap: 10px; }
+.btn-gps-wa, .btn-gps-sms { flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; }
 .btn-gps-wa { background-color: #25D366; }
 .btn-gps-sms { background-color: var(--c-blue); }
-
-.form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    color: white;
-    border-radius: 4px;
-    font-family: var(--font-main);
-}
-
-.form-group input:focus, .form-group textarea:focus {
-    outline: none;
-    border-color: var(--c-orange);
-}
-
-.chk-atentado-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--c-red);
-    font-weight: bold;
-    margin-top: 10px;
-    font-size: 0.9rem;
-}
-
-.form-footer-stick {
-    margin-top: auto;
-}
-
-.btn-dispatch {
-    width: 100%;
-    background-color: var(--c-red);
-    color: white;
-    padding: 15px;
-    border: none;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
-}
-
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background-color: var(--bg-panel); border: 1px solid var(--border-color); color: white; border-radius: 4px; font-family: var(--font-main); }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--c-orange); }
+.chk-atentado-container { display: flex; align-items: center; gap: 10px; color: var(--c-red); font-weight: bold; margin-top: 10px; font-size: 0.9rem; }
+.form-footer-stick { margin-top: auto; }
+.btn-dispatch { width: 100%; background-color: var(--c-red); color: white; padding: 15px; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 .btn-dispatch:hover { background-color: #c0392b; }
-
-.units-section h2, .maquinistas-section h2 {
-    font-size: 1rem;
-    margin-bottom: 10px;
-    color: var(--text-muted);
-}
-
-.units-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.unit-btn {
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    color: var(--text-light);
-    padding: 12px 5px;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    text-align: center;
-}
-
-.unit-btn.selected {
-    background-color: var(--c-orange);
-    border-color: var(--c-orange);
-    color: white;
-}
-
-.maq-select {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    color: var(--text-light);
-    border-radius: 4px;
-}
-
-.emergency-card {
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-left: 4px solid var(--c-red);
-}
-
-.emergency-card.alarma-1, .emergency-card.alarma-2, .emergency-card.alarma-3 {
-    border-left-color: var(--c-orange);
-}
-
+.units-section h2, .maquinistas-section h2 { font-size: 1rem; margin-bottom: 10px; color: var(--text-muted); }
+.units-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.unit-btn { background-color: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-light); padding: 12px 5px; border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; }
+.unit-btn.selected { background-color: var(--c-orange); border-color: var(--c-orange); color: white; }
+.maq-select { width: 100%; padding: 10px; background-color: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 4px; }
+.emergency-card { background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--c-red); }
+.emergency-card.alarma-1, .emergency-card.alarma-2, .emergency-card.alarma-3 { border-left-color: var(--c-orange); }
 .emergency-card h3 { margin-bottom: 5px; font-size: 1.1rem; }
 .emergency-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 3px; }
-.btn-destructive {
-    background-color: transparent;
-    border: 1px solid var(--c-red);
-    color: var(--c-red);
-    width: 100%;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 4px;
-}
+.btn-destructive { background-color: transparent; border: 1px solid var(--c-red); color: var(--c-red); width: 100%; cursor: pointer; font-weight: bold; border-radius: 4px; }
 .btn-destructive:hover { background-color: var(--c-red); color: white; }
-
-.address-suggestions-list {
-    position: absolute;
-    width: 100%;
-    background: var(--bg-panel);
-    z-index: 9999;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    border: 1px solid var(--border-color);
-    max-height: 200px;
-    overflow-y: auto;
-}
+.address-suggestions-list { position: absolute; width: 100%; background: var(--bg-panel); z-index: 9999; list-style: none; padding: 0; margin: 0; border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto; }
 
 /* =========================================================
    3. CENTRAL DE ALARMAS 2 (CENTRAL2.HTML)
    ========================================================= */
-.c2-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 20px;
-    padding: 20px;
-}
-
-.c2-card {
-    background-color: var(--bg-panel);
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
-
-.c2-unit-row {
-    background-color: var(--bg-dark);
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-}
-
-.c2-times-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-    margin-top: 10px;
-}
-
-.btn-c2-time {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    padding: 8px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
+.c2-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; padding: 20px; }
+.c2-card { background-color: var(--bg-panel); border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+.c2-unit-row { background-color: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); }
+.c2-times-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+.btn-c2-time { background-color: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
 .btn-c2-time span { font-size: 1rem; color: var(--text-light); margin-top: 3px; }
 .btn-c2-time.marcado { background-color: var(--c-blue); border-color: var(--c-blue); color: white; }
 
 /* =========================================================
-   4. APP MAQUINISTAS (MAQUINISTA.HTML)
+   4. APP MAQUINISTAS Y CONDUCTORES
    ========================================================= */
-.maquinista-body {
-    background-color: var(--bg-dark);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
-
-.app-header {
-    background-color: var(--bg-panel);
-    padding: 15px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
-}
-
+.maquinista-body { background-color: var(--bg-dark); display: flex; flex-direction: column; height: 100vh; }
+.app-header { background-color: var(--bg-panel); padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
 .app-header h1 { font-size: 1.2rem; }
-
-.content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-}
-
+.content-area { flex: 1; overflow-y: auto; padding: 20px; }
 .tab-section { display: none; }
 .tab-section.active { display: block; }
-
 .selector-container { margin-bottom: 30px; }
 .selector-container label { display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: bold; }
 .selector-container select { width: 100%; padding: 15px; background: var(--bg-panel); color: white; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1.1rem; }
-
 .status-container { display: flex; flex-direction: column; gap: 15px; }
 .btn-maq-status { padding: 20px; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; }
 .btn-disponible { background-color: var(--c-green); }
 .btn-fuera { background-color: var(--border-color); color: var(--text-muted); }
-
 .current-status-banner { margin-top: 30px; text-align: center; font-size: 1.2rem; font-weight: bold; padding: 20px; background: var(--bg-panel); border-radius: 8px; }
-
-.bottom-nav {
-    display: flex;
-    background-color: var(--bg-panel);
-    border-top: 1px solid var(--border-color);
-}
-
-.nav-item {
-    flex: 1;
-    padding: 15px;
-    text-align: center;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
+.bottom-nav { display: flex; background-color: var(--bg-panel); border-top: 1px solid var(--border-color); }
+.nav-item { flex: 1; padding: 15px; text-align: center; color: var(--text-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .nav-item.active { color: var(--c-blue); border-top: 3px solid var(--c-blue); }
-
 .empty-state-maq { text-align: center; padding: 40px 20px; color: var(--text-muted); font-style: italic; }
-
-.alert-card {
-    background: var(--c-red);
-    border-radius: 12px;
-    overflow: hidden;
-    color: white;
-}
-
+.alert-card { background: var(--c-red); border-radius: 12px; overflow: hidden; color: white; }
 .alert-head { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
 .alert-body { background: var(--bg-panel); padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
 .alert-inst { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; }
-
 .action-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
 .btn-asiste, .btn-no-asiste { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
 .btn-asiste { background: var(--c-green); color: white; }
 .btn-no-asiste { background: var(--border-color); color: var(--text-muted); }
 .time-block { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-light); }
 .time-clock { font-size: 1.2rem; font-weight: bold; }
-
 .alert-details { font-size: 0.9rem; }
 .alert-obs { color: var(--c-orange); margin-bottom: 5px; font-weight: bold; }
 
 /* =========================================================
-   5. APP VOLUNTARIOS (VOLUNTARIOS.HTML) - DISEÑO NATIVO iOS
+   5. APP VOLUNTARIOS (DISEÑO NATIVO iOS BLANCO)
    ========================================================= */
 body.voluntarios-body { background-color: #FFFFFF; color: #000000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 .vol-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #FFFFFF; transition: transform 0.3s cubic-bezier(0.36, 0.66, 0.04, 1); display: flex; flex-direction: column; }
@@ -499,12 +173,54 @@ body.voluntarios-body { background-color: #FFFFFF; color: #000000; font-family: 
 .btn-loc { background: var(--c-blue); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 20px; cursor: pointer; }
 
 /* =========================================================
-   NUEVO SISTEMA GYRAS: PLANTILLA SUPERPUESTA (OVERLAY)
+   7. SISTEMA GYRAS (EL HISTORIAL Y LAS TABLAS)
+   ========================================================= */
+body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+.gyras-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
+.gyras-header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; color: var(--text-light); }
+.gyras-header h1 span { color: var(--c-blue); }
+.gyras-station-tag { background: #222; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; border: 1px solid #444; color: var(--c-yellow); }
+
+.gyras-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+.gyras-stat-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; text-align: center; }
+.gyras-stat-card h3 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+.gyras-stat-card .num { font-size: 2rem; font-weight: 900; color: var(--text-light); }
+.gyras-stat-card.total .num { color: var(--c-yellow); }
+
+.gyras-filter-bar { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+.gyras-filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+.gyras-filter-group label { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; }
+.gyras-filter-group input, .gyras-filter-group select { width: 100%; padding: 10px; background: var(--bg-dark); color: var(--text-light); border: 1px solid var(--border-color); border-radius: 4px; outline: none; }
+
+.gyras-table-container { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px; overflow-x: auto; flex: 1; margin-bottom: 60px; }
+.gyras-table-container table { width: 100%; border-collapse: collapse; text-align: left; }
+.gyras-table-container th { background: #000; padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: bold; border-bottom: 2px solid var(--border-color); }
+.gyras-table-container td { padding: 14px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; }
+.gyras-empty-state { padding: 40px; text-align: center; color: var(--text-muted); font-weight: bold; font-style: italic; }
+
+.badge-code { background: #222; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #444; font-size: 0.85rem; display: inline-block; }
+.badge-code.estructural { border-color: var(--c-red); color: var(--c-red); }
+.badge-code.pastizal { border-color: var(--c-green); color: var(--c-green); }
+.badge-code.rescate { border-color: var(--c-orange); color: var(--c-orange); }
+.badge-unit { background: rgba(255, 235, 59, 0.1); color: var(--c-yellow); border: 1px solid var(--c-yellow); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 4px; display: inline-block; }
+.badge-alarma { background: var(--c-red); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 900; animation: pulse-red 2s infinite; }
+.btn-view { background: var(--c-blue); border: none; color: #fff; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem; text-transform: uppercase; }
+
+/* EL MODAL DE IMPRESIÓN DEL GYRAS */
+.gyras-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 15px; }
+.gyras-modal-content-doc { background: #E5E5EA; width: 100%; max-width: 950px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); display: flex; flex-direction: column; max-height: 90vh; }
+.gyras-doc-header-dark { background: #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+.btn-print { background: var(--c-blue); color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; }
+.gyras-modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+.gyras-modal-body { padding: 20px; overflow-x: auto; max-height: 70vh; }
+
+/* =========================================================
+   8. NUEVO SISTEMA GYRAS: PLANTILLA SUPERPUESTA (OVERLAY)
    ========================================================= */
 .hoja-plantilla {
     position: relative;
-    width: 800px;         /* Ancho de hoja estándar */
-    height: 1130px;       /* Alto aproximado para que mantenga proporción */
+    width: 800px;
+    height: 1130px;
     background-size: 100% 100%;
     background-position: center;
     background-repeat: no-repeat;
@@ -514,10 +230,9 @@ body.voluntarios-body { background-color: #FFFFFF; color: #000000; font-family: 
     page-break-after: always;
 }
 
-/* Los campos de texto flotantes */
 .dato-overlay {
     position: absolute;
-    background: rgba(245, 124, 0, 0.15); /* Fondo naranja para calibración visual */
+    background: rgba(245, 124, 0, 0.15); /* Fondo naranja visual */
     border: 1px dashed rgba(245, 124, 0, 0.6);
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
@@ -535,17 +250,16 @@ body.voluntarios-body { background-color: #FFFFFF; color: #000000; font-family: 
 .dato-overlay.font-bold { font-weight: bold; }
 .dato-overlay.text-center { text-align: center; }
 
-/* Casillas de verificación (Las X) */
 .chk-overlay {
     position: absolute;
     width: 16px;
     height: 16px;
     cursor: pointer;
     z-index: 10;
-    accent-color: black; /* Para que el check sea negro */
+    accent-color: black;
 }
 
-/* REGLAS DE IMPRESIÓN EXACTA */
+/* REGLAS DE IMPRESIÓN EXACTA PARA EL PDF */
 @media print {
     @page { size: auto; margin: 0; }
     body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -556,6 +270,5 @@ body.voluntarios-body { background-color: #FFFFFF; color: #000000; font-family: 
     .gyras-modal-body { padding: 0; background: none; overflow: visible; text-align: center; }
     
     .hoja-plantilla { box-shadow: none; margin: 0; border: none; }
-    /* Ocultar la ayuda visual al imprimir */
     .dato-overlay { background: transparent !important; border: none !important; }
 }
