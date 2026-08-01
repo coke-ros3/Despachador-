@@ -13,7 +13,6 @@
         <div id="clock">00:00:00</div>
     </div>
 
-    <!-- BARRA DE ACCIÓN SUPERIOR -->
     <div style="background: var(--bg-panel); padding: 15px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
         <span style="color: var(--text-muted); font-weight: bold; font-size: 1.1rem; text-transform: uppercase;">Monitor Logístico y Tiempos Radiales</span>
         <button onclick="abrirModalServicio()" style="background: var(--c-orange); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(245, 124, 0, 0.3); transition: 0.2s;">
@@ -21,12 +20,9 @@
         </button>
     </div>
 
-    <!-- CONTENEDOR DE TARJETAS (EMERGENCIAS Y SERVICOS) -->
     <div class="c2-grid" id="c2-container">
-        <!-- Las tarjetas se inyectan aquí con JS -->
-    </div>
+        </div>
 
-    <!-- VENTANA EMERGENTE (MODAL) PARA NUEVO SERVICIO -->
     <div id="modal-servicio" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; align-items: center; justify-content: center; padding: 20px;">
         <div style="background: var(--bg-panel); border: 2px solid var(--c-orange); border-radius: 12px; padding: 25px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <h2 style="color: var(--c-orange); text-transform: uppercase; margin-bottom: 20px; font-weight: 900; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">REGISTRAR NUEVO SERVICIO</h2>
@@ -63,7 +59,6 @@
         </div>
     </div>
 
-    <!-- MENÚ FLOTANTE CAMBIO RÁPIDO -->
     <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
         <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
             <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
@@ -123,14 +118,17 @@
                 return;
             }
 
-            // Inicializamos los logs en blanco
+            // Inicializamos los logs en blanco.
             let initialLogs = {};
             initialLogs[unidad] = { "6-0": "", "6-10": "", "km": "", "combustible": "" };
 
             try {
+                // Generamos el ID numérico
                 const emIdNum = Date.now();
+
+                // Forzamos el ID usando setDoc
                 await setDoc(doc(db, "emergencias_activas", emIdNum.toString()), {
-                    id: emIdNum,
+                    id: emIdNum, // Guardamos el ID dentro
                     code: clave,
                     alarma: 0,
                     address: destino,
@@ -161,6 +159,7 @@
                 const data = docSnap.data();
                 const emId = docSnap.id;
                 
+                // Diferenciar visualmente: Emergencias (Rojo) y Servicios (Naranja)
                 const isServicio = data.code.startsWith('6-');
                 const themeColor = isServicio ? 'var(--c-orange)' : 'var(--c-red)';
                 
@@ -176,8 +175,9 @@
                     <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;"></div>
                 `;
 
+                // Botón exclusivo para cerrar Servicios Rápidos (Ej. 6-13, 6-14)
                 if (isServicio) {
-                    cardHtml += `<button style="background: ${themeColor}; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%;" onclick="cerrarServicio('${emId}')">CERRAR Y ENVIAR AL GYRAS (6-10 FINAL)</button>`;
+                    cardHtml += `<button style="background: ${themeColor}; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%;" onclick="cerrarServicio('${emId}')">FINALIZAR SERVICIO Y ARCHIVAR</button>`;
                 }
 
                 card.innerHTML = cardHtml;
@@ -199,6 +199,7 @@
                                 </button>`;
                     };
 
+                    // Si es emergencia muestra todos los botones. Si es servicio, muestra solo 6-0 y 6-10.
                     let botonesHtml = '';
                     if (isServicio) {
                         botonesHtml = `
@@ -260,18 +261,22 @@
             }
         };
 
-        // CERRAR UN SERVICIO Y ENVIAR AL GYRAS
+        // CERRAR UN SERVICIO (SOLO PARA TRÁMITES 6-X)
         window.cerrarServicio = async function(id) {
-            if(confirm('¿Confirmar el 6-10 final y archivar este trámite en el GYRAS?')) {
+            if(confirm('¿Confirmar la finalización y archivar este trámite en el GYRAS?')) {
                 try {
                     const docRef = doc(db, "emergencias_activas", id);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         
+                        // Añadimos la fecha de término para el GYRAS
                         data.fecha_termino = new Date().toISOString();
                         
+                        // Archiva usando setDoc para mantener el ID numérico
                         await setDoc(doc(db, "historial_emergencias", id.toString()), data);
+                        
+                        // Borramos de activas
                         await deleteDoc(docRef);
                     }
                 } catch(e) {
