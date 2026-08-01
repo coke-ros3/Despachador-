@@ -136,10 +136,10 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 .alert-obs { color: var(--c-orange); margin-bottom: 5px; font-weight: bold; }
 
 /* =========================================================
-   5. APP VOLUNTARIOS (NUEVO DISEÑO MODERNO iOS)
+   5. APP VOLUNTARIOS (HTML ORIGINAL + CSS MODERNO TIPO iOS)
    ========================================================= */
 body.voluntarios-body { 
-    background-color: #0A1931; /* Fondo oscuro cabecera */
+    background-color: #0A1931; /* Fondo oscuro moderno */
     color: #000000; 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
     margin: 0; padding: 0; overflow-x: hidden; 
@@ -152,109 +152,114 @@ body.voluntarios-body {
     display: flex; flex-direction: column; 
 }
 
-/* Navegación Superior Oscura */
-.ios-nav-dark { 
-    padding: 50px 15px 15px 15px; 
+/* --- CABECERA OSCURA --- */
+.ios-nav { 
+    background: #0A1931; padding: 45px 15px 15px 15px; 
     display: flex; justify-content: space-between; align-items: center; 
+    border-bottom: none; /* Quitamos la línea vieja */
     position: sticky; top: 0; z-index: 100; 
 }
-.ios-nav-btn-dark { 
+.ios-nav-btn { 
     color: #FFFFFF; font-size: 1.05rem; background: none; border: none; 
-    padding: 0; cursor: pointer; display: flex; align-items: center; gap: 5px; 
+    padding: 0; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500; 
 }
-.ios-nav-title-dark { font-weight: 600; font-size: 1.1rem; color: #FFFFFF; }
+.ios-nav-title { font-weight: 600; font-size: 1.1rem; color: #FFFFFF; }
 
-/* Contenedor Blanco Redondeado (El "Papel") */
-.vol-view-content { 
-    background: #F2F2F7; /* Gris muy claro típico de iOS */
-    border-radius: 20px 20px 0 0; 
+/* --- CONTENEDOR BLANCO REDONDEADO (FEED) --- */
+.ios-list { 
     flex: 1; overflow-y: auto; 
+    background: #F2F2F7; /* Gris claro iOS */
+    border-radius: 20px 20px 0 0; /* Bordes redondeados arriba */
     padding-top: 20px;
 }
 
-/* Filtros (Feed) */
-.feed-filters {
-    display: flex; gap: 10px; padding: 0 20px 15px 20px; align-items: center; justify-content: space-between;
-}
-.filter-pill {
-    background: #FFFFFF; border: none; padding: 6px 14px; border-radius: 20px;
-    font-size: 0.85rem; color: #8E8E93; font-weight: 600; cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.filter-pill.active { background: #0A84FF; color: #FFFFFF; }
-.filter-icon-btn {
-    background: #FFFFFF; border: none; width: 32px; height: 32px; border-radius: 50%;
-    color: #8E8E93; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* Tarjetas Feed */
-.ios-card-feed {
+/* --- TARJETAS DEL FEED MODERNAS --- */
+.ios-list-item { 
     background: #FFFFFF; margin: 0 20px 12px 20px; border-radius: 12px;
     padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    cursor: pointer; position: relative;
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer; 
+    border-bottom: none; /* Adiós a la lista plana */
+    border-left: 4px solid #0A84FF; /* Franja azul tipo tarjeta */
 }
-.ios-card-feed:active { background-color: #F9F9F9; }
-.card-feed-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.card-feed-dot { width: 8px; height: 8px; border-radius: 50%; }
-.card-feed-date { color: #8E8E93; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.card-feed-body { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.card-feed-title { font-size: 0.95rem; font-weight: 600; color: #1C1C1E; line-height: 1.4; padding-right: 15px; }
-.card-feed-arrow { color: #C7C7CC; font-size: 1.5rem; line-height: 1; }
-.card-feed-units { display: inline-block; background: #F2F2F7; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; color: #1C1C1E; }
+.ios-list-item:active { background-color: #F9F9F9; }
+.ios-list-content { flex: 1; padding-right: 15px; }
+.ios-list-date { color: #8E8E93; font-size: 0.75rem; margin-bottom: 8px; display: block; font-weight: 600; text-transform: uppercase; }
+.ios-list-title { font-size: 0.95rem; font-weight: 600; color: #1C1C1E; line-height: 1.4; }
+.ios-list-arrow { color: #C7C7CC; font-size: 1.5rem; }
 
-/* Vista Detalle: Elementos */
-.det-header-modern { text-align: center; margin-bottom: 20px; }
-.det-header-modern h2 { font-size: 1.2rem; font-weight: 600; color: #1C1C1E; margin: 10px 0 2px 0; }
-.det-header-modern p { font-size: 0.85rem; color: #8E8E93; margin: 0; }
-
-.det-blue-banner {
-    background: #0A58CA; /* Azul corporativo fuerte */
-    border-radius: 12px; padding: 15px; color: white;
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 15px; box-shadow: 0 4px 12px rgba(10, 88, 202, 0.3);
+/* --- CONTENEDOR BLANCO REDONDEADO (DETALLE) --- */
+#view-detail > div:nth-child(2) {
+    background: #F2F2F7;
+    border-radius: 20px 20px 0 0;
+    padding: 15px;
 }
-.banner-left { display: flex; flex-direction: column; gap: 4px; flex: 1; padding-right: 15px; }
-.banner-clave { font-size: 1.3rem; font-weight: 800; }
-.banner-dir { font-size: 0.85rem; font-weight: 500; line-height: 1.3; }
-.banner-right { font-size: 1.1rem; font-weight: 700; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 6px; text-align: center; }
 
-.det-card-block {
-    background: #FFFFFF; border-radius: 12px; padding: 15px;
+/* --- CABECERA DEL DETALLE --- */
+.detail-header { text-align: center; padding: 10px 15px 20px 15px; background: transparent; }
+.detail-header span.shield { font-size: 40px; display: block; margin-bottom: 5px; }
+.detail-header h2 { font-size: 1.2rem; font-weight: 600; color: #1C1C1E; margin: 0; }
+
+/* --- BANNER AZUL MODERNO --- */
+.blue-banner { 
+    background-color: #0A58CA; color: white; padding: 15px; 
+    border-radius: 12px; font-weight: 600; font-size: 1rem; 
+    text-transform: uppercase; margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(10, 88, 202, 0.3);
+    text-align: left; line-height: 1.4;
+}
+
+/* --- BLOQUES BLANCOS (OBSERVACIONES) --- */
+.detail-info { 
+    background: #FFFFFF; border-radius: 12px; padding: 15px; 
+    font-size: 0.95rem; color: #1C1C1E; margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03); text-align: left; border: none;
+}
+.detail-info strong { color: #8E8E93; font-size: 0.85rem; display: block; margin-bottom: 5px; }
+
+/* --- BLOQUE UNIDADES SIMPLIFICADO --- */
+.unit-badge-container { 
+    background: #FFFFFF; border-radius: 12px; padding: 15px; 
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-start; 
     margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
-.det-card-title { font-size: 0.9rem; color: #8E8E93; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-.det-card-content { font-size: 0.95rem; color: #1C1C1E; line-height: 1.5; }
-
-/* Grilla unidades simplificada */
-.det-units-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-.unit-pill-simple { 
-    background: #F2F2F7; border: 1px solid #E5E5EA; border-radius: 8px; 
-    padding: 8px 15px; display: flex; align-items: center; color: #1C1C1E; font-size: 0.9rem; 
+.unit-badge-dark { 
+    background-color: #F2F2F7; color: #1C1C1E; padding: 8px 15px; 
+    border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+    border: 1px solid #E5E5EA;
 }
 
-/* Botones Navegación Mapa */
-.map-buttons-row-modern { display: flex; gap: 10px; margin-bottom: 15px; }
-.btn-map-modern { 
-    flex: 1; background: #FFFFFF; border: none; border-radius: 12px; padding: 12px 5px;
-    font-size: 0.75rem; color: #1C1C1E; font-weight: 600; cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03); text-align: center; line-height: 1.4;
+/* --- BOTONES DE NAVEGACIÓN MAPA --- */
+.map-buttons-row { 
+    display: flex; gap: 10px; padding: 0; background: transparent; 
+    border: none; margin-bottom: 15px;
 }
-.btn-map-modern:active { background: #E5E5EA; }
+.btn-map-grey { 
+    flex: 1; background: #FFFFFF; border: none; padding: 12px 5px; 
+    border-radius: 12px; font-weight: 600; color: #1C1C1E; font-size: 0.8rem; 
+    display: flex; justify-content: center; align-items: center; gap: 6px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03); cursor: pointer; text-decoration: none; 
+}
+.btn-map-grey:active { background: #E5E5EA; }
 
-.map-box-modern { 
-    height: 250px; border-radius: 12px; overflow: hidden; position: relative; 
+/* --- EL MAPA BLINDADO ANTI-COLAPSOS --- */
+.map-box { 
+    min-height: 280px; height: 280px; width: 100%;
+    flex-shrink: 0; /* ESTO EVITA QUE FLEXBOX LO APLASTE A 0px */
+    border-radius: 12px; overflow: hidden; position: relative; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 80px; 
+    background: #E5E5EA;
 }
 #map-voluntarios { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-/* Footer Oscuro Flotante */
-.det-footer-pill {
+/* --- FOOTER FLOTANTE OSCURO --- */
+.blue-footer { 
     position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-    background: #0A1931; color: #FFFFFF; padding: 10px 20px; border-radius: 30px;
-    font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 8px;
+    background-color: #0A1931; color: white; padding: 10px 20px; 
+    border-radius: 30px; font-size: 0.85rem; font-weight: 500;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 100;
+    width: max-content;
 }
+
 
 
 /* =========================================================
