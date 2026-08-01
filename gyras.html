@@ -40,11 +40,26 @@
             <select id="filter-code">
                 <option value="todos">TODAS LAS CLAVES</option>
                 <option value="10-0">10-0 ESTRUCTURAL</option>
-                <option value="10-1">10-1 VEHÍCULO</option>
-                <option value="10-2">10-2 PASTIZAL</option>
+                <option value="10-1">10-1 VEHÍCULOS</option>
+                <option value="10-2">10-2 PASTIZAL / BOSQUE</option>
                 <option value="10-3">10-3 RESCATE SIMPLE</option>
-                <option value="10-4">10-4 ACCIDENTE</option>
+                <option value="10-4">10-4 ACCIDENTE VEHICULAR</option>
+                <option value="10-5">10-5 DERRAME QUÍMICO</option>
+                <option value="10-6">10-6 EMANACIÓN GAS</option>
                 <option value="10-7">10-7 ELÉCTRICO</option>
+                <option value="10-8">10-8 NO CLASIFICADO</option>
+                <option value="10-9">10-9 OTROS SERVICIOS</option>
+                <option value="10-10">10-10 ESCOMBROS</option>
+                <option value="10-12">10-12 APOYO OTRO CUERPO</option>
+                <option value="10-14">10-14 ACCIDENTE AÉREO</option>
+                <option value="10-15">10-15 SIMULACRO</option>
+                <option value="10-17">10-17 INUNDACIÓN</option>
+                <!-- Claves de Servicio (6-X) -->
+                <option value="6-13">6-13 TRÁMITE / TALLER</option>
+                <option value="6-14">6-14 SERVICENTRO</option>
+                <option value="6-15">6-15 TRASLADO LESIONADO</option>
+                <option value="6-17">6-17 EJERCICIO</option>
+                <option value="6-18">6-18 PRÁCTICA CONDUCTOR</option>
             </select>
         </div>
         <div class="gyras-filter-group">
@@ -217,7 +232,9 @@
         const descripciones = {
             '10-0': 'Estructural', '10-1': 'Vehículo', '10-2': 'Pastizal', '10-3': 'Rescate',
             '10-4': 'Accidente', '10-5': 'Hazmat', '10-6': 'Gas', '10-7': 'Eléctrico',
-            '10-8': 'No Clasificado', '10-9': 'Servicios', '10-10': 'Escombros', '10-12': 'Apoyo'
+            '10-8': 'No Clasificado', '10-9': 'Servicios', '10-10': 'Escombros', '10-12': 'Apoyo',
+            '10-14': 'Aéreo', '10-15': 'Simulacro', '10-17': 'Inundación',
+            '6-13': 'Taller/Trámite', '6-14': 'Servicentro', '6-15': 'Traslado', '6-17': 'Ejercicio', '6-18': 'Práctica'
         };
 
         let rawDataList = [];
