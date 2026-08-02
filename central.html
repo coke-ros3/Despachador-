@@ -52,12 +52,17 @@
                 </div>
 
                 <div class="form-group" style="position: relative;">
-                    <input type="text" id="direccion" placeholder="Dirección Exacta o Intersección..." autocomplete="off">
+                    <input type="text" id="direccion" placeholder="Dirección Exacta / Institución..." autocomplete="off">
                     <ul id="address-suggestions" class="address-suggestions-list" style="display: none; position: absolute; width: 100%; background: #1e1e2f; z-index: 9999; list-style: none; padding: 0; margin: 0; border: 1px solid #3a3a50; max-height: 200px; overflow-y: auto;"></ul>
+                </div>
+                
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <input type="text" id="esquina" placeholder="Intersección / Esquina..." style="flex: 1;">
+                    <input type="text" id="numero" placeholder="Nº" style="width: 100px;">
                 </div>
 
                 <div class="form-group">
-                    <textarea id="observaciones" rows="2" placeholder="Observaciones / 0-4..."></textarea>
+                    <textarea id="observaciones" rows="2" placeholder="Observaciones / Pre-Informe..."></textarea>
                     
                     <label class="chk-atentado-container">
                         <input type="checkbox" id="chk-atentado" style="width:18px; height:18px;">
@@ -172,7 +177,6 @@
             const query = e.target.value;
             if (query.length < 3) { suggestionsList.style.display = 'none'; return; }
             
-            // El parche lógico para las intersecciones chilenas
             let searchQuery = query.replace(/\bcon\b/gi, 'and').replace(/\by\b/gi, 'and');
             searchQuery += ', Nueva Imperial, Chile';
             
@@ -242,16 +246,19 @@
 
         window.despachar = async function() {
             const direccion = document.getElementById('direccion').value.toUpperCase();
+            const esquina = document.getElementById('esquina').value.toUpperCase();
+            const numero = document.getElementById('numero').value.toUpperCase();
             const observaciones = document.getElementById('observaciones').value.toUpperCase();
-            const alarma = 0; // Inicia por defecto en Despacho Inicial
+            const alarma = 0;
             const isAtentado = document.getElementById('chk-atentado').checked;
             
             if (!selectedClave) return alert("Debe seleccionar una Clave 10-X");
             if (!direccion) return alert("Debe ingresar una dirección");
             if (selectedUnits.length === 0) return alert("Debe seleccionar al menos una Unidad");
 
-            // Ahora enviamos directo la dirección limpia, sin concatenar esquinas ni números sueltos
             let fullAddress = direccion;
+            if (numero) fullAddress += " " + numero;
+            if (esquina) fullAddress += " / " + esquina;
 
             let initialLogs = {};
             selectedUnits.forEach(u => {
@@ -275,6 +282,8 @@
                 });
 
                 document.getElementById('direccion').value = '';
+                document.getElementById('esquina').value = '';
+                document.getElementById('numero').value = '';
                 document.getElementById('observaciones').value = '';
                 document.getElementById('chk-atentado').checked = false;
                 
@@ -299,7 +308,6 @@
             }
         };
 
-        // Escuchar emergencias activas
         onSnapshot(collection(db, "emergencias_activas"), (snapshot) => {
             const container = document.getElementById('active-emergencies-list');
             container.innerHTML = '<h2 style="font-size: 1rem; margin-bottom: 10px; color: var(--text-light);">Emergencias Activas</h2>';
@@ -321,7 +329,7 @@
                     timeStr = data.timestamp.toDate().toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute:'2-digit' });
                 }
 
-                let headerText = `${data.code} ${data.alarma > 0 ? \`(\${data.alarma}ª Alarma)\` : ''}`;
+                let headerText = data.code + (data.alarma > 0 ? " (" + data.alarma + "ª Alarma)" : "");
                 
                 let htmlAlarma = '';
                 if (data.code === '10-0' || data.code === '10-2') {
@@ -405,7 +413,7 @@
         document.getElementById('btn-link-gps-sms').addEventListener('click', () => generarLinkGPS('sms'));
 
         function generarLinkGPS(metodo) {
-            const currentLinkId = Date.now().toString(); // Usamos Date.now() para generar un ID único
+            const currentLinkId = Math.floor(Math.random() * 10000).toString();
             const urlBase = window.location.origin + window.location.pathname.replace('central.html', '');
             const linkFinal = `${urlBase}loc.html?id=${currentLinkId}`;
             const mensaje = `🚨 *Bomberos Nueva Imperial* 🚨\nPara enviar la unidad de emergencia al lugar exacto, necesitamos su ubicación.\n\nHaga clic en el siguiente enlace y presione "ENVIAR MI UBICACIÓN":\n${linkFinal}`;
@@ -418,8 +426,7 @@
                 window.open(`sms:?body=${encodeURIComponent(mensaje)}`, '_self');
             }
             
-            // Guardamos el escuchador en una constante
-            const unsubscribe = onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
+            onSnapshot(doc(db, "ubicaciones_externas", currentLinkId), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById('direccion').value = "UBICACIÓN OBTENIDA VÍA LINK GPS";
@@ -430,16 +437,8 @@
                         icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
                     }).addTo(map).bindPopup("<b>ALERTA</b><br>Ubicación reportada").openPopup();
                     alert("¡El usuario ha compartido su ubicación con éxito!");
-                    
-                    // Apagamos el escuchador una vez recibido el dato para liberar memoria
-                    unsubscribe();
                 }
             });
-
-            // Temporizador de seguridad: si no mandan ubicación en 15 minutos, se apaga solo
-            setTimeout(() => {
-                unsubscribe();
-            }, 15 * 60 * 1000);
         }
     </script>
 </body>
