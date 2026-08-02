@@ -1,5 +1,5 @@
-// Aumentamos a la versión 4: se retiró la app de voluntarios de este sitio
-const CACHE_NAME = 'bomberos-cad-v4';
+// Versión 5: se agregó la pantalla de administración de cuentas (usuarios.html)
+const CACHE_NAME = 'bomberos-cad-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const urlsToCache = [
   './central2.html',
   './maquinista.html',
   './gyras.html',
+  './usuarios.html',
   './loc.html',
   './style.css',
   './manifest.json'

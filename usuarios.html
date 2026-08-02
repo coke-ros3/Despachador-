@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - Sistema CAD</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="central-body">
+
+    <div class="topbar">
+        <h1>SISTEMA C.A.D. - CUENTAS DE BOMBEROS</h1>
+        <div id="clock">00:00:00</div>
+    </div>
+
+    <div style="background: var(--bg-panel); padding: 15px 25px; border-bottom: 1px solid var(--border-color);">
+        <span style="color: var(--text-muted); font-weight: bold; font-size: 1.1rem; text-transform: uppercase;">Alta y baja de cuentas · App de Voluntarios</span>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px; max-width: 700px; line-height: 1.5;">
+            Cada bombero inicia sesión en la app con su <strong>número de registro</strong> y la contraseña que le asignes aquí.
+            Crear una cuenta no cierra tu sesión de Central.
+        </p>
+    </div>
+
+    <div style="padding: 25px; max-width: 900px; margin: 0 auto;">
+
+        <!-- FORMULARIO DE ALTA -->
+        <div style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+            <h2 style="color: var(--c-orange); text-transform: uppercase; font-weight: 900; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Crear nueva cuenta</h2>
+
+            <form id="form-crear">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">NOMBRE COMPLETO</label>
+                        <input type="text" id="f-nombre" placeholder="Ej: Juan Pérez Soto" required autocomplete="off"
+                            style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: white; font-weight: bold; outline: none;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">NÚMERO DE REGISTRO</label>
+                        <input type="text" id="f-registro" placeholder="Ej: 1234" required autocomplete="off" inputmode="numeric"
+                            style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: white; font-weight: bold; outline: none;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">CONTRASEÑA TEMPORAL</label>
+                        <input type="text" id="f-password" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="off"
+                            style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: white; font-weight: bold; outline: none;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; padding-top: 22px;">
+                        <input type="checkbox" id="f-maquinista" style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="f-maquinista" style="color: var(--text-light); font-weight: bold; cursor: pointer;">Es maquinista / conductor</label>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-crear" style="background: var(--c-orange); color: white; border: none; padding: 14px 24px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 1rem; box-shadow: 0 4px 10px rgba(245, 124, 0, 0.3);">
+                    Crear cuenta
+                </button>
+                <span id="crear-msg" style="margin-left: 15px; font-weight: bold; font-size: 0.9rem;"></span>
+            </form>
+        </div>
+
+        <!-- LISTADO -->
+        <div style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px;">
+            <h2 style="color: var(--c-blue); text-transform: uppercase; font-weight: 900; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Cuentas registradas</h2>
+            <div id="lista-usuarios" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="color: var(--text-muted); padding: 15px;">Cargando…</div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 18px; line-height: 1.5;">
+                "Eliminar" bloquea el acceso del bombero a la app (borra su perfil), pero no elimina el usuario de autenticación.
+                Para borrarlo por completo, hazlo también desde la <strong>consola de Firebase → Authentication</strong>.
+            </p>
+        </div>
+    </div>
+
+    <div style="position: fixed; bottom: 15px; right: 15px; z-index: 99999; background: var(--bg-panel); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <select id="vista-selector" onchange="window.location.href=this.value" style="background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; text-transform: uppercase;">
+            <option value="index.html" style="background: var(--bg-dark); color: var(--text-light);">[0] INICIO</option>
+            <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHO)</option>
+            <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
+            <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
+            <option value="usuarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] USUARIOS</option>
+        </select>
+    </div>
+
+    <script type="module">
+        import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
+            authDomain: "despachador-58fb8.firebaseapp.com",
+            projectId: "despachador-58fb8",
+            storageBucket: "despachador-58fb8.firebasestorage.app",
+            messagingSenderId: "1024295745401",
+            appId: "1:1024295745401:web:8d49683a86a8b1ff7aa1a8"
+        };
+        const EMAIL_DOMAIN = "bomberosni.internal";
+
+        // App principal: solo se usa para leer/escribir Firestore desde esta pantalla de Central
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('vista-selector').value = 'usuarios.html';
+
+        function updateClock() {
+            document.getElementById('clock').textContent = new Date().toLocaleTimeString('es-CL', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ==========================================
+        // CREAR CUENTA (instancia secundaria de Firebase Auth)
+        // ==========================================
+        // Truco necesario: crear un usuario con el SDK de cliente inicia sesión automáticamente
+        // como ese usuario nuevo. Usamos una app de Firebase "secundaria" y desechable solo para
+        // el registro, así la sesión de Central (esta pestaña) nunca se ve afectada.
+        const form = document.getElementById('form-crear');
+        const btnCrear = document.getElementById('btn-crear');
+        const crearMsg = document.getElementById('crear-msg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nombreCompleto = document.getElementById('f-nombre').value.trim();
+            const numeroRegistro = document.getElementById('f-registro').value.trim();
+            const password = document.getElementById('f-password').value;
+            const esMaquinista = document.getElementById('f-maquinista').checked;
+
+            if (!nombreCompleto || !numeroRegistro || password.length < 6) {
+                crearMsg.style.color = 'var(--c-red)';
+                crearMsg.textContent = 'Revisa los datos: la contraseña debe tener al menos 6 caracteres.';
+                return;
+            }
+
+            btnCrear.disabled = true;
+            crearMsg.style.color = 'var(--text-muted)';
+            crearMsg.textContent = 'Creando cuenta…';
+
+            const secondaryApp = initializeApp(firebaseConfig, 'CreadorSecundario-' + Date.now());
+            const secondaryAuth = getAuth(secondaryApp);
+
+            try {
+                const email = `${numeroRegistro}@${EMAIL_DOMAIN}`;
+                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+
+                await setDoc(doc(db, "bomberos", cred.user.uid), {
+                    nombreCompleto,
+                    numeroRegistro,
+                    esMaquinista,
+                    fechaCreacion: Date.now()
+                });
+
+                await signOut(secondaryAuth);
+                await deleteApp(secondaryApp);
+
+                crearMsg.style.color = 'var(--c-green)';
+                crearMsg.textContent = `Cuenta creada para ${nombreCompleto}.`;
+                form.reset();
+            } catch (error) {
+                console.error("Error creando cuenta:", error);
+                crearMsg.style.color = 'var(--c-red)';
+                if (error.code === 'auth/email-already-in-use') {
+                    crearMsg.textContent = 'Ese número de registro ya tiene una cuenta.';
+                } else if (error.code === 'auth/weak-password') {
+                    crearMsg.textContent = 'La contraseña es muy débil (mínimo 6 caracteres).';
+                } else {
+                    crearMsg.textContent = 'No se pudo crear la cuenta. Intenta nuevamente.';
+                }
+                try { await deleteApp(secondaryApp); } catch (_) {}
+            } finally {
+                btnCrear.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // LISTADO EN TIEMPO REAL
+        // ==========================================
+        const listaEl = document.getElementById('lista-usuarios');
+        const q = query(collection(db, "bomberos"), orderBy("fechaCreacion", "desc"));
+
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                listaEl.innerHTML = '<div style="color: var(--text-muted); padding: 15px;">Aún no hay cuentas creadas.</div>';
+                return;
+            }
+
+            listaEl.innerHTML = '';
+            snapshot.forEach((docSnap) => {
+                const u = docSnap.data();
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; background: var(--bg-dark); border:1px solid var(--border-color); border-radius:8px; padding:12px 16px;';
+                row.innerHTML = `
+                    <div>
+                        <div style="color: var(--text-light); font-weight: bold;">${u.nombreCompleto || '(sin nombre)'}</div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">Reg. ${u.numeroRegistro || '—'} ${u.esMaquinista ? '· <span style=\"color: var(--c-orange);\">MAQUINISTA</span>' : ''}</div>
+                    </div>
+                    <button data-id="${docSnap.id}" data-nombre="${(u.nombreCompleto || '').replace(/"/g, '&quot;')}" class="btn-eliminar-usuario"
+                        style="background: transparent; border: 1px solid var(--c-red); color: var(--c-red); padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
+                        Eliminar
+                    </button>
+                `;
+                listaEl.appendChild(row);
+            });
+
+            listaEl.querySelectorAll('.btn-eliminar-usuario').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    const nombre = btn.dataset.nombre || 'este bombero';
+                    if (!confirm(`¿Eliminar el perfil de ${nombre}? Perderá acceso a la app de inmediato.`)) return;
+                    try {
+                        await deleteDoc(doc(db, "bomberos", id));
+                    } catch (error) {
+                        console.error("Error eliminando perfil:", error);
+                        alert("No se pudo eliminar el perfil. Intenta nuevamente.");
+                    }
+                });
+            });
+        }, (error) => {
+            console.error("Error escuchando cuentas:", error);
+            listaEl.innerHTML = '<div style="color: var(--c-red); padding: 15px;">Error al cargar las cuentas.</div>';
+        });
+    </script>
+</body>
+</html>
