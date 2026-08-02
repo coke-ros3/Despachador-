@@ -51,14 +51,10 @@
                     <button class="btn-gps-sms" id="btn-link-gps-sms">✉️ GPS x SMS</button>
                 </div>
 
+                <!-- CAMPO ÚNICO DE DIRECCIÓN -->
                 <div class="form-group" style="position: relative;">
-                    <input type="text" id="direccion" placeholder="Dirección Exacta / Institución..." autocomplete="off">
+                    <input type="text" id="direccion" placeholder="Dirección Exacta, Nº e Intersección..." autocomplete="off">
                     <ul id="address-suggestions" class="address-suggestions-list" style="display: none; position: absolute; width: 100%; background: #1e1e2f; z-index: 9999; list-style: none; padding: 0; margin: 0; border: 1px solid #3a3a50; max-height: 200px; overflow-y: auto;"></ul>
-                </div>
-                
-                <div class="form-group" style="display: flex; gap: 10px;">
-                    <input type="text" id="esquina" placeholder="Intersección / Esquina..." style="flex: 1;">
-                    <input type="text" id="numero" placeholder="Nº" style="width: 100px;">
                 </div>
 
                 <div class="form-group">
@@ -245,9 +241,8 @@
         };
 
         window.despachar = async function() {
+            // Ahora toma todo de un solo input llamado direccion
             const direccion = document.getElementById('direccion').value.toUpperCase();
-            const esquina = document.getElementById('esquina').value.toUpperCase();
-            const numero = document.getElementById('numero').value.toUpperCase();
             const observaciones = document.getElementById('observaciones').value.toUpperCase();
             const alarma = 0;
             const isAtentado = document.getElementById('chk-atentado').checked;
@@ -257,8 +252,6 @@
             if (selectedUnits.length === 0) return alert("Debe seleccionar al menos una Unidad");
 
             let fullAddress = direccion;
-            if (numero) fullAddress += " " + numero;
-            if (esquina) fullAddress += " / " + esquina;
 
             let initialLogs = {};
             selectedUnits.forEach(u => {
@@ -281,9 +274,8 @@
                     timestamp: serverTimestamp()
                 });
 
+                // Solo limpiamos los inputs que siguen existiendo
                 document.getElementById('direccion').value = '';
-                document.getElementById('esquina').value = '';
-                document.getElementById('numero').value = '';
                 document.getElementById('observaciones').value = '';
                 document.getElementById('chk-atentado').checked = false;
                 
