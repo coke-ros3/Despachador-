@@ -330,15 +330,16 @@
                     timeStr = data.timestamp.toDate().toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute:'2-digit' });
                 }
 
-                let headerText = `${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}`;
+                let headerText = `${data.code} ${data.alarma > 0 ? \`(\${data.alarma}ª Alarma)\` : ''}`;
                 
                 let htmlAlarma = '';
                 if (data.code === '10-0' || data.code === '10-2') {
                     let enCurso = false;
                     
+                    // Verificamos si alguna unidad ya registró su 6-0
                     if (data.logs) {
                         Object.values(data.logs).forEach(log => {
-                            if (log["6-9"] && log["6-9"].trim() !== "") {
+                            if (log["6-0"] && log["6-0"].trim() !== "") {
                                 enCurso = true;
                             }
                         });
@@ -358,7 +359,7 @@
                     } else {
                         htmlAlarma = `
                         <div style="background: var(--bg-dark); border: 1px dashed var(--border-color); padding: 10px; border-radius: 4px; margin-top: 10px; text-align: center;">
-                            <span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">Esperando clave 6-9 (Llegada) para habilitar Alarmas...</span>
+                            <span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">Esperando clave 6-0 (Salida) para habilitar Alarmas...</span>
                         </div>`;
                     }
                 }
