@@ -51,7 +51,6 @@
                     <button class="btn-gps-sms" id="btn-link-gps-sms">✉️ GPS x SMS</button>
                 </div>
 
-                <!-- CAMPO ÚNICO DE DIRECCIÓN -->
                 <div class="form-group" style="position: relative;">
                     <input type="text" id="direccion" placeholder="Dirección Exacta, Nº e Intersección..." autocomplete="off">
                     <ul id="address-suggestions" class="address-suggestions-list" style="display: none; position: absolute; width: 100%; background: #1e1e2f; z-index: 9999; list-style: none; padding: 0; margin: 0; border: 1px solid #3a3a50; max-height: 200px; overflow-y: auto;"></ul>
@@ -173,7 +172,19 @@
             const query = e.target.value;
             if (query.length < 3) { suggestionsList.style.display = 'none'; return; }
             
-            let searchQuery = query.replace(/\bcon\b/gi, 'and').replace(/\by\b/gi, 'and');
+            // Lógica optimizada para intersecciones chilenas
+            let searchQuery = query
+                .replace(/\bcon\b/gi, ' and ')
+                .replace(/\by\b/gi, ' and ')
+                .replace(/\besquina\b/gi, ' and ')
+                .replace(/\besq\.?\b/gi, ' and ')
+                .replace(/\bcruce\b/gi, ' and ');
+
+            // Oculta números si es una intersección para no confundir a Mapbox
+            if (searchQuery.includes(' and ')) {
+                searchQuery = searchQuery.replace(/[0-9]+/g, '');
+            }
+            
             searchQuery += ', Nueva Imperial, Chile';
             
             const bboxImperial = '-73.10,-38.85,-72.80,-38.65';
@@ -241,7 +252,6 @@
         };
 
         window.despachar = async function() {
-            // Ahora toma todo de un solo input llamado direccion
             const direccion = document.getElementById('direccion').value.toUpperCase();
             const observaciones = document.getElementById('observaciones').value.toUpperCase();
             const alarma = 0;
@@ -274,7 +284,6 @@
                     timestamp: serverTimestamp()
                 });
 
-                // Solo limpiamos los inputs que siguen existiendo
                 document.getElementById('direccion').value = '';
                 document.getElementById('observaciones').value = '';
                 document.getElementById('chk-atentado').checked = false;
