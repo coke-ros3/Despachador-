@@ -136,134 +136,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 .alert-obs { color: var(--c-orange); margin-bottom: 5px; font-weight: bold; }
 
 /* =========================================================
-   5. APP VOLUNTARIOS (HTML ORIGINAL + CSS MODERNO TIPO iOS)
-   ========================================================= */
-body.voluntarios-body { 
-    background-color: #0A1931; /* Fondo oscuro moderno */
-    color: #000000; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    margin: 0; padding: 0; overflow-x: hidden; 
-}
-
-.vol-view { 
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-    background: #0A1931; 
-    transition: transform 0.3s cubic-bezier(0.36, 0.66, 0.04, 1); 
-    display: flex; flex-direction: column; 
-}
-
-/* --- CABECERA OSCURA --- */
-.ios-nav { 
-    background: #0A1931; padding: 45px 15px 15px 15px; 
-    display: flex; justify-content: space-between; align-items: center; 
-    border-bottom: none; /* Quitamos la línea vieja */
-    position: sticky; top: 0; z-index: 100; 
-}
-.ios-nav-btn { 
-    color: #FFFFFF; font-size: 1.05rem; background: none; border: none; 
-    padding: 0; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500; 
-}
-.ios-nav-title { font-weight: 600; font-size: 1.1rem; color: #FFFFFF; }
-
-/* --- CONTENEDOR BLANCO REDONDEADO (FEED) --- */
-.ios-list { 
-    flex: 1; overflow-y: auto; 
-    background: #F2F2F7; /* Gris claro iOS */
-    border-radius: 20px 20px 0 0; /* Bordes redondeados arriba */
-    padding-top: 20px;
-}
-
-/* --- TARJETAS DEL FEED MODERNAS --- */
-.ios-list-item { 
-    background: #FFFFFF; margin: 0 20px 12px 20px; border-radius: 12px;
-    padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    display: flex; justify-content: space-between; align-items: center; cursor: pointer; 
-    border-bottom: none; /* Adiós a la lista plana */
-    border-left: 4px solid #0A84FF; /* Franja azul tipo tarjeta */
-}
-.ios-list-item:active { background-color: #F9F9F9; }
-.ios-list-content { flex: 1; padding-right: 15px; }
-.ios-list-date { color: #8E8E93; font-size: 0.75rem; margin-bottom: 8px; display: block; font-weight: 600; text-transform: uppercase; }
-.ios-list-title { font-size: 0.95rem; font-weight: 600; color: #1C1C1E; line-height: 1.4; }
-.ios-list-arrow { color: #C7C7CC; font-size: 1.5rem; }
-
-/* --- CONTENEDOR BLANCO REDONDEADO (DETALLE) --- */
-#view-detail > div:nth-child(2) {
-    background: #F2F2F7;
-    border-radius: 20px 20px 0 0;
-    padding: 15px;
-}
-
-/* --- CABECERA DEL DETALLE --- */
-.detail-header { text-align: center; padding: 10px 15px 20px 15px; background: transparent; }
-.detail-header span.shield { font-size: 40px; display: block; margin-bottom: 5px; }
-.detail-header h2 { font-size: 1.2rem; font-weight: 600; color: #1C1C1E; margin: 0; }
-
-/* --- BANNER AZUL MODERNO --- */
-.blue-banner { 
-    background-color: #0A58CA; color: white; padding: 15px; 
-    border-radius: 12px; font-weight: 600; font-size: 1rem; 
-    text-transform: uppercase; margin-bottom: 15px;
-    box-shadow: 0 4px 12px rgba(10, 88, 202, 0.3);
-    text-align: left; line-height: 1.4;
-}
-
-/* --- BLOQUES BLANCOS (OBSERVACIONES) --- */
-.detail-info { 
-    background: #FFFFFF; border-radius: 12px; padding: 15px; 
-    font-size: 0.95rem; color: #1C1C1E; margin-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03); text-align: left; border: none;
-}
-.detail-info strong { color: #8E8E93; font-size: 0.85rem; display: block; margin-bottom: 5px; }
-
-/* --- BLOQUE UNIDADES SIMPLIFICADO --- */
-.unit-badge-container { 
-    background: #FFFFFF; border-radius: 12px; padding: 15px; 
-    display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-start; 
-    margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-.unit-badge-dark { 
-    background-color: #F2F2F7; color: #1C1C1E; padding: 8px 15px; 
-    border-radius: 8px; font-weight: 600; font-size: 0.9rem;
-    border: 1px solid #E5E5EA;
-}
-
-/* --- BOTONES DE NAVEGACIÓN MAPA --- */
-.map-buttons-row { 
-    display: flex; gap: 10px; padding: 0; background: transparent; 
-    border: none; margin-bottom: 15px;
-}
-.btn-map-grey { 
-    flex: 1; background: #FFFFFF; border: none; padding: 12px 5px; 
-    border-radius: 12px; font-weight: 600; color: #1C1C1E; font-size: 0.8rem; 
-    display: flex; justify-content: center; align-items: center; gap: 6px; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03); cursor: pointer; text-decoration: none; 
-}
-.btn-map-grey:active { background: #E5E5EA; }
-
-/* --- EL MAPA BLINDADO ANTI-COLAPSOS --- */
-.map-box { 
-    min-height: 280px; height: 280px; width: 100%;
-    flex-shrink: 0; /* ESTO EVITA QUE FLEXBOX LO APLASTE A 0px */
-    border-radius: 12px; overflow: hidden; position: relative; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 80px; 
-    background: #E5E5EA;
-}
-#map-voluntarios { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-
-/* --- FOOTER FLOTANTE OSCURO --- */
-.blue-footer { 
-    position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-    background-color: #0A1931; color: white; padding: 10px 20px; 
-    border-radius: 30px; font-size: 0.85rem; font-weight: 500;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 100;
-    width: max-content;
-}
-
-
-
-/* =========================================================
-   6. COMPARTIR UBICACIÓN (LOC.HTML)
+   5. COMPARTIR UBICACIÓN (LOC.HTML)
    ========================================================= */
 .loc-body { display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #f0f2f5; color: #333; }
 .loc-box { background: var(--bg-panel); padding: 30px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%; max-width: 350px; }
@@ -271,7 +144,7 @@ body.voluntarios-body {
 .btn-loc { background: var(--c-blue); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 20px; cursor: pointer; }
 
 /* =========================================================
-   7. SISTEMA GYRAS (EL HISTORIAL Y LAS TABLAS)
+   6. SISTEMA GYRAS (EL HISTORIAL Y LAS TABLAS)
    ========================================================= */
 body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
 .gyras-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
@@ -313,7 +186,7 @@ body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); pa
 .gyras-modal-body { padding: 20px; overflow-x: auto; max-height: 70vh; }
 
 /* =========================================================
-   8. NUEVO SISTEMA GYRAS: PLANTILLA SUPERPUESTA (OVERLAY)
+   7. NUEVO SISTEMA GYRAS: PLANTILLA SUPERPUESTA (OVERLAY)
    ========================================================= */
 .hoja-plantilla {
     position: relative;

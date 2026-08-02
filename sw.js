@@ -1,5 +1,5 @@
-// Aumentamos a la versión 3 para obligar al navegador a actualizar el diseño
-const CACHE_NAME = 'bomberos-cad-v3';
+// Aumentamos a la versión 4: se retiró la app de voluntarios de este sitio
+const CACHE_NAME = 'bomberos-cad-v4';
 const urlsToCache = [
   './',
   './index.html',
@@ -7,11 +7,9 @@ const urlsToCache = [
   './central2.html',
   './maquinista.html',
   './gyras.html',
-  './voluntarios.html',
   './loc.html',
   './style.css',
-  './manifest.json',
-  './manifest_voluntarios.json'
+  './manifest.json'
 ];
 
 self.addEventListener('install', event => {
