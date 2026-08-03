@@ -90,21 +90,16 @@
             </div>
 
             <div class="maquinistas-section">
-                <h2>CONDUCTOR EN TURNO (CONTRATO)</h2>
+                <h2>MAQUINISTAS</h2>
                 <div class="units-grid" id="turno-buttons">
                     <button class="unit-btn" data-turno="91">91</button>
                     <button class="unit-btn" data-turno="92">92</button>
                     <button class="unit-btn" data-turno="93">93</button>
                     <button class="unit-btn" data-turno="94">94</button>
                 </div>
-                <p style="color: var(--text-muted); font-size: 0.72rem; margin-top: 2px;">Marca quién está en el cuartel ahora mismo. Se sincroniza con las demás pantallas de Central.</p>
-            </div>
-
-            <div class="maquinistas-section" style="margin-top: 22px;">
-                <h2>REFUERZO VOLUNTARIO (APP)</h2>
-                <div class="maquinistas-list" id="maquinistas-list">
-                    <div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">Cargando…</div>
-                </div>
+                <select class="maq-select" id="otros-select">
+                    <option value="">+ OTROS</option>
+                </select>
             </div>
 
             <div class="active-emergencies-container" id="active-emergencies-list" style="margin-top: 15px;">
@@ -443,15 +438,16 @@
         }
 
         // ==========================================
-        // CONDUCTOR EN TURNO: los 4 de planta (contrato), selección única
+        // MAQUINISTAS: los 4 de planta + "otros" (voluntarios disponibles de la app)
         // ==========================================
-        const turnoButtons = document.querySelectorAll('#turno-buttons .unit-btn');
+        const turnoButtonsArr = Array.from(document.querySelectorAll('#turno-buttons .unit-btn'));
+        const otrosSelect = document.getElementById('otros-select');
         const turnoDocRef = doc(db, "turno_cuartel", "actual");
 
-        turnoButtons.forEach((btn) => {
+        turnoButtonsArr.forEach((btn) => {
             btn.addEventListener('click', async () => {
                 const yaActivo = btn.classList.contains('selected');
-                const valor = yaActivo ? null : btn.dataset.turno; // tocar de nuevo lo deja "sin marcar"
+                const valor = yaActivo ? null : btn.dataset.turno;
                 try {
                     await setDoc(turnoDocRef, { enTurno: valor, timestamp: Date.now() });
                 } catch (error) {
@@ -461,54 +457,41 @@
             });
         });
 
+        otrosSelect.addEventListener('change', async () => {
+            try {
+                await setDoc(turnoDocRef, { enTurno: otrosSelect.value || null, timestamp: Date.now() });
+            } catch (error) {
+                console.error("Error guardando el turno:", error);
+                alert("No se pudo guardar el turno. Revisa tu conexión.");
+            }
+        });
+
+        onSnapshot(collection(db, "maquinistas"), (snapshot) => {
+            const disponibles = [];
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                if (data.estado === 'disponible') disponibles.push(data.nombre || 'Sin nombre');
+            });
+            disponibles.sort((a, b) => a.localeCompare(b));
+
+            const seleccionActual = otrosSelect.value;
+            otrosSelect.innerHTML = '<option value="">+ OTROS</option>' +
+                disponibles.map((nombre) => `<option value="${nombre}">${nombre}</option>`).join('');
+            if (disponibles.includes(seleccionActual)) otrosSelect.value = seleccionActual;
+        }, (error) => console.error("Error leyendo voluntarios disponibles:", error));
+
         onSnapshot(turnoDocRef, (snap) => {
             const enTurno = snap.exists() ? snap.data().enTurno : null;
-            turnoButtons.forEach((btn) => {
+
+            turnoButtonsArr.forEach((btn) => {
                 const activo = btn.dataset.turno === enTurno;
                 btn.classList.toggle('selected', activo);
                 btn.style.backgroundColor = activo ? 'var(--c-orange)' : 'var(--bg-dark)';
             });
+
+            const esUnoDeLosCuatro = turnoButtonsArr.some((btn) => btn.dataset.turno === enTurno);
+            otrosSelect.value = esUnoDeLosCuatro ? '' : (enTurno || '');
         }, (error) => console.error("Error leyendo el turno:", error));
-
-        // ==========================================
-        // REFUERZO VOLUNTARIO: estado real reportado desde la app de voluntarios
-        // ==========================================
-        const maquinistasListEl = document.getElementById('maquinistas-list');
-
-        onSnapshot(collection(db, "maquinistas"), (snapshot) => {
-            if (snapshot.empty) {
-                maquinistasListEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">Nadie ha reportado su disponibilidad todavía.</div>';
-                return;
-            }
-
-            const conductores = [];
-            snapshot.forEach((docSnap) => conductores.push(docSnap.data()));
-
-            // Disponibles primero, luego por nombre
-            conductores.sort((a, b) => {
-                if (a.estado !== b.estado) return a.estado === 'disponible' ? -1 : 1;
-                return (a.nombre || '').localeCompare(b.nombre || '');
-            });
-
-            maquinistasListEl.innerHTML = conductores.map((c) => {
-                const disponible = c.estado === 'disponible';
-                const color = disponible ? 'var(--c-green)' : 'var(--c-gray)';
-                const etiqueta = disponible ? 'DISPONIBLE' : 'FUERA DE SERVICIO';
-                const hora = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute: '2-digit' }) : '';
-                return `
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background: var(--bg-dark); border-left: 3px solid ${color}; border-radius: 6px; padding: 8px 12px; margin-bottom: 8px;">
-                        <div>
-                            <div style="color: var(--text-light); font-weight: bold; font-size: 0.9rem;">${c.nombre || 'Sin nombre'}</div>
-                            <div style="color: var(--text-muted); font-size: 0.72rem;">Reg. ${c.numeroRegistro || '—'}${hora ? ' · ' + hora : ''}</div>
-                        </div>
-                        <span style="color: ${color}; font-weight: 900; font-size: 0.72rem; white-space: nowrap;">${etiqueta}</span>
-                    </div>
-                `;
-            }).join('');
-        }, (error) => {
-            console.error("Error leyendo conductores:", error);
-            maquinistasListEl.innerHTML = '<div style="color: var(--c-red); font-size: 0.85rem; padding: 8px 0;">Error al cargar conductores.</div>';
-        });
     </script>
 </body>
 </html>
