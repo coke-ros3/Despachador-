@@ -9,7 +9,7 @@
 <body class="central-body">
 
     <div class="topbar">
-        <h1>SISTEMA C.A.D. - CUENTAS DE BOMBEROS</h1>
+        <h1>CUENTAS DE BOMBEROS</h1>
         <div id="clock">00:00:00</div>
     </div>
 
@@ -79,8 +79,7 @@
             <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHO)</option>
             <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
             <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
-            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
-            <option value="usuarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] USUARIOS</option>
+            <option value="usuarios.html" style="background: var(--bg-dark); color: var(--text-light);">[4] USUARIOS</option>
         </select>
     </div>
 
@@ -141,12 +140,15 @@
 
             const secondaryApp = initializeApp(firebaseConfig, 'CreadorSecundario-' + Date.now());
             const secondaryAuth = getAuth(secondaryApp);
+            const secondaryDb = getFirestore(secondaryApp);
 
             try {
                 const email = `${numeroRegistro}@${EMAIL_DOMAIN}`;
                 const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
 
-                await setDoc(doc(db, "bomberos", cred.user.uid), {
+                // Escribimos el perfil MIENTRAS el usuario nuevo sigue con sesión en la app secundaria,
+                // así el documento se crea como "self-write" (uid propio), que es lo que exigen las reglas.
+                await setDoc(doc(secondaryDb, "bomberos", cred.user.uid), {
                     nombreCompleto,
                     numeroRegistro,
                     esMaquinista,

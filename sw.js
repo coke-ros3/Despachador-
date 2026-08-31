@@ -1,11 +1,10 @@
-// Versión 5: se agregó la pantalla de administración de cuentas (usuarios.html)
-const CACHE_NAME = 'bomberos-cad-v5';
+// Versión 6: se retiró "Conductores" del portal (todo pasa por la app de voluntarios) y se limpiaron títulos
+const CACHE_NAME = 'bomberos-cad-v6';
 const urlsToCache = [
   './',
   './index.html',
   './central.html',
   './central2.html',
-  './maquinista.html',
   './gyras.html',
   './usuarios.html',
   './loc.html',
