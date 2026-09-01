@@ -22,6 +22,8 @@
                 <button class="clave-btn" data-code="10-0" style="--clave-color: var(--c-red);" onclick="window.selectClave(this)">10-0 ESTRUCTURAL</button>
                 <button class="clave-btn" data-code="10-1" style="--clave-color: var(--c-red);" onclick="window.selectClave(this)">10-1 VEHÍCULOS</button>
                 <button class="clave-btn" data-code="10-2" style="--clave-color: var(--c-cyan);" onclick="window.selectClave(this)">10-2 PASTIZAL / BOSQUE</button>
+                <button class="clave-btn" data-code="10-3-1" style="--clave-color: var(--c-orange);" onclick="window.selectClave(this)">10-3-1 RESCATE SEGUNDA CÍA</button>
+                <button class="clave-btn" data-code="10-3-2" style="--clave-color: var(--c-purple);" onclick="window.selectClave(this)">10-3-2 G.E.R.S.A.</button>
                 <button class="clave-btn" data-code="10-3" style="--clave-color: var(--c-green);" onclick="window.selectClave(this)">10-3 RESCATE SIMPLE</button>
                 <button class="clave-btn" data-code="10-4" style="--clave-color: var(--c-green);" onclick="window.selectClave(this)">10-4 ACCIDENTE VEHICULAR</button>
                 <button class="clave-btn" data-code="10-5" style="--clave-color: var(--c-orange);" onclick="window.selectClave(this)">10-5 DERRAME QUÍMICO</button>
@@ -29,6 +31,8 @@
                 <button class="clave-btn" data-code="10-7" onclick="window.selectClave(this)">10-7 ELÉCTRICO</button>
                 <button class="clave-btn" data-code="10-8" onclick="window.selectClave(this)">10-8 NO CLASIFICADO</button>
                 <button class="clave-btn" data-code="10-9" onclick="window.selectClave(this)">10-9 OTROS SERVICIOS</button>
+                <button class="clave-btn" data-code="10-9-0" onclick="window.selectClave(this)">10-9-0 P.C.R.</button>
+                <button class="clave-btn" data-code="10-9-1" style="--clave-color: var(--c-red);" onclick="window.selectClave(this)">10-9-1 APOYO SAMU</button>
                 <button class="clave-btn" data-code="10-10" onclick="window.selectClave(this)">10-10 ESCOMBROS</button>
                 <button class="clave-btn" data-code="10-12" style="--clave-color: var(--c-red);" onclick="window.selectClave(this)">10-12 APOYO OTRO CUERPO</button>
                 <button class="clave-btn" data-code="10-14" style="--clave-color: var(--c-red);" onclick="window.selectClave(this)">10-14 ACCIDENTE AÉREO</button>
@@ -139,8 +143,10 @@
         const CODE_COLORS = {
             "10-0": "var(--c-red)", "10-1": "var(--c-red)",
             "10-2": "var(--c-cyan)",
+            "10-3-1": "var(--c-orange)", "10-3-2": "var(--c-purple)",
             "10-3": "var(--c-green)", "10-4": "var(--c-green)",
             "10-5": "var(--c-orange)", "10-6": "var(--c-orange)",
+            "10-9-1": "var(--c-red)",
             "10-12": "var(--c-red)", "10-14": "var(--c-red)",
         };
         function getCodeColor(code) {
@@ -238,10 +244,12 @@
         window.selectClave = function(btn) {
             document.querySelectorAll('.clave-btn').forEach(b => {
                 b.classList.remove('selected');
-                b.style.backgroundColor = 'var(--bg-panel)';
+                b.style.backgroundColor = '';
+                b.style.color = '';
             });
             btn.classList.add('selected');
-            btn.style.backgroundColor = 'var(--c-blue)';
+            btn.style.backgroundColor = '';
+            btn.style.color = '';
             selectedClave = btn.getAttribute('data-code');
         };
 

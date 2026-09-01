@@ -31,10 +31,13 @@ const CODE_COLORS = {
     "10-0":  { light: "#D32F2F", navy: "#FF6B6B" },
     "10-1":  { light: "#D32F2F", navy: "#FF6B6B" },
     "10-2":  { light: "#0288D1", navy: "#4FC3F7" },
+    "10-3-1": { light: "#F57C00", navy: "#FFB74D" },
+    "10-3-2": { light: "#8E24AA", navy: "#CE93D8" },
     "10-3":  { light: "#1E8E3E", navy: "#66BB6A" },
     "10-4":  { light: "#1E8E3E", navy: "#66BB6A" },
     "10-5":  { light: "#F57C00", navy: "#FFB74D" },
     "10-6":  { light: "#F57C00", navy: "#FFB74D" },
+    "10-9-1": { light: "#D32F2F", navy: "#FF6B6B" },
     "10-12": { light: "#D32F2F", navy: "#FF6B6B" },
     "10-14": { light: "#D32F2F", navy: "#FF6B6B" },
 };
