@@ -10,7 +10,7 @@
 <body class="central-body">
 
     <div class="topbar">
-        <h1>CENTRAL DE ALARMAS</h1>
+        <h1>SISTEMA C.A.D. - CENTRAL DE ALARMAS</h1>
         <div id="clock">00:00:00</div>
     </div>
 
@@ -53,7 +53,7 @@
 
                 <div class="form-group" style="position: relative;">
                     <input type="text" id="direccion" placeholder="Dirección Exacta, Nº e Intersección..." autocomplete="off">
-                    <ul id="address-suggestions" class="address-suggestions-list" style="display: none; position: absolute; width: 100%; background: var(--bg-panel); z-index: 9999; list-style: none; padding: 0; margin: 0; border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto;"></ul>
+                    <ul id="address-suggestions" class="address-suggestions-list" style="display: none; position: absolute; width: 100%; background: #1e1e2f; z-index: 9999; list-style: none; padding: 0; margin: 0; border: 1px solid #3a3a50; max-height: 200px; overflow-y: auto;"></ul>
                 </div>
 
                 <div class="form-group">
@@ -113,7 +113,8 @@
             <option value="central.html" style="background: var(--bg-dark); color: var(--text-light);">[1] CENTRAL 1 (DESPACHO)</option>
             <option value="central2.html" style="background: var(--bg-dark); color: var(--text-light);">[2] CENTRAL 2 (TIEMPOS)</option>
             <option value="gyras.html" style="background: var(--bg-dark); color: var(--text-light);">[3] GYRAS (HISTÓRICO)</option>
-            <option value="usuarios.html" style="background: var(--bg-dark); color: var(--text-light);">[4] USUARIOS</option>
+            <option value="maquinista.html" style="background: var(--bg-dark); color: var(--text-light);">[4] CONDUCTORES</option>
+            <option value="usuarios.html" style="background: var(--bg-dark); color: var(--text-light);">[5] USUARIOS</option>
         </select>
     </div>
 
@@ -193,8 +194,8 @@
                                 const li = document.createElement('li');
                                 li.style.padding = '10px';
                                 li.style.cursor = 'pointer';
-                                li.style.color = '#16181D';
-                                li.style.borderBottom = '1px solid #E4E6EA';
+                                li.style.color = '#fff';
+                                li.style.borderBottom = '1px solid #2a2a3a';
                                 
                                 let placeName = place.place_name.split(',')[0].trim();
                                 li.innerText = placeName;
@@ -342,7 +343,7 @@
                         htmlAlarma = `
                         <div style="background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
                             <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem;">NIVEL DE ALARMA:</label>
-                            <select onchange="window.actualizarAlarma('${emId}', this.value)" style="background: var(--bg-panel); color: var(--text-light); border: 1px solid var(--border-color); padding: 5px; border-radius: 4px; font-weight: bold; outline: none; cursor: pointer;">
+                            <select onchange="window.actualizarAlarma('${emId}', this.value)" style="background: var(--bg-panel); color: white; border: 1px solid var(--border-color); padding: 5px; border-radius: 4px; font-weight: bold; outline: none; cursor: pointer;">
                                 <option value="0" ${data.alarma === 0 ? 'selected' : ''}>Despacho Inicial</option>
                                 <option value="1" ${data.alarma === 1 ? 'selected' : ''}>1ª Alarma</option>
                                 <option value="2" ${data.alarma === 2 ? 'selected' : ''}>2ª Alarma</option>

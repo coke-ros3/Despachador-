@@ -1,22 +1,27 @@
 /* =========================================================
-   VARIABLES GLOBALES Y PALETA DE COLORES (MODO OSCURO CLÁSICO)
+   VARIABLES GLOBALES Y PALETA DE COLORES (MODO CLARO, IGUAL A LA APP DE VOLUNTARIOS)
    ========================================================= */
 :root {
-    --bg-dark: #121212;
-    --bg-panel: #1e1e2f;
-    --border-color: #3a3a50;
-    
-    --c-red: #e74c3c;
+    --bg-dark: #F0F1F4;      /* fondo de página (antes era el fondo oscuro) */
+    --bg-panel: #FFFFFF;     /* paneles y tarjetas elevadas (antes panel oscuro) */
+    --border-color: #E4E6EA; /* líneas divisorias sutiles */
+
+    --navy: #0A1931;         /* franjas superiores / chrome de marca, igual que la app */
+    --navy-2: #10233F;
+
+    --c-red: #D32F2F;
     --c-orange: #F57C00;
-    --c-blue: #1976D2;
-    --c-green: #2ecc71;
-    --c-yellow: #f1c40f;
+    --c-blue: #0A58CA;
+    --c-green: #1E8E3E;
+    --c-yellow: #B7791F;
     --c-gray: #7f8c8d;
-    
-    --text-light: #ffffff;
-    --text-muted: #a0a0b0;
-    
-    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    --text-light: #16181D;   /* texto principal (antes blanco, ahora oscuro) */
+    --text-muted: #6B6F76;   /* texto secundario */
+    --text-on-navy: #FFFFFF;
+    --text-on-navy-dim: rgba(255, 255, 255, 0.65);
+
+    --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --font-oficial: Arial, Helvetica, sans-serif;
 
     /* Para el redimensionamiento de paneles en Central */
@@ -39,7 +44,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 .index-header p { color: var(--text-muted); font-size: 1.1rem; }
 .index-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
 .index-card { background-color: var(--bg-panel); border: 2px solid var(--border-color); border-radius: 8px; padding: 25px; text-decoration: none; color: var(--text-light); transition: transform 0.2s, box-shadow 0.2s; }
-.index-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
+.index-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(16,24,40,0.12); }
 .index-card h2 { font-size: 1.3rem; margin-bottom: 10px; }
 .index-card p { color: var(--text-muted); font-size: 0.95rem; }
 .card-cad { border-color: var(--c-red); }
@@ -51,8 +56,8 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
    2. CENTRAL DE ALARMAS 1 (CENTRAL.HTML)
    ========================================================= */
 .central-body { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-.topbar { background-color: var(--bg-panel); border-bottom: 1px solid var(--border-color); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-.topbar h1 { font-size: 1.2rem; color: var(--text-light); }
+.topbar { background-color: var(--navy); border-bottom: 1px solid var(--navy-2); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+.topbar h1 { font-size: 1.2rem; color: var(--text-on-navy); }
 #clock { font-size: 1.2rem; font-weight: bold; color: var(--c-orange); }
 .triptych { display: flex; flex: 1; overflow: hidden; }
 .panel { background-color: var(--bg-dark); overflow-y: auto; padding: 15px; }
@@ -62,7 +67,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 .resizer { width: 5px; background-color: var(--border-color); cursor: col-resize; }
 .claves-list { display: flex; flex-direction: column; gap: 8px; }
 .clave-btn { background-color: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-light); padding: 10px; text-align: left; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
-.clave-btn:hover { background-color: #2a2a3a; }
+.clave-btn:hover { background-color: var(--bg-dark); }
 .clave-btn.selected { background-color: var(--c-red); border-color: var(--c-red); }
 .dispatch-form-layout { display: flex; flex-direction: column; height: 100%; gap: 15px; }
 .mini-map { flex: 1; min-height: 200px; border: 2px solid var(--border-color); border-radius: 8px; overflow: hidden; }
@@ -94,7 +99,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
    3. CENTRAL DE ALARMAS 2 (CENTRAL2.HTML)
    ========================================================= */
 .c2-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; padding: 20px; }
-.c2-card { background-color: var(--bg-panel); border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+.c2-card { background-color: var(--bg-panel); border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(16,24,40,0.08); }
 .c2-unit-row { background-color: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); }
 .c2-times-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
 .btn-c2-time { background-color: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
@@ -105,7 +110,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
    4. APP MAQUINISTAS Y CONDUCTORES
    ========================================================= */
 .maquinista-body { background-color: var(--bg-dark); display: flex; flex-direction: column; height: 100vh; }
-.app-header { background-color: var(--bg-panel); padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
+.app-header { background-color: var(--navy); padding: 15px; text-align: center; border-bottom: 1px solid var(--navy-2); color: var(--text-on-navy); }
 .app-header h1 { font-size: 1.2rem; }
 .content-area { flex: 1; overflow-y: auto; padding: 20px; }
 .tab-section { display: none; }
@@ -138,7 +143,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 /* =========================================================
    5. COMPARTIR UBICACIÓN (LOC.HTML)
    ========================================================= */
-.loc-body { display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #f0f2f5; color: #333; }
+.loc-body { display: flex; align-items: center; justify-content: center; height: 100vh; background-color: var(--bg-dark); color: var(--text-light); }
 .loc-box { background: var(--bg-panel); padding: 30px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%; max-width: 350px; }
 .loc-box h2 { color: var(--c-red); margin-top: 0; font-size: 1.5rem; text-transform: uppercase; }
 .btn-loc { background: var(--c-blue); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 20px; cursor: pointer; }
@@ -150,7 +155,7 @@ body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); pa
 .gyras-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
 .gyras-header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; color: var(--text-light); }
 .gyras-header h1 span { color: var(--c-blue); }
-.gyras-station-tag { background: #222; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; border: 1px solid #444; color: var(--c-yellow); }
+.gyras-station-tag { background: var(--navy); padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; border: none; color: var(--c-yellow); }
 
 .gyras-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
 .gyras-stat-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; text-align: center; }
@@ -165,11 +170,11 @@ body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); pa
 
 .gyras-table-container { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px; overflow-x: auto; flex: 1; margin-bottom: 60px; }
 .gyras-table-container table { width: 100%; border-collapse: collapse; text-align: left; }
-.gyras-table-container th { background: #000; padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: bold; border-bottom: 2px solid var(--border-color); }
+.gyras-table-container th { background: var(--navy); padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-on-navy-dim); font-weight: bold; border-bottom: 2px solid var(--navy-2); }
 .gyras-table-container td { padding: 14px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; }
 .gyras-empty-state { padding: 40px; text-align: center; color: var(--text-muted); font-weight: bold; font-style: italic; }
 
-.badge-code { background: #222; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #444; font-size: 0.85rem; display: inline-block; }
+.badge-code { background: var(--bg-dark); padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid var(--border-color); font-size: 0.85rem; display: inline-block; }
 .badge-code.estructural { border-color: var(--c-red); color: var(--c-red); }
 .badge-code.pastizal { border-color: var(--c-green); color: var(--c-green); }
 .badge-code.rescate { border-color: var(--c-orange); color: var(--c-orange); }
@@ -180,7 +185,7 @@ body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); pa
 /* EL MODAL DE IMPRESIÓN DEL GYRAS */
 .gyras-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 15px; }
 .gyras-modal-content-doc { background: #E5E5EA; width: 100%; max-width: 950px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); display: flex; flex-direction: column; max-height: 90vh; }
-.gyras-doc-header-dark { background: #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+.gyras-doc-header-dark { background: var(--navy); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--navy-2); }
 .btn-print { background: var(--c-blue); color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; }
 .gyras-modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
 .gyras-modal-body { padding: 20px; overflow-x: auto; max-height: 70vh; }
