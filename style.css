@@ -78,7 +78,7 @@ body { background-color: var(--bg-dark); color: var(--text-light); font-family: 
 .btn-gps-wa, .btn-gps-sms { flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; }
 .btn-gps-wa { background-color: #25D366; }
 .btn-gps-sms { background-color: var(--c-blue); }
-.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background-color: var(--bg-panel); border: 1px solid var(--border-color); color: white; border-radius: 4px; font-family: var(--font-main); }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background-color: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-light); border-radius: 4px; font-family: var(--font-main); }
 .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--c-orange); }
 .chk-atentado-container { display: flex; align-items: center; gap: 10px; color: var(--c-red); font-weight: bold; margin-top: 10px; font-size: 0.9rem; }
 .form-footer-stick { margin-top: auto; }
