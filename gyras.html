@@ -249,11 +249,22 @@
         const filterUnit = document.getElementById('filter-unit');
         const emptyState = document.getElementById('empty-state');
 
+        // Los registros de más de 3 días quedan ocultos por defecto (no se borran, solo no se listan aquí)
+        const DIAS_VISIBLES_POR_DEFECTO = 3;
+
+        function fechaDeRegistro(em) {
+            return em.fecha_termino ? new Date(em.fecha_termino) : new Date(em.id);
+        }
+
+        function esReciente(em) {
+            const limite = Date.now() - DIAS_VISIBLES_POR_DEFECTO * 24 * 60 * 60 * 1000;
+            return fechaDeRegistro(em).getTime() >= limite;
+        }
+
         onSnapshot(collection(db, "historial_emergencias"), (snapshot) => {
             rawDataList = [];
             snapshot.forEach((doc) => { rawDataList.push(doc.data()); });
             rawDataList.sort((a, b) => b.id - a.id);
-            calcularEstadisticas(rawDataList);
             aplicarFiltros();
         });
 
@@ -269,7 +280,11 @@
             const codeVal = filterCode.value;
             const unitVal = filterUnit.value;
 
-            const filtered = rawDataList.filter(em => {
+            const listaVisible = rawDataList.filter(esReciente);
+
+            calcularEstadisticas(listaVisible);
+
+            const filtered = listaVisible.filter(em => {
                 const matchText = em.address.toLowerCase().includes(queryText) || (em.obs && em.obs.toLowerCase().includes(queryText));
                 const matchCode = (codeVal === 'todos') || (em.code === codeVal);
                 const matchUnit = (unitVal === 'todos') || (em.units && em.units.includes(unitVal));
