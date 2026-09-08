@@ -11,7 +11,10 @@
     <!-- CABECERA Y ESTADÍSTICAS (INTERFAZ WEB) -->
     <div class="gyras-header">
         <h1>GYRAS</h1>
-        <div class="gyras-station-tag">CUARTEL CENTRAL - NUEVA IMPERIAL</div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div class="gyras-station-tag">CUARTEL CENTRAL - NUEVA IMPERIAL</div>
+            <button id="btn-limpiar-historial" class="btn-limpiar-historial" title="Borra todos los registros del historial (útil antes de una demo)">🗑️ Vaciar historial</button>
+        </div>
     </div>
 
     <div class="gyras-stats-grid">
@@ -215,7 +218,7 @@
     <!-- SCRIPT FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -417,6 +420,60 @@
 
         document.getElementById('btn-close-modal').addEventListener('click', () => { document.getElementById('detail-modal').style.display = 'none'; currentEmId = null; });
         window.addEventListener('click', (e) => { if (e.target === document.getElementById('detail-modal')) { document.getElementById('detail-modal').style.display = 'none'; currentEmId = null; } });
+
+        // ==========================================
+        // VACIAR HISTORIAL (para dejar el GYRAS limpio antes de una demo)
+        // ==========================================
+        const btnLimpiar = document.getElementById('btn-limpiar-historial');
+        btnLimpiar.addEventListener('click', async () => {
+            if (rawDataList.length === 0) {
+                alert('El historial ya está vacío.');
+                return;
+            }
+
+            const primeraConfirmacion = confirm(
+                `Esto borrará TODOS los registros del historial (${rawDataList.length} en total) de forma PERMANENTE.\n\n` +
+                `Úsalo solo para limpiar datos de prueba antes de mostrar el sistema. No se puede deshacer.\n\n` +
+                `¿Continuar?`
+            );
+            if (!primeraConfirmacion) return;
+
+            const textoEsperado = 'BORRAR';
+            const escrito = prompt(`Para confirmar, escribe ${textoEsperado} en mayúsculas:`);
+            if (escrito !== textoEsperado) {
+                alert('Cancelado: el texto no coincide.');
+                return;
+            }
+
+            btnLimpiar.disabled = true;
+            btnLimpiar.textContent = 'Borrando…';
+
+            try {
+                // Firestore permite máx. 500 operaciones por batch
+                const lote = [...rawDataList];
+                for (let i = 0; i < lote.length; i += 450) {
+                    const trozo = lote.slice(i, i + 450);
+                    const batch = writeBatch(db);
+                    trozo.forEach((em) => {
+                        batch.delete(doc(db, "historial_emergencias", em.id.toString()));
+                    });
+                    await batch.commit();
+                }
+
+                // Limpiar también los borradores locales guardados en este dispositivo
+                Object.keys(localStorage)
+                    .filter((k) => k.startsWith('gyras_draft_hist_'))
+                    .forEach((k) => localStorage.removeItem(k));
+
+                alert('Historial vaciado correctamente.');
+            } catch (error) {
+                console.error('Error vaciando el historial:', error);
+                alert('Ocurrió un error al borrar. Revisa tu conexión e intenta nuevamente.');
+            } finally {
+                btnLimpiar.disabled = false;
+                btnLimpiar.textContent = '🗑️ Vaciar historial';
+            }
+        });
     </script>
 
     <!-- MENÚ FLOTANTE ACTUALIZADO -->
@@ -430,6 +487,298 @@
         </select>
     </div>
     <script>document.getElementById('vista-selector').value = 'gyras.html';</script>
+
+    <!-- ================= MODO CALIBRACIÓN (?calibrar=1 / abrirCalibrador()) ================= -->
+    <script>
+    (function () {
+        const PASO_FINO_TECLADO = 0.05;   // % por flecha sin Shift
+        const PASO_GRUESO_TECLADO = 0.5;  // % por flecha con Shift
+        const PASO_FINO_DPAD = 0.1;
+        const PASO_GRUESO_DPAD = 1;
+
+        let calibrando = false;
+        let pasoGruesoDpad = false;
+        let campoActivo = null;
+        let drag = null;
+
+        function pct(n) { return Math.round(n * 100) / 100; }
+        function clamp(v) { return Math.min(100, Math.max(0, v)); }
+
+        window.abrirCalibrador = function () {
+            if (calibrando) return;
+            calibrando = true;
+            document.body.classList.add('modo-calibracion');
+            document.getElementById('detail-modal').style.display = 'flex';
+            prepararCampos();
+            crearBarraCalibracion();
+            crearDpad();
+        };
+
+        window.cerrarCalibrador = function () {
+            calibrando = false;
+            document.body.classList.remove('modo-calibracion');
+            document.getElementById('detail-modal').style.display = 'none';
+            seleccionarCampo(null);
+            const barra = document.getElementById('cal-topbar');
+            if (barra) barra.remove();
+            const dpad = document.getElementById('cal-dpad');
+            if (dpad) dpad.remove();
+            cerrarExportModal();
+            if (window.history.replaceState) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('calibrar');
+                window.history.replaceState({}, '', url);
+            }
+        };
+
+        function camposCalibrables() {
+            return document.querySelectorAll('.hoja-plantilla .dato-overlay, .hoja-plantilla .chk-overlay');
+        }
+
+        // Convierte cada campo a % (si venía en px) y lo deja identificable + arrastrable
+        function prepararCampos() {
+            camposCalibrables().forEach((el) => {
+                convertirAPorcentaje(el);
+                if (el.tagName === 'INPUT' && el.type === 'checkbox') {
+                    crearEtiquetaCheckbox(el);
+                } else if (!el.value) {
+                    el.setAttribute('placeholder', `[${el.id}]`);
+                }
+                habilitarArrastre(el);
+            });
+        }
+
+        function convertirAPorcentaje(el) {
+            const contenedor = el.closest('.hoja-plantilla');
+            if (!contenedor) return;
+            const anchoBase = contenedor.offsetWidth;
+            const altoBase = contenedor.offsetHeight;
+            if (el.style.top && el.style.top.endsWith('px')) {
+                el.style.top = pct((parseFloat(el.style.top) / altoBase) * 100) + '%';
+            }
+            if (el.style.left && el.style.left.endsWith('px')) {
+                el.style.left = pct((parseFloat(el.style.left) / anchoBase) * 100) + '%';
+            }
+        }
+
+        function crearEtiquetaCheckbox(el) {
+            let etiqueta = document.getElementById('cal-label-' + el.id);
+            if (!etiqueta) {
+                etiqueta = document.createElement('span');
+                etiqueta.id = 'cal-label-' + el.id;
+                etiqueta.className = 'chk-cal-label';
+                etiqueta.textContent = `[${el.id}]`;
+                el.insertAdjacentElement('afterend', etiqueta);
+            }
+            sincronizarEtiqueta(el);
+        }
+
+        function sincronizarEtiqueta(el) {
+            const etiqueta = document.getElementById('cal-label-' + el.id);
+            if (etiqueta) {
+                etiqueta.style.top = el.style.top;
+                etiqueta.style.left = el.style.left;
+            }
+        }
+
+        // Arrastre con mouse Y dedo (Pointer Events cubre ambos)
+        function habilitarArrastre(el) {
+            if (el.dataset.calArrastrable === '1') return;
+            el.dataset.calArrastrable = '1';
+
+            el.addEventListener('pointerdown', (e) => {
+                if (!calibrando) return;
+                e.preventDefault(); // evita foco/teclado en pantalla al tocar un input
+                seleccionarCampo(el);
+                const contenedor = el.closest('.hoja-plantilla');
+                const rect = contenedor.getBoundingClientRect();
+                drag = {
+                    el, rect,
+                    startX: e.clientX, startY: e.clientY,
+                    startTop: parseFloat(el.style.top) || 0,
+                    startLeft: parseFloat(el.style.left) || 0,
+                    pointerId: e.pointerId
+                };
+                el.classList.add('campo-arrastrando');
+                try { el.setPointerCapture(e.pointerId); } catch (err) {}
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (!drag || drag.el !== el || e.pointerId !== drag.pointerId) return;
+                const dx = e.clientX - drag.startX;
+                const dy = e.clientY - drag.startY;
+                el.style.left = pct(clamp(drag.startLeft + (dx / drag.rect.width) * 100)) + '%';
+                el.style.top = pct(clamp(drag.startTop + (dy / drag.rect.height) * 100)) + '%';
+                sincronizarEtiqueta(el);
+            });
+
+            const soltar = () => {
+                if (drag && drag.el === el) {
+                    el.classList.remove('campo-arrastrando');
+                    drag = null;
+                }
+            };
+            el.addEventListener('pointerup', soltar);
+            el.addEventListener('pointercancel', soltar);
+        }
+
+        function seleccionarCampo(el) {
+            if (campoActivo) campoActivo.classList.remove('campo-activo');
+            campoActivo = el;
+            if (campoActivo) campoActivo.classList.add('campo-activo');
+            const info = document.getElementById('cal-campo-activo');
+            if (info) info.textContent = campoActivo ? campoActivo.id : 'Ningún campo seleccionado';
+        }
+
+        function moverCampoActivo(dx, dy) {
+            if (!campoActivo) return;
+            campoActivo.style.top = pct(clamp((parseFloat(campoActivo.style.top) || 0) + dy)) + '%';
+            campoActivo.style.left = pct(clamp((parseFloat(campoActivo.style.left) || 0) + dx)) + '%';
+            sincronizarEtiqueta(campoActivo);
+        }
+
+        // Ajuste fino con flechas del teclado; Shift = paso grueso
+        document.addEventListener('keydown', (e) => {
+            if (!calibrando || !campoActivo) return;
+            const mapa = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+            if (!mapa[e.key]) return;
+            e.preventDefault();
+            const paso = e.shiftKey ? PASO_GRUESO_TECLADO : PASO_FINO_TECLADO;
+            moverCampoActivo(mapa[e.key][0] * paso, mapa[e.key][1] * paso);
+        });
+
+        // Reparte todos los campos de cada hoja en una grilla, por si arrancan amontonados
+        function repartirEnGrilla() {
+            document.querySelectorAll('.hoja-plantilla').forEach((contenedor) => {
+                const campos = contenedor.querySelectorAll('.dato-overlay, .chk-overlay');
+                const columnas = 5;
+                const pasoX = 18, pasoY = 7;
+                campos.forEach((el, i) => {
+                    const col = i % columnas;
+                    const fila = Math.floor(i / columnas);
+                    el.style.left = pct(4 + col * pasoX) + '%';
+                    el.style.top = pct(4 + fila * pasoY) + '%';
+                    sincronizarEtiqueta(el);
+                });
+            });
+        }
+
+        // Reconstruye la línea original del campo (misma etiqueta/atributos) con el top/left ya actualizado
+        function limpiarClon(el) {
+            const clon = el.cloneNode(false);
+            clon.removeAttribute('placeholder');
+            clon.removeAttribute('data-cal-arrastrable');
+            clon.classList.remove('campo-activo', 'campo-arrastrando');
+            if (clon.getAttribute('class') === '') clon.removeAttribute('class');
+            return clon.outerHTML;
+        }
+
+        function generarExport() {
+            let salida = '';
+            document.querySelectorAll('.hoja-plantilla').forEach((contenedor, idx) => {
+                salida += `<!-- PÁGINA ${idx + 1} -->\n`;
+                contenedor.querySelectorAll('.dato-overlay, .chk-overlay').forEach((el) => {
+                    salida += limpiarClon(el) + '\n';
+                });
+                salida += '\n';
+            });
+            return salida.trim();
+        }
+
+        function crearBarraCalibracion() {
+            if (document.getElementById('cal-topbar')) return;
+            const barra = document.createElement('div');
+            barra.id = 'cal-topbar';
+            barra.className = 'cal-topbar';
+            barra.innerHTML = `
+                <div>
+                    <div class="cal-title">🎯 Modo calibración</div>
+                    <div class="cal-campo-activo" id="cal-campo-activo">Ningún campo seleccionado</div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="cal-btn secundario" id="cal-btn-grilla">Repartir en grilla</button>
+                    <button class="cal-btn" id="cal-btn-exportar">Exportar coordenadas</button>
+                    <button class="cal-btn salir" id="cal-btn-salir">Salir</button>
+                </div>
+            `;
+            document.body.appendChild(barra);
+            document.getElementById('cal-btn-grilla').addEventListener('click', repartirEnGrilla);
+            document.getElementById('cal-btn-exportar').addEventListener('click', abrirExportModal);
+            document.getElementById('cal-btn-salir').addEventListener('click', window.cerrarCalibrador);
+        }
+
+        function crearDpad() {
+            if (document.getElementById('cal-dpad')) return;
+            const dpad = document.createElement('div');
+            dpad.id = 'cal-dpad';
+            dpad.className = 'cal-dpad';
+            dpad.innerHTML = `
+                <span></span><button data-dx="0" data-dy="-1">▲</button><span></span>
+                <button data-dx="-1" data-dy="0">◀</button>
+                <button class="cal-paso" id="cal-toggle-paso">FINO</button>
+                <button data-dx="1" data-dy="0">▶</button>
+                <span></span><button data-dx="0" data-dy="1">▼</button><span></span>
+            `;
+            document.body.appendChild(dpad);
+            dpad.querySelectorAll('button[data-dx]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const paso = pasoGruesoDpad ? PASO_GRUESO_DPAD : PASO_FINO_DPAD;
+                    moverCampoActivo(parseFloat(btn.dataset.dx) * paso, parseFloat(btn.dataset.dy) * paso);
+                });
+            });
+            document.getElementById('cal-toggle-paso').addEventListener('click', (e) => {
+                pasoGruesoDpad = !pasoGruesoDpad;
+                e.target.textContent = pasoGruesoDpad ? 'GRUESO' : 'FINO';
+            });
+        }
+
+        function abrirExportModal() {
+            let modal = document.getElementById('cal-export-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'cal-export-modal';
+                modal.className = 'cal-export-modal';
+                modal.innerHTML = `
+                    <div class="cal-export-box">
+                        <strong>Coordenadas actualizadas — copia y pega en el código</strong>
+                        <textarea id="cal-export-text" readonly></textarea>
+                        <div style="display:flex; gap:10px; justify-content:flex-end;">
+                            <button class="cal-btn secundario" id="cal-export-cerrar">Cerrar</button>
+                            <button class="cal-btn" id="cal-export-copiar">Copiar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('cal-export-cerrar').addEventListener('click', cerrarExportModal);
+                document.getElementById('cal-export-copiar').addEventListener('click', () => {
+                    const ta = document.getElementById('cal-export-text');
+                    ta.select();
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(ta.value).catch(() => document.execCommand('copy'));
+                    } else {
+                        document.execCommand('copy');
+                    }
+                    const btn = document.getElementById('cal-export-copiar');
+                    const original = btn.textContent;
+                    btn.textContent = '¡Copiado!';
+                    setTimeout(() => { btn.textContent = original; }, 1500);
+                });
+            }
+            document.getElementById('cal-export-text').value = generarExport();
+            modal.classList.add('abierto');
+        }
+
+        function cerrarExportModal() {
+            const modal = document.getElementById('cal-export-modal');
+            if (modal) modal.classList.remove('abierto');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('calibrar') === '1') window.abrirCalibrador();
+        });
+    })();
+    </script>
 
 </body>
 </html>

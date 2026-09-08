@@ -158,6 +158,9 @@ body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); pa
 .gyras-header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; color: var(--text-light); }
 .gyras-header h1 span { color: var(--c-blue); }
 .gyras-station-tag { background: var(--navy); padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; border: none; color: var(--c-yellow); }
+.btn-limpiar-historial { background: transparent; border: 1px solid var(--c-red); color: var(--c-red); padding: 8px 14px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
+.btn-limpiar-historial:hover { background: var(--c-red); color: #fff; }
+.btn-limpiar-historial:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .gyras-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
 .gyras-stat-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; text-align: center; }
@@ -288,4 +291,151 @@ body.gyras-body { background-color: var(--bg-dark); color: var(--text-light); pa
     /* 5. Ocultar menú superior y fondos naranjas de ayuda */
     .gyras-doc-header-dark { display: none !important; }
     .dato-overlay { background: transparent !important; border: none !important; }
+}
+
+/* =========================================================
+   8. MODO CALIBRACIÓN GYRAS (?calibrar=1 / abrirCalibrador())
+   ========================================================= */
+body.modo-calibracion .gyras-header,
+body.modo-calibracion .gyras-stats-grid,
+body.modo-calibracion .gyras-filter-bar,
+body.modo-calibracion .gyras-table-container,
+body.modo-calibracion > div[style*="position: fixed"] {
+    display: none !important;
+}
+
+body.modo-calibracion .gyras-modal {
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: #2b2f36 !important;
+    padding: 0 !important;
+    z-index: 5000;
+}
+body.modo-calibracion .gyras-doc-header-dark { display: none !important; }
+body.modo-calibracion .gyras-modal-content-doc {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+body.modo-calibracion .gyras-modal-body {
+    height: 100%;
+    max-height: none !important;
+    overflow: auto !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 90px 20px 150px 20px !important;
+    background: #2b2f36 !important;
+}
+
+body.modo-calibracion .dato-overlay,
+body.modo-calibracion .chk-overlay {
+    cursor: grab;
+    touch-action: none;
+}
+body.modo-calibracion .campo-arrastrando {
+    cursor: grabbing !important;
+}
+.campo-activo {
+    outline: 3px solid var(--c-blue) !important;
+    outline-offset: 1px;
+    z-index: 999 !important;
+}
+
+.chk-cal-label {
+    position: absolute;
+    background: rgba(10, 88, 202, 0.9);
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 11;
+    transform: translateY(-100%);
+}
+
+/* Barra flotante superior del calibrador */
+.cal-topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    z-index: 5100;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.cal-topbar .cal-title { font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-orange); }
+.cal-topbar .cal-campo-activo { font-size: 0.8rem; color: var(--text-on-navy-dim); }
+.cal-btn {
+    background: var(--c-blue);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.cal-btn.secundario { background: transparent; border: 1px solid rgba(255,255,255,0.4); }
+.cal-btn.salir { background: var(--c-red); }
+
+/* D-pad flotante (uso táctil / iPad) */
+.cal-dpad {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(10, 25, 49, 0.92);
+    border-radius: 12px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 46px);
+    grid-template-rows: repeat(3, 46px);
+    gap: 4px;
+    z-index: 5100;
+}
+.cal-dpad button {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-light);
+    cursor: pointer;
+}
+.cal-dpad button:active { background: var(--c-orange); color: #fff; }
+.cal-dpad .cal-paso {
+    grid-column: 2; grid-row: 2;
+    font-size: 0.55rem !important;
+    background: var(--c-blue) !important;
+    color: #fff !important;
+}
+
+/* Modal de exportación de coordenadas */
+.cal-export-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; align-items: center; justify-content: center;
+    z-index: 6000; padding: 20px;
+}
+.cal-export-modal.abierto { display: flex; }
+.cal-export-box {
+    background: var(--bg-panel); border-radius: 8px; padding: 20px;
+    width: 100%; max-width: 700px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px;
+    color: var(--text-light);
+}
+.cal-export-box textarea {
+    width: 100%; flex: 1; min-height: 300px; font-family: monospace; font-size: 0.8rem;
+    padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; resize: vertical;
+    color: var(--text-light); background: var(--bg-dark);
 }
