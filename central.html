@@ -47,6 +47,9 @@
         <div class="panel panel-center" id="panel-form">
             <div class="dispatch-form-layout">
                 
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0 0 6px; text-align: center;">
+                    ¿No aparece la dirección en las sugerencias? Toca el mapa para marcarla a mano.
+                </p>
                 <div class="mini-map">
                     <div id="map"></div>
                 </div>
@@ -175,6 +178,23 @@
         let selectedUnits = [];
         let selectedCoords = null; 
         let dispatchMarker = null; 
+
+        // Pin manual: si el buscador no encuentra la dirección, el despachador
+        // marca el punto directo tocando el mapa. Reutiliza las mismas
+        // variables que usa la búsqueda, así despachar() no necesita cambios.
+        map.on('click', (e) => {
+            selectedCoords = [e.latlng.lat, e.latlng.lng];
+            suggestionsList.style.display = 'none';
+
+            if (dispatchMarker) map.removeLayer(dispatchMarker);
+            dispatchMarker = L.marker(selectedCoords, {
+                icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
+            }).addTo(map).bindPopup('<b>Punto marcado a mano</b>').openPopup();
+
+            if (!addressInput.value.trim()) {
+                addressInput.value = 'UBICACIÓN MARCADA EN EL MAPA';
+            }
+        });
 
         const addressInput = document.getElementById('direccion');
         const suggestionsList = document.getElementById('address-suggestions');
