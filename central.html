@@ -198,7 +198,9 @@
                 try {
                     const resp = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}&language=es&limit=1`);
                     const data = await resp.json();
-                    const encontrada = data.features && data.features[0] ? data.features[0].place_name : null;
+                    const encontrada = data.features && data.features[0]
+                        ? data.features[0].place_name.split(',')[0].trim()
+                        : null;
 
                     // El despachador pudo haber tocado otro punto mientras esperábamos
                     // la respuesta; si ya no es el mismo punto, no pisamos lo nuevo.
