@@ -179,8 +179,10 @@
         // Pin manual: si el buscador no encuentra la dirección, el despachador
         // marca el punto directo tocando el mapa. Reutiliza las mismas
         // variables que usa la búsqueda, así despachar() no necesita cambios.
-        map.on('click', (e) => {
-            selectedCoords = [e.latlng.lat, e.latlng.lng];
+        map.on('click', async (e) => {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            selectedCoords = [lat, lng];
             suggestionsList.style.display = 'none';
 
             if (dispatchMarker) map.removeLayer(dispatchMarker);
@@ -188,8 +190,29 @@
                 icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
             }).addTo(map).bindPopup('<b>Punto marcado a mano</b>').openPopup();
 
+            // Si el despachador no había escrito nada, buscamos la dirección más
+            // cercana a ese punto (geocodificación inversa). Si ya escribió una
+            // descripción propia del lugar, la respetamos y no la pisamos.
             if (!addressInput.value.trim()) {
-                addressInput.value = 'UBICACIÓN MARCADA EN EL MAPA';
+                addressInput.value = 'Buscando dirección…';
+                try {
+                    const resp = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}&language=es&limit=1`);
+                    const data = await resp.json();
+                    const encontrada = data.features && data.features[0] ? data.features[0].place_name : null;
+
+                    // El despachador pudo haber tocado otro punto mientras esperábamos
+                    // la respuesta; si ya no es el mismo punto, no pisamos lo nuevo.
+                    if (selectedCoords[0] === lat && selectedCoords[1] === lng) {
+                        addressInput.value = encontrada
+                            ? encontrada.toUpperCase()
+                            : 'UBICACIÓN MARCADA EN EL MAPA (sin dirección cercana)';
+                    }
+                } catch (err) {
+                    console.error('Error en geocodificación inversa:', err);
+                    if (selectedCoords[0] === lat && selectedCoords[1] === lng) {
+                        addressInput.value = 'UBICACIÓN MARCADA EN EL MAPA';
+                    }
+                }
             }
         });
 
