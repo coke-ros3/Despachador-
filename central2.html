@@ -21,6 +21,11 @@
         </button>
     </div>
 
+    <div id="panel-flota" style="background: var(--bg-panel); border-bottom: 1px solid var(--border-color); padding: 14px 25px;">
+        <span style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; text-transform: uppercase; display: block; margin-bottom: 10px;">Estado de la flota</span>
+        <div id="chips-flota" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+    </div>
+
     <div class="c2-grid" id="c2-container">
     </div>
 
@@ -73,6 +78,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, serverTimestamp, doc, updateDoc, getDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA-NIM0pbgU2w85mWFhqUEkbA3L0_NrimI",
@@ -85,6 +91,17 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const functions = getFunctions(app, 'southamerica-west1');
+
+        // Misma lista de unidades que usa Usuarios.
+        const UNIDADES = ['B-1', 'Z-1', 'BT-1', 'B-2', 'R-2', 'BX-2', 'B-3', 'BX-3', 'G-3'];
+
+        // Códigos de llegada de otras instituciones. Se guardan como texto simple
+        // junto al despacho; el nombre completo es solo para mostrar en el botón.
+        const INSTITUCIONES = [
+            { clave: '1-0', label: 'Carabineros' },
+            { clave: '1-2', label: 'Ambulancia' },
+        ];
 
         document.getElementById('vista-selector').value = 'central2.html';
 
@@ -97,6 +114,49 @@
 
         const container = document.getElementById('c2-container');
         const modalServicio = document.getElementById('modal-servicio');
+
+        // ==========================================
+        // ESTADO DE LA FLOTA (unidades fuera de servicio)
+        // ==========================================
+        // Un solo documento con un mapa {unidad: true/false}. true = fuera de
+        // servicio. Si la unidad no aparece en el mapa, se asume en servicio.
+        const REF_FLOTA = doc(db, "operaciones", "flota");
+        let estadoFlota = {};
+        const chipsFlota = document.getElementById('chips-flota');
+
+        function pintarChipsFlota() {
+            chipsFlota.innerHTML = UNIDADES.map(u => {
+                const fuera = !!estadoFlota[u];
+                return `
+                    <button class="chip-unidad" data-unidad="${u}" style="
+                        padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;
+                        cursor: pointer; border: 1.5px solid ${fuera ? 'var(--c-red)' : 'var(--border-color)'};
+                        background: ${fuera ? 'var(--c-red)' : 'var(--bg-dark)'};
+                        color: ${fuera ? 'white' : 'var(--text-light)'};
+                    ">${u}${fuera ? ' · FUERA DE SERVICIO' : ''}</button>
+                `;
+            }).join('');
+
+            chipsFlota.querySelectorAll('.chip-unidad').forEach(chip => {
+                chip.addEventListener('click', async () => {
+                    const u = chip.dataset.unidad;
+                    const nuevoEstado = !estadoFlota[u];
+                    try {
+                        await setDoc(REF_FLOTA, { [u]: nuevoEstado }, { merge: true });
+                    } catch (e) {
+                        console.error("Error actualizando estado de flota:", e);
+                        alert("No se pudo actualizar el estado de la unidad.");
+                    }
+                });
+            });
+        }
+
+        onSnapshot(REF_FLOTA, (snap) => {
+            estadoFlota = snap.exists() ? snap.data() : {};
+            pintarChipsFlota();
+        }, (error) => {
+            console.error("Error escuchando estado de flota:", error);
+        });
 
         window.abrirModalServicio = () => { modalServicio.style.display = 'flex'; };
         window.cerrarModalServicio = () => { 
@@ -158,11 +218,34 @@
                 card.style.borderTop = `4px solid ${themeColor}`;
                 
                 let cardHtml = `
-                    <div class="c2-card-header" style="border-bottom: 2px solid ${themeColor}; padding-bottom: 10px;">
-                        <h2 style="color: ${themeColor}; margin: 0; font-size: 1.4rem; font-weight: 900; text-transform: uppercase;">${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}</h2>
-                        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 1rem; font-weight: bold; text-transform: uppercase;">${data.address}</p>
+                    <div class="c2-card-header" style="border-bottom: 2px solid ${themeColor}; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <div>
+                            <h2 style="color: ${themeColor}; margin: 0; font-size: 1.4rem; font-weight: 900; text-transform: uppercase;">${data.code} ${data.alarma > 0 ? `(${data.alarma}ª Alarma)` : ''}</h2>
+                            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 1rem; font-weight: bold; text-transform: uppercase;">${data.address}</p>
+                        </div>
+                        ${!isServicio ? `
+                            <button onclick="window.solicitar66('${emId}')" style="
+                                background: transparent; border: 1.5px solid var(--c-orange); color: var(--c-orange);
+                                padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem;
+                                cursor: pointer; white-space: nowrap; text-transform: uppercase;
+                            ">Pedir 6-6</button>
+                        ` : ''}
                     </div>
-                    <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;"></div>
+                    <div style="display: flex; gap: 12px; margin-top: 15px; align-items: flex-start;">
+                        <div id="units-container-${emId}" style="display: flex; flex-direction: column; gap: 10px; flex: 1;"></div>
+                        ${!isServicio ? `
+                            <div style="display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;">
+                                <span style="color: var(--text-muted); font-size: 0.65rem; font-weight: bold; text-transform: uppercase; text-align: center;">Otras<br>instituciones</span>
+                                ${INSTITUCIONES.map(inst => {
+                                    const marcado = data.institucionesLog && data.institucionesLog[inst.clave];
+                                    return `<button class="btn-c2-time ${marcado ? 'marcado' : ''}" style="min-width: 64px; font-size: 0.7rem;"
+                                        onclick="window.marcarInstitucion('${emId}', '${inst.clave}')" title="${inst.label}">
+                                        ${inst.clave}<span style="font-size: 0.85rem; display:block;">${marcado || '--:--'}</span>
+                                    </button>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
                 `;
 
                 if (isServicio) {
@@ -209,11 +292,19 @@
                         `;
                     }
 
-                    // Se agrega el registro visual del KM
                     const kmText = (unitLogs.km && unitLogs.km !== "") ? ` | KM LLEGADA: ${unitLogs.km}` : '';
 
                     unitRow.innerHTML = `
-                        <span class="c2-unit-name" style="color: ${themeColor}; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px;">UNIDAD ${unit}${kmText}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <span class="c2-unit-name" style="color: ${themeColor}; font-weight: bold; font-size: 1.1rem;">UNIDAD ${unit}${kmText}</span>
+                            ${!isServicio ? `
+                                <button onclick="window.solicitar1210('${unit}')" style="
+                                    background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
+                                    padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.68rem;
+                                    cursor: pointer; white-space: nowrap; text-transform: uppercase;
+                                ">Pedir 12-10</button>
+                            ` : ''}
+                        </div>
                         ${botonesHtml}
                     `;
                     unitsContainer.appendChild(unitRow);
@@ -244,6 +335,54 @@
             } catch(e) {
                 console.error("Error actualizando tiempo: ", e);
                 alert("Error de conexión al guardar la hora.");
+            }
+        };
+
+        window.marcarInstitucion = async function(emId, clave) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            try {
+                await updateDoc(doc(db, "emergencias_activas", emId), {
+                    [`institucionesLog.${clave}`]: timeString
+                });
+            } catch (e) {
+                console.error("Error registrando institución:", e);
+                alert("Error de conexión al guardar el registro.");
+            }
+        };
+
+        // ==========================================
+        // SOLICITUDES A LA APP (12-10 y 6-6)
+        // ==========================================
+        const fnSolicitar1210 = httpsCallable(functions, 'solicitar12_10');
+        const fnSolicitar66 = httpsCallable(functions, 'solicitar6_6');
+
+        window.solicitar1210 = async function(unidad) {
+            if (!confirm(`¿Solicitar 12-10 (maquinista) para ${unidad}? Se avisará solo a quienes puedan conducir esa unidad.`)) return;
+            try {
+                const resultado = await fnSolicitar1210({ unidad });
+                const enviados = resultado.data && resultado.data.enviados;
+                if (!enviados) {
+                    alert(`No hay maquinistas registrados para ${unidad}. Revisa los perfiles en Usuarios.`);
+                } else {
+                    alert(`12-10 enviado a ${enviados} maquinista(s) de ${unidad}.`);
+                }
+            } catch (e) {
+                console.error("Error solicitando 12-10:", e);
+                alert("No se pudo enviar la solicitud. Intenta nuevamente.");
+            }
+        };
+
+        window.solicitar66 = async function(emId) {
+            if (!confirm('¿Solicitar 6-6 (más personal) para esta emergencia? Se avisará a todos los voluntarios.')) return;
+            try {
+                const docSnap = await getDoc(doc(db, "emergencias_activas", emId));
+                const direccion = docSnap.exists() ? docSnap.data().address : 'Emergencia activa';
+                const resultado = await fnSolicitar66({ emId, direccion });
+                alert(`6-6 enviado a ${resultado.data.enviados} voluntario(s).`);
+            } catch (e) {
+                console.error("Error solicitando 6-6:", e);
+                alert("No se pudo enviar la solicitud. Intenta nuevamente.");
             }
         };
 

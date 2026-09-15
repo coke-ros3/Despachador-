@@ -44,9 +44,35 @@
                         <input type="text" id="f-password" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="off"
                             style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: var(--text-light); font-weight: bold; outline: none;">
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px; padding-top: 22px;">
+                    <div>
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">COMPAÑÍA</label>
+                        <select id="f-compania"
+                            style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: var(--text-light); font-weight: bold; outline: none; cursor: pointer;">
+                            <option value="">— Sin asignar —</option>
+                            <option value="Primera">Primera Compañía</option>
+                            <option value="Segunda">Segunda Compañía</option>
+                            <option value="Tercera">Tercera Compañía</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: var(--text-muted); font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; display: block;">ESPECIALIDAD(ES) — opcional</label>
+                    <input type="text" id="f-especialidades" placeholder="Ej: GERSA, Rescate vehicular" autocomplete="off"
+                        style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: var(--text-light); font-weight: bold; outline: none;">
+                    <p style="color: var(--text-muted); font-size: 0.75rem; margin: 6px 0 0;">Separadas por coma. Sirve para despachos segregados (ej: solo GERSA), sin importar la compañía de cada uno.</p>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" id="f-maquinista" style="width: 20px; height: 20px; cursor: pointer;">
                         <label for="f-maquinista" style="color: var(--text-light); font-weight: bold; cursor: pointer;">Es maquinista / conductor</label>
+                    </div>
+
+                    <div id="bloque-unidades" style="display: none; margin-top: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.8rem; margin-bottom: 8px; display: block;">¿QUÉ UNIDADES SABE CONDUCIR?</label>
+                        <div id="checks-unidades" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
+                        <p style="color: var(--text-muted); font-size: 0.72rem; margin: 10px 0 0;">Ej: el Z-1 tiene una caja de cambios que pocos manejan — no lo marques si no está seguro.</p>
                     </div>
                 </div>
 
@@ -95,7 +121,6 @@
         };
         const EMAIL_DOMAIN = "bomberosni.internal";
 
-        // App principal: solo se usa para leer/escribir Firestore desde esta pantalla de Central
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -107,12 +132,28 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ==========================================
-        // CREAR CUENTA (instancia secundaria de Firebase Auth)
-        // ==========================================
-        // Truco necesario: crear un usuario con el SDK de cliente inicia sesión automáticamente
-        // como ese usuario nuevo. Usamos una app de Firebase "secundaria" y desechable solo para
-        // el registro, así la sesión de Central (esta pestaña) nunca se ve afectada.
+        // Misma lista de unidades que usa Central 2 (6-13 y despachos).
+        // Si el cuerpo suma o retira una unidad, se actualiza aquí también.
+        const UNIDADES = ['B-1', 'Z-1', 'BT-1', 'B-2', 'R-2', 'BX-2', 'B-3', 'BX-3', 'G-3'];
+
+        const chkMaquinista = document.getElementById('f-maquinista');
+        const bloqueUnidades = document.getElementById('bloque-unidades');
+        const checksUnidades = document.getElementById('checks-unidades');
+
+        checksUnidades.innerHTML = UNIDADES.map(u => `
+            <label style="display: flex; align-items: center; gap: 6px; color: var(--text-light); font-size: 0.85rem; cursor: pointer;">
+                <input type="checkbox" class="chk-unidad" value="${u}" style="width: 16px; height: 16px; cursor: pointer;">
+                ${u}
+            </label>
+        `).join('');
+
+        chkMaquinista.addEventListener('change', () => {
+            bloqueUnidades.style.display = chkMaquinista.checked ? 'block' : 'none';
+            if (!chkMaquinista.checked) {
+                checksUnidades.querySelectorAll('.chk-unidad').forEach(c => c.checked = false);
+            }
+        });
+
         const form = document.getElementById('form-crear');
         const btnCrear = document.getElementById('btn-crear');
         const crearMsg = document.getElementById('crear-msg');
@@ -124,6 +165,14 @@
             const numeroRegistro = document.getElementById('f-registro').value.trim();
             const password = document.getElementById('f-password').value;
             const esMaquinista = document.getElementById('f-maquinista').checked;
+            const compania = document.getElementById('f-compania').value;
+            const especialidades = document.getElementById('f-especialidades').value
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean);
+            const unidadesQueConduce = esMaquinista
+                ? Array.from(checksUnidades.querySelectorAll('.chk-unidad:checked')).map(c => c.value)
+                : [];
 
             if (!nombreCompleto || !numeroRegistro || password.length < 6) {
                 crearMsg.style.color = 'var(--c-red)';
@@ -143,12 +192,13 @@
                 const email = `${numeroRegistro}@${EMAIL_DOMAIN}`;
                 const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
 
-                // Escribimos el perfil MIENTRAS el usuario nuevo sigue con sesión en la app secundaria,
-                // así el documento se crea como "self-write" (uid propio), que es lo que exigen las reglas.
                 await setDoc(doc(secondaryDb, "bomberos", cred.user.uid), {
                     nombreCompleto,
                     numeroRegistro,
                     esMaquinista,
+                    compania,
+                    especialidades,
+                    unidadesQueConduce,
                     fechaCreacion: Date.now()
                 });
 
@@ -158,6 +208,7 @@
                 crearMsg.style.color = 'var(--c-green)';
                 crearMsg.textContent = `Cuenta creada para ${nombreCompleto}.`;
                 form.reset();
+                bloqueUnidades.style.display = 'none';
             } catch (error) {
                 console.error("Error creando cuenta:", error);
                 crearMsg.style.color = 'var(--c-red)';
@@ -174,9 +225,6 @@
             }
         });
 
-        // ==========================================
-        // LISTADO EN TIEMPO REAL
-        // ==========================================
         const listaEl = document.getElementById('lista-usuarios');
         const q = query(collection(db, "bomberos"), orderBy("fechaCreacion", "desc"));
 
@@ -191,10 +239,23 @@
                 const u = docSnap.data();
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; background: var(--bg-dark); border:1px solid var(--border-color); border-radius:8px; padding:12px 16px;';
+                const etiquetas = [];
+                if (u.compania) etiquetas.push(u.compania + ' Cía.');
+                if (Array.isArray(u.especialidades) && u.especialidades.length) etiquetas.push(u.especialidades.join(', '));
+                if (u.esMaquinista) {
+                    const unidades = Array.isArray(u.unidadesQueConduce) && u.unidadesQueConduce.length
+                        ? u.unidadesQueConduce.join(', ')
+                        : 'sin unidades marcadas';
+                    etiquetas.push(`MAQUINISTA (${unidades})`);
+                }
+
                 row.innerHTML = `
                     <div>
                         <div style="color: var(--text-light); font-weight: bold;">${u.nombreCompleto || '(sin nombre)'}</div>
-                        <div style="color: var(--text-muted); font-size: 0.8rem;">Reg. ${u.numeroRegistro || '—'} ${u.esMaquinista ? '· <span style=\"color: var(--c-orange);\">MAQUINISTA</span>' : ''}</div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">
+                            Reg. ${u.numeroRegistro || '—'}
+                            ${etiquetas.length ? '· ' + etiquetas.join(' · ') : ''}
+                        </div>
                     </div>
                     <button data-id="${docSnap.id}" data-nombre="${(u.nombreCompleto || '').replace(/"/g, '&quot;')}" class="btn-eliminar-usuario"
                         style="background: transparent; border: 1px solid var(--c-red); color: var(--c-red); padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">

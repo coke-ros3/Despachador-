@@ -70,6 +70,37 @@
                     </label>
                 </div>
                 
+                <div class="form-group">
+                    <button type="button" onclick="window.toggleSegmentacion()" style="
+                        background: transparent; border: none; color: var(--text-muted);
+                        font-size: 0.78rem; font-weight: bold; text-transform: uppercase;
+                        cursor: pointer; padding: 4px 0; text-decoration: underline;
+                    ">Restringir a quién avisar (opcional) ▾</button>
+
+                    <div id="panel-segmentacion" style="display: none; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 6px;">
+                        <span style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 8px;">
+                            Si no marcas nada, la alerta llega a TODOS los voluntarios como siempre.
+                        </span>
+
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">SOLO ESTAS COMPAÑÍAS:</label>
+                        <div style="display: flex; gap: 12px; margin-bottom: 10px;">
+                            <label style="display:flex; align-items:center; gap:5px; color: var(--text-light); font-size: 0.82rem;">
+                                <input type="checkbox" class="chk-compania-seg" value="Primera"> Primera
+                            </label>
+                            <label style="display:flex; align-items:center; gap:5px; color: var(--text-light); font-size: 0.82rem;">
+                                <input type="checkbox" class="chk-compania-seg" value="Segunda"> Segunda
+                            </label>
+                            <label style="display:flex; align-items:center; gap:5px; color: var(--text-light); font-size: 0.82rem;">
+                                <input type="checkbox" class="chk-compania-seg" value="Tercera"> Tercera
+                            </label>
+                        </div>
+
+                        <label style="color: var(--text-muted); font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">SOLO ESTA ESPECIALIDAD (opcional):</label>
+                        <input type="text" id="input-especialidad-seg" placeholder="Ej: GERSA" autocomplete="off"
+                            style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-light); font-size: 0.85rem;">
+                    </div>
+                </div>
+
                 <div class="form-footer-stick">
                     <button class="btn-dispatch" onclick="window.despachar()">DESPACHAR EMERGENCIA</button>
                 </div>
@@ -81,7 +112,7 @@
         <div class="panel panel-right" id="panel-units">
             <div class="units-section">
                 <h2>UNIDADES</h2>
-                <div class="units-grid">
+                <div class="units-grid" id="grid-unidades">
                     <button class="unit-btn" onclick="window.toggleUnit(this)">B-1</button>
                     <button class="unit-btn" onclick="window.toggleUnit(this)">Z-1</button>
                     <button class="unit-btn" onclick="window.toggleUnit(this)">BT-1</button>
@@ -190,30 +221,29 @@
                 icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', iconSize: [25, 41], iconAnchor: [12, 41] })
             }).addTo(map).bindPopup('<b>Punto marcado a mano</b>').openPopup();
 
-            // Si el despachador no había escrito nada, buscamos la dirección más
-            // cercana a ese punto (geocodificación inversa). Si ya escribió una
-            // descripción propia del lugar, la respetamos y no la pisamos.
-            if (!addressInput.value.trim()) {
-                addressInput.value = 'Buscando dirección…';
-                try {
-                    const resp = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}&language=es&limit=1`);
-                    const data = await resp.json();
-                    const encontrada = data.features && data.features[0]
-                        ? data.features[0].place_name.split(',')[0].trim()
-                        : null;
+            // Cada clic en el mapa reemplaza la dirección actual, sin importar
+            // si ya había algo escrito: el mapa siempre manda sobre el último
+            // punto tocado. Buscamos la dirección más cercana (geocodificación
+            // inversa) y la dejamos apenas llega.
+            addressInput.value = 'Buscando dirección…';
+            try {
+                const resp = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}&language=es&limit=1`);
+                const data = await resp.json();
+                const encontrada = data.features && data.features[0]
+                    ? data.features[0].place_name.split(',')[0].trim()
+                    : null;
 
-                    // El despachador pudo haber tocado otro punto mientras esperábamos
-                    // la respuesta; si ya no es el mismo punto, no pisamos lo nuevo.
-                    if (selectedCoords[0] === lat && selectedCoords[1] === lng) {
-                        addressInput.value = encontrada
-                            ? encontrada.toUpperCase()
-                            : 'UBICACIÓN MARCADA EN EL MAPA (sin dirección cercana)';
-                    }
-                } catch (err) {
-                    console.error('Error en geocodificación inversa:', err);
-                    if (selectedCoords[0] === lat && selectedCoords[1] === lng) {
-                        addressInput.value = 'UBICACIÓN MARCADA EN EL MAPA';
-                    }
+                // El despachador pudo haber tocado otro punto mientras esperábamos
+                // la respuesta; si ya no es el mismo punto, no pisamos lo nuevo.
+                if (selectedCoords[0] === lat && selectedCoords[1] === lng) {
+                    addressInput.value = encontrada
+                        ? encontrada.toUpperCase()
+                        : 'UBICACIÓN MARCADA EN EL MAPA (sin dirección cercana)';
+                }
+            } catch (err) {
+                console.error('Error en geocodificación inversa:', err);
+                if (selectedCoords[0] === lat && selectedCoords[1] === lng) {
+                    addressInput.value = 'UBICACIÓN MARCADA EN EL MAPA';
                 }
             }
         });
@@ -297,6 +327,7 @@
         };
 
         window.toggleUnit = function(btn) {
+            if (btn.disabled) return; // fuera de servicio, no se puede seleccionar
             btn.classList.toggle('selected');
             const unitName = btn.innerText;
             if (btn.classList.contains('selected')) {
@@ -308,11 +339,22 @@
             }
         };
 
+        window.toggleSegmentacion = function() {
+            const panel = document.getElementById('panel-segmentacion');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        };
+
         window.despachar = async function() {
             const direccion = document.getElementById('direccion').value.toUpperCase();
             const observaciones = document.getElementById('observaciones').value.toUpperCase();
             const alarma = 0;
             const isAtentado = document.getElementById('chk-atentado').checked;
+
+            // Despacho segregado (opcional): si no se marca nada acá, la Cloud
+            // Function avisa a todos los voluntarios como siempre.
+            const companiasSeg = Array.from(document.querySelectorAll('.chk-compania-seg:checked')).map(c => c.value);
+            const especialidadSeg = document.getElementById('input-especialidad-seg').value.trim();
+            const haySegmentacion = companiasSeg.length > 0 || especialidadSeg !== '';
             
             if (!selectedClave) return alert("Debe seleccionar una Clave 10-X");
             if (!direccion) return alert("Debe ingresar una dirección");
@@ -338,13 +380,22 @@
                     units: selectedUnits,
                     logs: initialLogs,
                     markerLatLng: selectedCoords ? { lat: selectedCoords[0], lng: selectedCoords[1] } : null, 
-                    timestamp: serverTimestamp()
+                    timestamp: serverTimestamp(),
+                    ...(haySegmentacion ? {
+                        segmentacion: {
+                            companias: companiasSeg,
+                            especialidad: especialidadSeg || null
+                        }
+                    } : {})
                 });
 
                 document.getElementById('direccion').value = '';
                 document.getElementById('observaciones').value = '';
                 document.getElementById('chk-atentado').checked = false;
-                
+                document.querySelectorAll('.chk-compania-seg').forEach(c => c.checked = false);
+                document.getElementById('input-especialidad-seg').value = '';
+                document.getElementById('panel-segmentacion').style.display = 'none';
+
                 selectedClave = null;
                 selectedUnits = [];
                 selectedCoords = null;
@@ -527,6 +578,29 @@
                 alert("No se pudo guardar el turno. Revisa tu conexión.");
             }
         });
+
+        // Unidades fuera de servicio: mismo documento que administra Central 2.
+        // Si una unidad está fuera de servicio, se bloquea acá para que no se
+        // pueda despachar por error.
+        onSnapshot(doc(db, "operaciones", "flota"), (snap) => {
+            const estadoFlota = snap.exists() ? snap.data() : {};
+            document.querySelectorAll('#grid-unidades .unit-btn').forEach((btn) => {
+                const fueraDeServicio = !!estadoFlota[btn.innerText];
+                btn.disabled = fueraDeServicio;
+                btn.title = fueraDeServicio ? 'Fuera de servicio' : '';
+                btn.style.opacity = fueraDeServicio ? '0.4' : '';
+                btn.style.cursor = fueraDeServicio ? 'not-allowed' : '';
+                btn.style.textDecoration = fueraDeServicio ? 'line-through' : '';
+
+                // Si estaba seleccionada y justo ahora la marcaron fuera de servicio,
+                // la deseleccionamos para no dejar un despacho a medio armar con ella.
+                if (fueraDeServicio && btn.classList.contains('selected')) {
+                    btn.classList.remove('selected');
+                    btn.style.backgroundColor = 'var(--bg-dark)';
+                    selectedUnits = selectedUnits.filter((u) => u !== btn.innerText);
+                }
+            });
+        }, (error) => console.error("Error leyendo estado de la flota:", error));
 
         onSnapshot(collection(db, "maquinistas"), (snapshot) => {
             const disponibles = [];
